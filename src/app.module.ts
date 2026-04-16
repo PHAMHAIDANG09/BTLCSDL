@@ -1,0 +1,43 @@
+import { Module } from '@nestjs/common';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { TypeOrmModule, TypeOrmModuleOptions } from '@nestjs/typeorm';
+import { ScheduleModule } from '@nestjs/schedule';
+import databaseConfig from './config/database.config';
+import { AppController } from './app.controller';
+import { AppService } from './app.service';
+import { AuthModule } from './modules/auth/auth.module';
+import { OrganizationModule } from './modules/organization/organization.module';
+import { EmployeeModule } from './modules/employee/employee.module';
+import { AttendanceModule } from './modules/attendance/attendance.module';
+import { LeaveModule } from './modules/leave/leave.module';
+import { PayrollModule } from './modules/payroll/payroll.module';
+import { SystemModule } from './modules/system/system.module';
+import { ReportModule } from './modules/report/report.module';
+import { DashboardModule } from './modules/dashboard/dashboard.module';
+
+@Module({
+  imports: [
+    ConfigModule.forRoot({
+      isGlobal: true,
+      load: [databaseConfig],
+    }),
+    ScheduleModule.forRoot(),
+    TypeOrmModule.forRootAsync({
+      inject: [ConfigService],
+      useFactory: (config: ConfigService) =>
+        config.get<TypeOrmModuleOptions>('database')!,
+    }),
+    AuthModule,
+    OrganizationModule,
+    EmployeeModule,
+    AttendanceModule,
+    LeaveModule,
+    PayrollModule,
+    SystemModule,
+    ReportModule,
+    DashboardModule,
+  ],
+  controllers: [AppController],
+  providers: [AppService],
+})
+export class AppModule {}

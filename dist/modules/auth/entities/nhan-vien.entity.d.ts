@@ -1,0 +1,31 @@
+import { PhongBan } from '../../organization/entities/phong-ban.entity';
+import { ChucVu } from '../../organization/entities/chuc-vu.entity';
+import { VaiTro } from './vai-tro.entity';
+export declare class NhanVien {
+    Id: number;
+    MaNhanVien: string;
+    HoTen: string;
+    Email: string;
+    MatKhauHash: string;
+    SoDienThoai: string;
+    GioiTinh: string;
+    NgaySinh: Date;
+    SoCCCD: string;
+    DiaChi: string;
+    MaSoThue: string;
+    SoNguoiPhuThuoc: number;
+    SoTaiKhoan: string;
+    TenNganHang: string;
+    ChiNhanhNganHang: string;
+    MaPhongId: number;
+    MaChucVuId: number;
+    MaVaiTroId: number;
+    NgayVaoLam: Date;
+    NgayNghiViec: Date;
+    TrangThai: string;
+    NgayTao: Date;
+    NgayCapNhat: Date;
+    phongBan: PhongBan;
+    chucVu: ChucVu;
+    vaiTro: VaiTro;
+}
