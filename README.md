@@ -58,6 +58,9 @@ File `.env` đã được đồng bộ theo hướng:
 - `CONTROL_API_BASE_URL=http://localhost:3001`
 
 > Lưu ý: ứng dụng vẫn dùng TypeORM để map entity/repository, nhưng **không dùng ORM để tạo schema**. Schema được tạo bởi script SQL init.
+### Kết nối với MSMS
+![alt text](image.png)
+- `Mật khẩu Dang@12345`
 
 ## Compile and run the project
 
