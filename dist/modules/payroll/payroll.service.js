@@ -84,16 +84,19 @@ let PayrollService = class PayrollService {
                 const attendances = await this.chamCongRepository.find({
                     where: {
                         MaNhanVienId: emp.Id,
-                        NgayLamViec: (0, typeorm_2.MoreThanOrEqual)(startDate) && (0, typeorm_2.LessThanOrEqual)(endDate),
+                        NgayLamViec: (0, typeorm_2.Between)(startDate, endDate),
                     },
                 });
-                const filteredAttendances = attendances.filter((a) => a.NgayLamViec >= startDate && a.NgayLamViec <= endDate);
-                const soNgayCongThucTe = filteredAttendances.length;
+                const soNgayCongThucTe = attendances.length;
                 const ots = await this.donLamThemRepository.find({
-                    where: { MaNhanVienId: emp.Id, TrangThai: 'Approved' },
+                    where: {
+                        MaNhanVienId: emp.Id,
+                        TrangThai: 'Approved',
+                        NgayLamThem: (0, typeorm_2.Between)(startDate, endDate),
+                    },
                 });
-                const filteredOts = ots.filter((o) => o.NgayLamThem >= startDate && o.NgayLamThem <= endDate);
-                const tongGioOT = filteredOts.reduce((sum, o) => sum + o.TongSoGio * Number(o.HeSoOT), 0);
+                const tongGioOTThucTe = ots.reduce((sum, o) => sum + o.TongSoGio, 0);
+                const tongGioOT = ots.reduce((sum, o) => sum + o.TongSoGio * Number(o.HeSoOT), 0);
                 const tienLamThem = (currentSalary.LuongCoBan / 26 / 8) * tongGioOT;
                 const luongGop = currentSalary.LuongCoBan + currentSalary.PhuCap + tienLamThem;
                 const bhxh = currentSalary.LuongCoBan * 0.08;
@@ -106,26 +109,53 @@ let PayrollService = class PayrollService {
                 if (thuNhapTinhThue > 0)
                     thueTNCN = thuNhapTinhThue * 0.1;
                 const luongThucNhan = luongGop - bhxh - bhyt - bhtn - thueTNCN;
-                const phieu = queryRunner.manager.create(phieu_luong_entity_1.PhieuLuong, {
-                    MaNhanVienId: emp.Id,
-                    Thang: thang,
-                    Nam: nam,
-                    SoNgayCongChuan: 26,
-                    SoNgayCongThucTe: soNgayCongThucTe,
-                    LuongCoBan: currentSalary.LuongCoBan,
-                    PhuCap: currentSalary.PhuCap,
-                    TienLamThem: tienLamThem,
-                    BaoHiemXaHoi: bhxh,
-                    BaoHiemYTe: bhyt,
-                    BaoHiemThatNghiep: bhtn,
-                    ThueTNCN: thueTNCN,
-                    KhauTruDiMuon: 0,
-                    CacKhoanKhauTruKhac: 0,
-                    TongLuongGop: luongGop,
-                    LuongThucNhan: luongThucNhan,
-                    NguoiTaoId: adminId,
+                const existing = await queryRunner.manager.findOne(phieu_luong_entity_1.PhieuLuong, {
+                    where: { MaNhanVienId: emp.Id, Thang: thang, Nam: nam },
                 });
-                await queryRunner.manager.save(phieu);
+                let phieu;
+                if (existing) {
+                    Object.assign(existing, {
+                        SoNgayCongChuan: 26,
+                        SoNgayCongThucTe: soNgayCongThucTe,
+                        LuongCoBan: currentSalary.LuongCoBan,
+                        PhuCap: currentSalary.PhuCap,
+                        SoGioLamThem: tongGioOTThucTe,
+                        TienLamThem: tienLamThem,
+                        BaoHiemXaHoi: bhxh,
+                        BaoHiemYTe: bhyt,
+                        BaoHiemThatNghiep: bhtn,
+                        ThueTNCN: thueTNCN,
+                        KhauTruDiMuon: 0,
+                        CacKhoanKhauTruKhac: 0,
+                        TongLuongGop: luongGop,
+                        LuongThucNhan: luongThucNhan,
+                        NguoiTaoId: adminId,
+                    });
+                    phieu = await queryRunner.manager.save(existing);
+                }
+                else {
+                    phieu = queryRunner.manager.create(phieu_luong_entity_1.PhieuLuong, {
+                        MaNhanVienId: emp.Id,
+                        Thang: thang,
+                        Nam: nam,
+                        SoNgayCongChuan: 26,
+                        SoNgayCongThucTe: soNgayCongThucTe,
+                        LuongCoBan: currentSalary.LuongCoBan,
+                        PhuCap: currentSalary.PhuCap,
+                        SoGioLamThem: tongGioOTThucTe,
+                        TienLamThem: tienLamThem,
+                        BaoHiemXaHoi: bhxh,
+                        BaoHiemYTe: bhyt,
+                        BaoHiemThatNghiep: bhtn,
+                        ThueTNCN: thueTNCN,
+                        KhauTruDiMuon: 0,
+                        CacKhoanKhauTruKhac: 0,
+                        TongLuongGop: luongGop,
+                        LuongThucNhan: luongThucNhan,
+                        NguoiTaoId: adminId,
+                    });
+                    await queryRunner.manager.save(phieu);
+                }
                 await queryRunner.commitTransaction();
                 results.push(phieu);
             }

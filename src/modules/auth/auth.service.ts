@@ -5,6 +5,8 @@ import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { NhanVien } from './entities/nhan-vien.entity';
 import { LoginDto } from './dto/login.dto';
+import { AuditService } from '../../system/audit.service';
+import { NotFoundException } from '@nestjs/common';
 
 @Injectable()
 export class AuthService {
@@ -12,6 +14,7 @@ export class AuthService {
     @InjectRepository(NhanVien)
     private nhanVienRepository: Repository<NhanVien>,
     private jwtService: JwtService,
+    private auditService: AuditService,
   ) { }
 
   async login(loginDto: LoginDto) {
@@ -50,16 +53,22 @@ export class AuthService {
       maNhanVien: user.MaNhanVien,
     };
 
+    const token = this.jwtService.sign(payload);
+    await this.auditService.log({
+      tenBang: 'NhanVien',
+      maBanGhi: user.Id,
+      hanhDong: 'LOGIN',
+      giaTriMoi: JSON.stringify({ ip: 'unknown', time: new Date() }),
+      nguoiThucHienId: user.Id,
+    });
     return {
-      access_token: this.jwtService.sign(payload),
+      access_token: token,
       user: {
         id: user.Id,
         hoTen: user.HoTen,
         email: user.Email,
         maNhanVien: user.MaNhanVien,
-        role: user.vaiTro?.TenVaiTro,
-      },
-    };
+        role: user.vaiTro?.TenVaiTro
   }
 
   async getProfile(userId: number) {

@@ -40,14 +40,25 @@ export class LeaveService {
 
     for (const employee of employees) {
       for (const lt of leaveTypes) {
-        const balance = this.soDuPhepRepository.create({
-          MaNhanVienId: employee.Id,
-          MaLoaiPhepId: lt.Id,
-          Nam: year,
-          TongNgayPhep: lt.SoNgayToiDaNam,
-          DaSuDung: 0,
+        // ✅ Check tồn tại trước
+        const existing = await this.soDuPhepRepository.findOne({
+          where: {
+            MaNhanVienId: employee.Id,
+            MaLoaiPhepId: lt.Id,
+            Nam: year,
+          },
         });
-        await this.soDuPhepRepository.save(balance);
+        
+        if (!existing) {
+          const balance = this.soDuPhepRepository.create({
+            MaNhanVienId: employee.Id,
+            MaLoaiPhepId: lt.Id,
+            Nam: year,
+            TongNgayPhep: lt.SoNgayToiDaNam,
+            DaSuDung: 0,
+          });
+          await this.soDuPhepRepository.save(balance);
+        }
       }
     }
   }
@@ -83,20 +94,31 @@ export class LeaveService {
     try {
       const request = await queryRunner.manager.findOne(DonNghiPhep, {
         where: { Id: requestId },
+        lock: { mode: 'pessimistic_write' }, // ✅ Lock row
       });
+      
       if (!request || request.TrangThai !== 'Pending') {
-        throw new BadRequestException('Invalid request');
+        throw new BadRequestException('Đơn không hợp lệ hoặc đã xử lý');
       }
 
-      // Update balance
       const balance = await queryRunner.manager.findOne(SoDuPhep, {
         where: {
           MaNhanVienId: request.MaNhanVienId,
           MaLoaiPhepId: request.MaLoaiPhepId,
-          Nam: request.NgayBatDau.getFullYear(),
+          Nam: new Date(request.NgayBatDau).getFullYear(), // ✅ Fix crash
         },
+        lock: { mode: 'pessimistic_write' }, // ✅ Lock row
       });
 
+      // ✅ Re-check balance khi approve
+      const soNgayConLai = balance ? balance.TongNgayPhep - balance.DaSuDung : 0;
+      if (soNgayConLai < request.TongSoNgay) {
+        throw new BadRequestException(
+          `Số dư phép không đủ. Còn lại: ${soNgayConLai} ngày`
+        );
+      }
+
+      // Update balance
       if (balance) {
         balance.DaSuDung += request.TongSoNgay;
         await queryRunner.manager.save(balance);

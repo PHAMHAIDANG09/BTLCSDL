@@ -160,14 +160,18 @@ let EmployeeService = class EmployeeService {
         return this.hopDongRepository.remove(hd);
     }
     async getExpiringContracts() {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
         const thirtyDaysFromNow = new Date();
         thirtyDaysFromNow.setDate(thirtyDaysFromNow.getDate() + 30);
+        thirtyDaysFromNow.setHours(23, 59, 59, 999);
         return this.hopDongRepository.find({
             where: {
-                NgayKetThuc: thirtyDaysFromNow,
+                NgayKetThuc: (0, typeorm_2.Between)(today, thirtyDaysFromNow),
                 TrangThai: 'Active',
             },
             relations: ['nhanVien'],
+            order: { NgayKetThuc: 'ASC' },
         });
     }
 };

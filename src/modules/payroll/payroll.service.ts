@@ -3,8 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import {
   Repository,
   DataSource,
-  LessThanOrEqual,
-  MoreThanOrEqual,
+  Between,
 } from 'typeorm';
 import { Cron } from '@nestjs/schedule';
 import { PhieuLuong } from './entities/phieu-luong.entity';
@@ -98,24 +97,21 @@ export class PayrollService {
         const attendances = await this.chamCongRepository.find({
           where: {
             MaNhanVienId: emp.Id,
-            NgayLamViec:
-              MoreThanOrEqual(startDate) && (LessThanOrEqual(endDate) as any), // Mocking range check for simplification
+            NgayLamViec: Between(startDate, endDate),
           },
         });
-        // Filtering manually as TypeORM Date range query needs Between or manual Raw
-        const filteredAttendances = attendances.filter(
-          (a) => a.NgayLamViec >= startDate && a.NgayLamViec <= endDate,
-        );
-        const soNgayCongThucTe = filteredAttendances.length;
+        const soNgayCongThucTe = attendances.length;
 
         // 3. Tính OT
         const ots = await this.donLamThemRepository.find({
-          where: { MaNhanVienId: emp.Id, TrangThai: 'Approved' },
+          where: {
+            MaNhanVienId: emp.Id,
+            TrangThai: 'Approved',
+            NgayLamThem: Between(startDate, endDate), // ✅ filter trong DB
+          },
         });
-        const filteredOts = ots.filter(
-          (o) => o.NgayLamThem >= startDate && o.NgayLamThem <= endDate,
-        );
-        const tongGioOT = filteredOts.reduce(
+        const tongGioOTThucTe = ots.reduce((sum, o) => sum + o.TongSoGio, 0);
+        const tongGioOT = ots.reduce(
           (sum, o) => sum + o.TongSoGio * Number(o.HeSoOT),
           0,
         );
@@ -141,27 +137,54 @@ export class PayrollService {
         const luongThucNhan = luongGop - bhxh - bhyt - bhtn - thueTNCN;
 
         // 5. Lưu phiếu lương
-        const phieu = queryRunner.manager.create(PhieuLuong, {
-          MaNhanVienId: emp.Id,
-          Thang: thang,
-          Nam: nam,
-          SoNgayCongChuan: 26,
-          SoNgayCongThucTe: soNgayCongThucTe,
-          LuongCoBan: currentSalary.LuongCoBan,
-          PhuCap: currentSalary.PhuCap,
-          TienLamThem: tienLamThem,
-          BaoHiemXaHoi: bhxh,
-          BaoHiemYTe: bhyt,
-          BaoHiemThatNghiep: bhtn,
-          ThueTNCN: thueTNCN,
-          KhauTruDiMuon: 0,
-          CacKhoanKhauTruKhac: 0,
-          TongLuongGop: luongGop,
-          LuongThucNhan: luongThucNhan,
-          NguoiTaoId: adminId,
+        const existing = await queryRunner.manager.findOne(PhieuLuong, {
+          where: { MaNhanVienId: emp.Id, Thang: thang, Nam: nam },
         });
 
-        await queryRunner.manager.save(phieu);
+        let phieu;
+        if (existing) {
+          // Update thay vì insert
+          Object.assign(existing, {
+            SoNgayCongChuan: 26,
+            SoNgayCongThucTe: soNgayCongThucTe,
+            LuongCoBan: currentSalary.LuongCoBan,
+            PhuCap: currentSalary.PhuCap,
+            SoGioLamThem: tongGioOTThucTe, // ✅ thêm
+            TienLamThem: tienLamThem,
+            BaoHiemXaHoi: bhxh,
+            BaoHiemYTe: bhyt,
+            BaoHiemThatNghiep: bhtn,
+            ThueTNCN: thueTNCN,
+            KhauTruDiMuon: 0,
+            CacKhoanKhauTruKhac: 0,
+            TongLuongGop: luongGop,
+            LuongThucNhan: luongThucNhan,
+            NguoiTaoId: adminId,
+          });
+          phieu = await queryRunner.manager.save(existing);
+        } else {
+          phieu = queryRunner.manager.create(PhieuLuong, {
+            MaNhanVienId: emp.Id,
+            Thang: thang,
+            Nam: nam,
+            SoNgayCongChuan: 26,
+            SoNgayCongThucTe: soNgayCongThucTe,
+            LuongCoBan: currentSalary.LuongCoBan,
+            PhuCap: currentSalary.PhuCap,
+            SoGioLamThem: tongGioOTThucTe, // ✅ thêm
+            TienLamThem: tienLamThem,
+            BaoHiemXaHoi: bhxh,
+            BaoHiemYTe: bhyt,
+            BaoHiemThatNghiep: bhtn,
+            ThueTNCN: thueTNCN,
+            KhauTruDiMuon: 0,
+            CacKhoanKhauTruKhac: 0,
+            TongLuongGop: luongGop,
+            LuongThucNhan: luongThucNhan,
+            NguoiTaoId: adminId,
+          });
+          await queryRunner.manager.save(phieu);
+        }
         await queryRunner.commitTransaction();
         results.push(phieu);
       } catch (err) {

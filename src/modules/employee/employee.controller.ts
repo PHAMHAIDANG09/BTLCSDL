@@ -75,14 +75,14 @@ export class EmployeeController {
     });
   }
 
+
+  // --- Contract Endpoints ---
   @Get('contracts/expiring')
   @Roles('Admin', 'Manager')
   @ApiOperation({ summary: 'Lấy các hợp đồng sắp hết hạn (trong 30 ngày)' })
   getExpiring() {
     return this.employeeService.getExpiringContracts();
   }
-
-  // --- Contract Endpoints ---
   @Get(':employeeId/contracts')
   @Roles('Admin', 'Manager')
   @ApiOperation({ summary: 'Lấy danh sách hợp đồng của nhân viên' })

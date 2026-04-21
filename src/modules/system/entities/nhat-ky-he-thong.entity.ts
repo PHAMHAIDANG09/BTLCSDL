@@ -23,10 +23,10 @@ export class NhatKyHeThong {
   HanhDong: string;
 
   @Column({ type: 'nvarchar', length: 'max', nullable: true })
-  GiaTriCu: string;
+  GiaTriCu: string | null;
 
   @Column({ type: 'nvarchar', length: 'max', nullable: true })
-  GiaTriMoi: string;
+  GiaTriMoi: string | null;
 
   @Column({ type: 'int' })
   MaNguoiThucHienId: number;

@@ -20,10 +20,12 @@ const config_1 = require("@nestjs/config");
 const typeorm_1 = require("@nestjs/typeorm");
 const typeorm_2 = require("typeorm");
 const nhan_vien_entity_1 = require("../entities/nhan-vien.entity");
+const redis_service_1 = require("../../redis/redis.service");
 let JwtStrategy = class JwtStrategy extends (0, passport_1.PassportStrategy)(passport_jwt_1.Strategy) {
     configService;
     nhanVienRepository;
-    constructor(configService, nhanVienRepository) {
+    redisService;
+    constructor(configService, nhanVienRepository, redisService) {
         super({
             jwtFromRequest: passport_jwt_1.ExtractJwt.fromAuthHeaderAsBearerToken(),
             ignoreExpiration: false,
@@ -31,16 +33,21 @@ let JwtStrategy = class JwtStrategy extends (0, passport_1.PassportStrategy)(pas
         });
         this.configService = configService;
         this.nhanVienRepository = nhanVienRepository;
+        this.redisService = redisService;
     }
     async validate(payload) {
-        const { sub: id } = payload;
+        const cacheKey = `user:${payload.sub}`;
+        const cached = await this.redisService.get(cacheKey);
+        if (cached)
+            return JSON.parse(cached);
         const user = await this.nhanVienRepository.findOne({
-            where: { Id: id },
+            where: { Id: payload.sub },
             relations: ['vaiTro', 'phongBan', 'chucVu'],
         });
         if (!user || user.TrangThai !== 'Active') {
             throw new common_1.UnauthorizedException('User not found or inactive');
         }
+        await this.redisService.set(cacheKey, JSON.stringify(user), 300);
         return user;
     }
 };
@@ -49,6 +56,7 @@ exports.JwtStrategy = JwtStrategy = __decorate([
     (0, common_1.Injectable)(),
     __param(1, (0, typeorm_1.InjectRepository)(nhan_vien_entity_1.NhanVien)),
     __metadata("design:paramtypes", [config_1.ConfigService,
-        typeorm_2.Repository])
+        typeorm_2.Repository,
+        redis_service_1.RedisService])
 ], JwtStrategy);
 //# sourceMappingURL=jwt.strategy.js.map

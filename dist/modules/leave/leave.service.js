@@ -42,14 +42,23 @@ let LeaveService = class LeaveService {
         const leaveTypes = await this.loaiNghiPhepRepository.find();
         for (const employee of employees) {
             for (const lt of leaveTypes) {
-                const balance = this.soDuPhepRepository.create({
-                    MaNhanVienId: employee.Id,
-                    MaLoaiPhepId: lt.Id,
-                    Nam: year,
-                    TongNgayPhep: lt.SoNgayToiDaNam,
-                    DaSuDung: 0,
+                const existing = await this.soDuPhepRepository.findOne({
+                    where: {
+                        MaNhanVienId: employee.Id,
+                        MaLoaiPhepId: lt.Id,
+                        Nam: year,
+                    },
                 });
-                await this.soDuPhepRepository.save(balance);
+                if (!existing) {
+                    const balance = this.soDuPhepRepository.create({
+                        MaNhanVienId: employee.Id,
+                        MaLoaiPhepId: lt.Id,
+                        Nam: year,
+                        TongNgayPhep: lt.SoNgayToiDaNam,
+                        DaSuDung: 0,
+                    });
+                    await this.soDuPhepRepository.save(balance);
+                }
             }
         }
     }
@@ -78,17 +87,23 @@ let LeaveService = class LeaveService {
         try {
             const request = await queryRunner.manager.findOne(don_nghi_phep_entity_1.DonNghiPhep, {
                 where: { Id: requestId },
+                lock: { mode: 'pessimistic_write' },
             });
             if (!request || request.TrangThai !== 'Pending') {
-                throw new common_1.BadRequestException('Invalid request');
+                throw new common_1.BadRequestException('Đơn không hợp lệ hoặc đã xử lý');
             }
             const balance = await queryRunner.manager.findOne(so_du_phep_entity_1.SoDuPhep, {
                 where: {
                     MaNhanVienId: request.MaNhanVienId,
                     MaLoaiPhepId: request.MaLoaiPhepId,
-                    Nam: request.NgayBatDau.getFullYear(),
+                    Nam: new Date(request.NgayBatDau).getFullYear(),
                 },
+                lock: { mode: 'pessimistic_write' },
             });
+            const soNgayConLai = balance ? balance.TongNgayPhep - balance.DaSuDung : 0;
+            if (soNgayConLai < request.TongSoNgay) {
+                throw new common_1.BadRequestException(`Số dư phép không đủ. Còn lại: ${soNgayConLai} ngày`);
+            }
             if (balance) {
                 balance.DaSuDung += request.TongSoNgay;
                 await queryRunner.manager.save(balance);

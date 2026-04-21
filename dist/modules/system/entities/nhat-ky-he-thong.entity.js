@@ -42,11 +42,11 @@ __decorate([
 ], NhatKyHeThong.prototype, "HanhDong", void 0);
 __decorate([
     (0, typeorm_1.Column)({ type: 'nvarchar', length: 'max', nullable: true }),
-    __metadata("design:type", String)
+    __metadata("design:type", Object)
 ], NhatKyHeThong.prototype, "GiaTriCu", void 0);
 __decorate([
     (0, typeorm_1.Column)({ type: 'nvarchar', length: 'max', nullable: true }),
-    __metadata("design:type", String)
+    __metadata("design:type", Object)
 ], NhatKyHeThong.prototype, "GiaTriMoi", void 0);
 __decorate([
     (0, typeorm_1.Column)({ type: 'int' }),

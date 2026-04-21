@@ -1,7 +1,10 @@
 import { Module } from '@nestjs/common';
+import * as Joi from 'joi';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule, TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { ScheduleModule } from '@nestjs/schedule';
+import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
+import { APP_GUARD } from '@nestjs/core';
 import databaseConfig from './config/database.config';
 import redisConfig from './config/redis.config';
 import controlApiConfig from './config/control-api.config';
@@ -24,8 +27,13 @@ import { DashboardModule } from './modules/dashboard/dashboard.module';
     ConfigModule.forRoot({
       isGlobal: true,
       load: [databaseConfig, redisConfig, controlApiConfig],
+      validationSchema: Joi.object({
+        DB_PASSWORD: Joi.string().required(),
+        JWT_SECRET: Joi.string().min(32).required(),
+      }),
     }),
     ScheduleModule.forRoot(),
+    ThrottlerModule.forRoot([{ ttl: 60000, limit: 100 }]),
     TypeOrmModule.forRootAsync({
       inject: [ConfigService],
       useFactory: (config: ConfigService) =>
@@ -44,6 +52,9 @@ import { DashboardModule } from './modules/dashboard/dashboard.module';
     DashboardModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    { provide: APP_GUARD, useClass: ThrottlerGuard },
+  ],
 })
 export class AppModule {}

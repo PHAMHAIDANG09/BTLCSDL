@@ -4,8 +4,8 @@ export declare class NhatKyHeThong {
     TenBang: string;
     MaBanGhi: number;
     HanhDong: string;
-    GiaTriCu: string;
-    GiaTriMoi: string;
+    GiaTriCu: string | null;
+    GiaTriMoi: string | null;
     MaNguoiThucHienId: number;
     NgayThucHien: Date;
     nguoiThucHien: NhanVien;

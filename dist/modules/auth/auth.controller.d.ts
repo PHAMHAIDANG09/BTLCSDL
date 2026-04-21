@@ -12,32 +12,7 @@ export declare class AuthController {
             maNhanVien: string;
             role: string;
         };
+        getProfile(userId: number): Promise<any>;
     }>;
-    getProfile(req: any): Promise<{
-        Id: number;
-        MaNhanVien: string;
-        HoTen: string;
-        Email: string;
-        SoDienThoai: string;
-        GioiTinh: string;
-        NgaySinh: Date;
-        SoCCCD: string;
-        DiaChi: string;
-        MaSoThue: string;
-        SoNguoiPhuThuoc: number;
-        SoTaiKhoan: string;
-        TenNganHang: string;
-        ChiNhanhNganHang: string;
-        MaPhongId: number;
-        MaChucVuId: number;
-        MaVaiTroId: number;
-        NgayVaoLam: Date;
-        NgayNghiViec: Date;
-        TrangThai: string;
-        NgayTao: Date;
-        NgayCapNhat: Date;
-        phongBan: import("../organization/entities/phong-ban.entity").PhongBan;
-        chucVu: import("../organization/entities/chuc-vu.entity").ChucVu;
-        vaiTro: import("./entities/vai-tro.entity").VaiTro;
-    } | null>;
+    getProfile(req: any): any;
 }

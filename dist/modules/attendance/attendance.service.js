@@ -16,18 +16,31 @@ exports.AttendanceService = void 0;
 const common_1 = require("@nestjs/common");
 const typeorm_1 = require("@nestjs/typeorm");
 const typeorm_2 = require("typeorm");
+const system_service_1 = require("../system/system.service");
 const cham_cong_entity_1 = require("./entities/cham-cong.entity");
 const don_lam_them_entity_1 = require("./entities/don-lam-them.entity");
 let AttendanceService = class AttendanceService {
     chamCongRepository;
     donLamThemRepository;
-    constructor(chamCongRepository, donLamThemRepository) {
+    systemService;
+    constructor(chamCongRepository, donLamThemRepository, systemService) {
         this.chamCongRepository = chamCongRepository;
         this.donLamThemRepository = donLamThemRepository;
+        this.systemService = systemService;
     }
     async checkInOut(userId) {
         const today = new Date();
         today.setHours(0, 0, 0, 0);
+        const dayOfWeek = today.getDay();
+        if (dayOfWeek === 0 || dayOfWeek === 6) {
+            throw new common_1.BadRequestException('Không chấm công vào cuối tuần');
+        }
+        const todayStr = today.toISOString().split('T')[0];
+        const holidays = await this.systemService.getHolidays();
+        const isHoliday = holidays.some(h => h.NgayLe.toISOString().split('T')[0] === todayStr);
+        if (isHoliday) {
+            throw new common_1.BadRequestException('Hôm nay là ngày lễ, không chấm công');
+        }
         let attendance = await this.chamCongRepository.findOne({
             where: { MaNhanVienId: userId, NgayLamViec: today },
         });
@@ -110,6 +123,7 @@ exports.AttendanceService = AttendanceService = __decorate([
     __param(0, (0, typeorm_1.InjectRepository)(cham_cong_entity_1.ChamCong)),
     __param(1, (0, typeorm_1.InjectRepository)(don_lam_them_entity_1.DonLamThem)),
     __metadata("design:paramtypes", [typeorm_2.Repository,
-        typeorm_2.Repository])
+        typeorm_2.Repository,
+        system_service_1.SystemService])
 ], AttendanceService);
 //# sourceMappingURL=attendance.service.js.map

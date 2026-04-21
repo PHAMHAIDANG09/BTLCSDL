@@ -44,6 +44,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
+var _a;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AuthService = void 0;
 const common_1 = require("@nestjs/common");
@@ -52,12 +53,15 @@ const typeorm_1 = require("@nestjs/typeorm");
 const typeorm_2 = require("typeorm");
 const bcrypt = __importStar(require("bcrypt"));
 const nhan_vien_entity_1 = require("./entities/nhan-vien.entity");
+const audit_service_1 = require("../../system/audit.service");
 let AuthService = class AuthService {
     nhanVienRepository;
     jwtService;
-    constructor(nhanVienRepository, jwtService) {
+    auditService;
+    constructor(nhanVienRepository, jwtService, auditService) {
         this.nhanVienRepository = nhanVienRepository;
         this.jwtService = jwtService;
+        this.auditService = auditService;
     }
     async login(loginDto) {
         const { email, password } = loginDto;
@@ -89,26 +93,34 @@ let AuthService = class AuthService {
             role: user.vaiTro?.TenVaiTro,
             maNhanVien: user.MaNhanVien,
         };
+        const token = this.jwtService.sign(payload);
+        await this.auditService.log({
+            tenBang: 'NhanVien',
+            maBanGhi: user.Id,
+            hanhDong: 'LOGIN',
+            giaTriMoi: JSON.stringify({ ip: 'unknown', time: new Date() }),
+            nguoiThucHienId: user.Id,
+        });
         return {
-            access_token: this.jwtService.sign(payload),
+            access_token: token,
             user: {
                 id: user.Id,
                 hoTen: user.HoTen,
                 email: user.Email,
                 maNhanVien: user.MaNhanVien,
-                role: user.vaiTro?.TenVaiTro,
+                role: user.vaiTro?.TenVaiTro
             },
+            async getProfile(userId) {
+                const user = await this.nhanVienRepository.findOne({
+                    where: { Id: userId },
+                    relations: ['phongBan', 'chucVu', 'vaiTro'],
+                });
+                if (!user)
+                    return null;
+                const { MatKhauHash, ...result } = user;
+                return result;
+            }
         };
-    }
-    async getProfile(userId) {
-        const user = await this.nhanVienRepository.findOne({
-            where: { Id: userId },
-            relations: ['phongBan', 'chucVu', 'vaiTro'],
-        });
-        if (!user)
-            return null;
-        const { MatKhauHash, ...result } = user;
-        return result;
     }
 };
 exports.AuthService = AuthService;
@@ -116,6 +128,6 @@ exports.AuthService = AuthService = __decorate([
     (0, common_1.Injectable)(),
     __param(0, (0, typeorm_1.InjectRepository)(nhan_vien_entity_1.NhanVien)),
     __metadata("design:paramtypes", [typeorm_2.Repository,
-        jwt_1.JwtService])
+        jwt_1.JwtService, typeof (_a = typeof audit_service_1.AuditService !== "undefined" && audit_service_1.AuditService) === "function" ? _a : Object])
 ], AuthService);
 //# sourceMappingURL=auth.service.js.map

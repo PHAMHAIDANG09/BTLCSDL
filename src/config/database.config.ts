@@ -1,4 +1,4 @@
-import { registerAs } from '@nestjs/config/dist';
+import { registerAs } from '@nestjs/config';
 import { TypeOrmModuleOptions } from '@nestjs/typeorm';
 
 export default registerAs(
@@ -8,7 +8,7 @@ export default registerAs(
     host: process.env.DB_HOST || 'localhost',
     port: parseInt((process.env.DB_PORT as string) || '1433', 10),
     username: process.env.DB_USERNAME || 'sa',
-    password: process.env.DB_PASSWORD || 'Dang@12345',
+    password: process.env.DB_PASSWORD,
     database: process.env.DB_DATABASE || 'NextHR',
     extra: {
       trustServerCertificate: true,
