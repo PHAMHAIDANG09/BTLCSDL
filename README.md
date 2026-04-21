@@ -31,6 +31,34 @@
 $ npm install
 ```
 
+## Infrastructure services
+
+Project này dùng:
+
+- SQL Server qua Docker Compose, expose tại `localhost:1435`
+- Redis qua Docker Compose, expose tại `localhost:6379`
+- Schema database được khởi tạo bằng file `init-db/SchemaNEXTHR.sql`
+
+### Chạy hạ tầng
+
+```bash
+docker compose up -d
+```
+
+### Cấu hình môi trường chính
+
+File `.env` đã được đồng bộ theo hướng:
+
+- `DB_HOST=localhost`
+- `DB_PORT=1435`
+- `DB_DATABASE=NextHR`
+- `DB_SYNCHRONIZE=false`
+- `REDIS_HOST=localhost`
+- `REDIS_PORT=6379`
+- `CONTROL_API_BASE_URL=http://localhost:3001`
+
+> Lưu ý: ứng dụng vẫn dùng TypeORM để map entity/repository, nhưng **không dùng ORM để tạo schema**. Schema được tạo bởi script SQL init.
+
 ## Compile and run the project
 
 ```bash

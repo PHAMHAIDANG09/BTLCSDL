@@ -23,7 +23,7 @@ __decorate([
     __metadata("design:type", String)
 ], LoginDto.prototype, "email", void 0);
 __decorate([
-    (0, swagger_1.ApiProperty)({ example: '123456', description: 'User password' }),
+    (0, swagger_1.ApiProperty)({ example: 'Admin123!', description: 'User password' }),
     (0, class_validator_1.IsString)(),
     (0, class_validator_1.IsNotEmpty)(),
     (0, class_validator_1.MinLength)(6),

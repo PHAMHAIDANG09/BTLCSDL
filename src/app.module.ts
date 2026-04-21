@@ -3,6 +3,10 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule, TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { ScheduleModule } from '@nestjs/schedule';
 import databaseConfig from './config/database.config';
+import redisConfig from './config/redis.config';
+import controlApiConfig from './config/control-api.config';
+import { RedisModule } from './modules/redis/redis.module';
+import { ControlApiModule } from './modules/control-api/control-api.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './modules/auth/auth.module';
@@ -19,7 +23,7 @@ import { DashboardModule } from './modules/dashboard/dashboard.module';
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      load: [databaseConfig],
+      load: [databaseConfig, redisConfig, controlApiConfig],
     }),
     ScheduleModule.forRoot(),
     TypeOrmModule.forRootAsync({
@@ -27,6 +31,8 @@ import { DashboardModule } from './modules/dashboard/dashboard.module';
       useFactory: (config: ConfigService) =>
         config.get<TypeOrmModuleOptions>('database')!,
     }),
+    RedisModule,
+    ControlApiModule,
     AuthModule,
     OrganizationModule,
     EmployeeModule,
