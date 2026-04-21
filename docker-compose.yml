@@ -10,6 +10,7 @@ services:
       - TZ=Asia/Ha_Noi
     volumes:
       - sqlserver_data:/var/opt/mssql
+      - ./init-db:/init-db:ro
     networks:
       - app-network
     healthcheck:
@@ -18,6 +19,22 @@ services:
         timeout: 3s
         retries: 10
         start_period: 10s
+
+  sqlserver-init:
+    image: mcr.microsoft.com/mssql-tools
+    container_name: nexthr-db-init
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+    volumes:
+      - ./init-db:/init-db:ro
+    entrypoint: >
+      /bin/bash -c "
+      /opt/mssql-tools/bin/sqlcmd -S sqlserver -U sa -P 'Dang@12345' -i /init-db/SchemaNEXTHR.sql
+      "
+    networks:
+      - app-network
+    restart: 'no'
 
   redis:
     image: redis:alpine
