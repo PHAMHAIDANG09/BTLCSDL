@@ -402,7 +402,7 @@ INSERT INTO dbo.NhanVien (
     MaPhongId, MaChucVuId, MaVaiTroId, NgayVaoLam, NgayNghiViec, TrangThai, NgayCapNhat
 )
 VALUES
-('EMP-2025-001', N'Nguyễn Văn Hùng', 'hung.nguyen@nexthr.vn', 'HASH_ADMIN_001', '0901000001', N'Nam', '1988-03-15', '012345678901',
+('EMP-2025-001', N'Nguyễn Văn Hùng', 'admin@nexthr.com', '$2b$10$IU/vOOAuMxFRe9EdhNJE2evKDp/EllM7byKpOjrKIygHzgcw0tQMu', '0901000001', N'Nam', '1988-03-15', '012345678901',
  N'Hà Nội', 'MST001', 2, '100000001', N'Vietcombank', N'Hà Nội',
  1, 4, 1, '2025-01-02', NULL, N'Active', GETDATE()),
 
