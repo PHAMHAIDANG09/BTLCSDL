@@ -1,0 +1,3177 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>NextHR — Hệ thống Quản trị Nhân sự</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --ink: #0d0f14;
+    --ink-soft: #1e2230;
+    --ink-mute: #3a3f52;
+    --paper: #f5f3ef;
+    --paper-warm: #ede9e1;
+    --paper-card: #ffffff;
+    --accent: #c84b31;
+    --accent-2: #2563eb;
+    --accent-3: #059669;
+    --accent-warn: #d97706;
+    --accent-glow: rgba(200,75,49,0.12);
+    --border: rgba(13,15,20,0.1);
+    --border-strong: rgba(13,15,20,0.2);
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+    --shadow-md: 0 4px 16px rgba(0,0,0,0.08), 0 2px 6px rgba(0,0,0,0.04);
+    --shadow-lg: 0 20px 60px rgba(0,0,0,0.1), 0 8px 24px rgba(0,0,0,0.06);
+    --radius: 10px;
+    --radius-lg: 16px;
+    --sidebar-w: 240px;
+    --header-h: 60px;
+    --font-display: 'Syne', sans-serif;
+    --font-body: 'DM Sans', sans-serif;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { font-size: 15px; }
+
+  body {
+    font-family: var(--font-body);
+    background: var(--paper);
+    color: var(--ink);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ─── SCROLLBAR ─── */
+  ::-webkit-scrollbar { width: 5px; height: 5px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 10px; }
+
+  /* ─── AUTH PAGE ─── */
+  #auth-page {
+    min-height: 100vh;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    position: relative;
+  }
+
+  .auth-left {
+    background: var(--ink);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 3rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .auth-left::before {
+    content: '';
+    position: absolute;
+    top: -30%;
+    right: -20%;
+    width: 500px;
+    height: 500px;
+    background: radial-gradient(circle, rgba(200,75,49,0.25) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .auth-left::after {
+    content: '';
+    position: absolute;
+    bottom: -20%;
+    left: -10%;
+    width: 400px;
+    height: 400px;
+    background: radial-gradient(circle, rgba(37,99,235,0.2) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .auth-logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: white;
+    font-family: var(--font-display);
+    font-size: 1.4rem;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .auth-logo-icon {
+    width: 36px; height: 36px;
+    background: var(--accent);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    font-weight: 900;
+    color: white;
+  }
+
+  .auth-hero {
+    position: relative;
+    z-index: 1;
+  }
+
+  .auth-hero h1 {
+    font-family: var(--font-display);
+    font-size: 3rem;
+    font-weight: 800;
+    color: white;
+    line-height: 1.1;
+    letter-spacing: -1.5px;
+    margin-bottom: 1.2rem;
+  }
+
+  .auth-hero h1 span { color: var(--accent); }
+
+  .auth-hero p {
+    color: rgba(255,255,255,0.5);
+    font-size: 0.95rem;
+    line-height: 1.7;
+    max-width: 340px;
+  }
+
+  .auth-stats {
+    display: flex;
+    gap: 2rem;
+    position: relative;
+    z-index: 1;
+  }
+
+  .auth-stat-num {
+    font-family: var(--font-display);
+    font-size: 1.8rem;
+    font-weight: 800;
+    color: white;
+    line-height: 1;
+  }
+
+  .auth-stat-label {
+    font-size: 0.75rem;
+    color: rgba(255,255,255,0.4);
+    margin-top: 3px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  .auth-right {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem;
+    background: var(--paper);
+  }
+
+  .auth-form-wrap {
+    width: 100%;
+    max-width: 380px;
+    animation: slideUp 0.5s ease;
+  }
+
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .auth-form-wrap h2 {
+    font-family: var(--font-display);
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin-bottom: 0.3rem;
+    letter-spacing: -0.5px;
+  }
+
+  .auth-form-wrap p {
+    color: var(--ink-mute);
+    font-size: 0.88rem;
+    margin-bottom: 2rem;
+  }
+
+  .form-group { margin-bottom: 1.1rem; }
+
+  .form-label {
+    display: block;
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--ink-mute);
+    margin-bottom: 6px;
+    letter-spacing: 0.3px;
+  }
+
+  .form-input {
+    width: 100%;
+    padding: 11px 14px;
+    border: 1.5px solid var(--border-strong);
+    border-radius: var(--radius);
+    background: white;
+    font-family: var(--font-body);
+    font-size: 0.9rem;
+    color: var(--ink);
+    transition: border-color 0.2s, box-shadow 0.2s;
+    outline: none;
+  }
+
+  .form-input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-glow);
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 11px 20px;
+    border-radius: var(--radius);
+    font-family: var(--font-body);
+    font-size: 0.88rem;
+    font-weight: 500;
+    cursor: pointer;
+    border: none;
+    transition: all 0.15s ease;
+    text-decoration: none;
+    white-space: nowrap;
+  }
+
+  .btn-primary {
+    background: var(--ink);
+    color: white;
+    width: 100%;
+    padding: 13px;
+    font-size: 0.92rem;
+  }
+
+  .btn-primary:hover { background: var(--ink-soft); transform: translateY(-1px); box-shadow: var(--shadow-md); }
+
+  .btn-secondary {
+    background: white;
+    color: var(--ink);
+    border: 1.5px solid var(--border-strong);
+  }
+
+  .btn-secondary:hover { background: var(--paper); }
+
+  .btn-accent { background: var(--accent); color: white; }
+  .btn-accent:hover { background: #b0402a; transform: translateY(-1px); }
+
+  .btn-ghost { background: transparent; color: var(--ink-mute); }
+  .btn-ghost:hover { background: var(--paper-warm); color: var(--ink); }
+
+  .btn-sm { padding: 7px 14px; font-size: 0.82rem; }
+  .btn-icon { padding: 8px; border-radius: 8px; }
+
+  .btn-danger { background: #fee2e2; color: #dc2626; }
+  .btn-danger:hover { background: #fecaca; }
+
+  .btn-success { background: #d1fae5; color: #065f46; }
+  .btn-success:hover { background: #a7f3d0; }
+
+  .auth-divider {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 1.2rem 0;
+    color: var(--ink-mute);
+    font-size: 0.8rem;
+  }
+
+  .auth-divider::before, .auth-divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  .auth-hint {
+    background: var(--paper-warm);
+    border-radius: var(--radius);
+    padding: 12px 14px;
+    font-size: 0.82rem;
+    color: var(--ink-mute);
+    border-left: 3px solid var(--accent);
+  }
+
+  .auth-error {
+    background: #fee2e2;
+    border: 1px solid #fecaca;
+    border-radius: var(--radius);
+    padding: 11px 14px;
+    font-size: 0.85rem;
+    color: #dc2626;
+    margin-bottom: 1rem;
+  }
+
+  /* ─── LAYOUT ─── */
+  #app-layout { display: none; min-height: 100vh; }
+  #app-layout.visible { display: flex; }
+
+  .sidebar {
+    width: var(--sidebar-w);
+    min-height: 100vh;
+    background: var(--ink);
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 100;
+    transition: transform 0.3s ease;
+  }
+
+  .sidebar-logo {
+    padding: 1.2rem 1.4rem;
+    border-bottom: 1px solid rgba(255,255,255,0.07);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: white;
+    font-family: var(--font-display);
+    font-size: 1.1rem;
+    font-weight: 800;
+    letter-spacing: -0.3px;
+  }
+
+  .sidebar-logo-icon {
+    width: 32px; height: 32px;
+    background: var(--accent);
+    border-radius: 7px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 900;
+    font-size: 0.9rem;
+    flex-shrink: 0;
+  }
+
+  .sidebar-nav {
+    flex: 1;
+    padding: 0.8rem 0;
+    overflow-y: auto;
+  }
+
+  .nav-section-label {
+    padding: 1rem 1.4rem 0.4rem;
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: rgba(255,255,255,0.25);
+    font-weight: 600;
+  }
+
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 1.4rem;
+    color: rgba(255,255,255,0.5);
+    font-size: 0.86rem;
+    cursor: pointer;
+    transition: all 0.15s;
+    border-left: 2px solid transparent;
+    position: relative;
+    user-select: none;
+  }
+
+  .nav-item:hover { color: rgba(255,255,255,0.85); background: rgba(255,255,255,0.04); }
+
+  .nav-item.active {
+    color: white;
+    background: rgba(255,255,255,0.07);
+    border-left-color: var(--accent);
+  }
+
+  .nav-item .nav-icon { font-size: 1rem; width: 20px; text-align: center; }
+
+  .nav-badge {
+    margin-left: auto;
+    background: var(--accent);
+    color: white;
+    font-size: 0.65rem;
+    padding: 2px 6px;
+    border-radius: 10px;
+    font-weight: 600;
+  }
+
+  .sidebar-user {
+    padding: 1rem 1.4rem;
+    border-top: 1px solid rgba(255,255,255,0.07);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .user-avatar {
+    width: 34px; height: 34px;
+    border-radius: 50%;
+    background: var(--accent);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 0.85rem;
+    color: white;
+    flex-shrink: 0;
+  }
+
+  .user-info { flex: 1; min-width: 0; }
+
+  .user-name {
+    color: white;
+    font-size: 0.82rem;
+    font-weight: 500;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .user-role {
+    color: rgba(255,255,255,0.35);
+    font-size: 0.72rem;
+    margin-top: 1px;
+  }
+
+  .logout-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: rgba(255,255,255,0.3);
+    font-size: 1rem;
+    padding: 4px;
+    transition: color 0.15s;
+  }
+
+  .logout-btn:hover { color: var(--accent); }
+
+  /* ─── MAIN CONTENT ─── */
+  .main-content {
+    margin-left: var(--sidebar-w);
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+  }
+
+  .topbar {
+    height: var(--header-h);
+    background: var(--paper-card);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 1.8rem;
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .topbar-title {
+    font-family: var(--font-display);
+    font-size: 1.05rem;
+    font-weight: 700;
+    letter-spacing: -0.3px;
+  }
+
+  .topbar-actions { display: flex; align-items: center; gap: 10px; }
+
+  .notif-btn {
+    position: relative;
+    width: 36px; height: 36px;
+    background: var(--paper);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    transition: background 0.15s;
+  }
+
+  .notif-btn:hover { background: var(--paper-warm); }
+
+  .notif-dot {
+    position: absolute;
+    top: 7px; right: 7px;
+    width: 7px; height: 7px;
+    background: var(--accent);
+    border-radius: 50%;
+    border: 2px solid white;
+  }
+
+  .page-content {
+    flex: 1;
+    padding: 1.8rem;
+    animation: fadeIn 0.25s ease;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ─── PAGE HEADER ─── */
+  .page-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 1.6rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+
+  .page-header-left h1 {
+    font-family: var(--font-display);
+    font-size: 1.5rem;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    line-height: 1.1;
+  }
+
+  .page-header-left p {
+    color: var(--ink-mute);
+    font-size: 0.85rem;
+    margin-top: 4px;
+  }
+
+  .page-header-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+  /* ─── STATS GRID ─── */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.6rem;
+  }
+
+  .stat-card {
+    background: var(--paper-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 1.3rem;
+    transition: box-shadow 0.2s, transform 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .stat-card:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
+
+  .stat-card-accent {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: var(--accent);
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  }
+
+  .stat-icon {
+    width: 40px; height: 40px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    margin-bottom: 0.9rem;
+  }
+
+  .stat-icon-red { background: #fee2e2; color: #dc2626; }
+  .stat-icon-blue { background: #dbeafe; color: #2563eb; }
+  .stat-icon-green { background: #d1fae5; color: #059669; }
+  .stat-icon-amber { background: #fef3c7; color: #d97706; }
+  .stat-icon-purple { background: #ede9fe; color: #7c3aed; }
+
+  .stat-num {
+    font-family: var(--font-display);
+    font-size: 2rem;
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: -1px;
+  }
+
+  .stat-label {
+    font-size: 0.8rem;
+    color: var(--ink-mute);
+    margin-top: 4px;
+  }
+
+  .stat-change {
+    font-size: 0.75rem;
+    margin-top: 8px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .change-up { color: var(--accent-3); }
+  .change-down { color: var(--accent); }
+
+  /* ─── CARD ─── */
+  .card {
+    background: var(--paper-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .card-header {
+    padding: 1.1rem 1.4rem;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+  }
+
+  .card-title {
+    font-family: var(--font-display);
+    font-size: 0.95rem;
+    font-weight: 700;
+    letter-spacing: -0.2px;
+  }
+
+  .card-body { padding: 1.4rem; }
+
+  /* ─── TABLE ─── */
+  .table-wrap { overflow-x: auto; }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.86rem;
+  }
+
+  thead th {
+    padding: 10px 14px;
+    text-align: left;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: var(--ink-mute);
+    font-weight: 600;
+    background: var(--paper);
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+  }
+
+  tbody tr {
+    border-bottom: 1px solid var(--border);
+    transition: background 0.1s;
+  }
+
+  tbody tr:last-child { border-bottom: none; }
+  tbody tr:hover { background: var(--paper); }
+
+  tbody td {
+    padding: 11px 14px;
+    vertical-align: middle;
+  }
+
+  /* ─── BADGE ─── */
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 9px;
+    border-radius: 100px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    white-space: nowrap;
+  }
+
+  .badge-green { background: #d1fae5; color: #065f46; }
+  .badge-red { background: #fee2e2; color: #991b1b; }
+  .badge-amber { background: #fef3c7; color: #92400e; }
+  .badge-blue { background: #dbeafe; color: #1e40af; }
+  .badge-gray { background: #f3f4f6; color: #4b5563; }
+  .badge-purple { background: #ede9fe; color: #5b21b6; }
+
+  /* ─── FORM MODAL ─── */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.4);
+    backdrop-filter: blur(4px);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem;
+  }
+
+  .modal-overlay.open { display: flex; }
+
+  .modal {
+    background: white;
+    border-radius: var(--radius-lg);
+    width: 100%;
+    max-width: 520px;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: var(--shadow-lg);
+    animation: modalIn 0.25s ease;
+  }
+
+  .modal-lg { max-width: 700px; }
+
+  @keyframes modalIn {
+    from { opacity: 0; transform: scale(0.95) translateY(10px); }
+    to { opacity: 1; transform: scale(1) translateY(0); }
+  }
+
+  .modal-header {
+    padding: 1.3rem 1.5rem;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .modal-title {
+    font-family: var(--font-display);
+    font-size: 1.05rem;
+    font-weight: 700;
+    letter-spacing: -0.3px;
+  }
+
+  .modal-close {
+    width: 30px; height: 30px;
+    border: none;
+    background: var(--paper);
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1.1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--ink-mute);
+    transition: background 0.15s;
+  }
+
+  .modal-close:hover { background: var(--paper-warm); color: var(--ink); }
+
+  .modal-body { padding: 1.5rem; }
+
+  .modal-footer {
+    padding: 1.1rem 1.5rem;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+  }
+
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+
+  .form-select {
+    width: 100%;
+    padding: 11px 14px;
+    border: 1.5px solid var(--border-strong);
+    border-radius: var(--radius);
+    background: white;
+    font-family: var(--font-body);
+    font-size: 0.9rem;
+    color: var(--ink);
+    cursor: pointer;
+    outline: none;
+    transition: border-color 0.2s;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23666' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    padding-right: 32px;
+  }
+
+  .form-select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow); }
+
+  .form-textarea {
+    width: 100%;
+    padding: 11px 14px;
+    border: 1.5px solid var(--border-strong);
+    border-radius: var(--radius);
+    background: white;
+    font-family: var(--font-body);
+    font-size: 0.9rem;
+    color: var(--ink);
+    resize: vertical;
+    min-height: 90px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .form-textarea:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow); }
+
+  /* ─── SEARCH BAR ─── */
+  .search-bar {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    flex-wrap: wrap;
+  }
+
+  .search-input-wrap {
+    position: relative;
+    flex: 1;
+    min-width: 200px;
+  }
+
+  .search-input-wrap input {
+    width: 100%;
+    padding: 9px 14px 9px 36px;
+    border: 1.5px solid var(--border-strong);
+    border-radius: var(--radius);
+    background: white;
+    font-family: var(--font-body);
+    font-size: 0.87rem;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .search-input-wrap input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow); }
+
+  .search-icon {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--ink-mute);
+    font-size: 0.9rem;
+  }
+
+  /* ─── TABS ─── */
+  .tabs {
+    display: flex;
+    gap: 2px;
+    background: var(--paper);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 3px;
+    width: fit-content;
+    margin-bottom: 1.4rem;
+  }
+
+  .tab {
+    padding: 7px 16px;
+    border-radius: 8px;
+    font-size: 0.84rem;
+    font-weight: 500;
+    cursor: pointer;
+    color: var(--ink-mute);
+    transition: all 0.15s;
+    border: none;
+    background: none;
+    font-family: var(--font-body);
+  }
+
+  .tab.active { background: white; color: var(--ink); box-shadow: var(--shadow-sm); }
+  .tab:hover:not(.active) { color: var(--ink); }
+
+  /* ─── EMPTY STATE ─── */
+  .empty-state {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: var(--ink-mute);
+  }
+
+  .empty-state-icon { font-size: 2.5rem; margin-bottom: 0.8rem; opacity: 0.5; }
+  .empty-state h3 { font-family: var(--font-display); font-weight: 700; margin-bottom: 0.4rem; color: var(--ink); }
+  .empty-state p { font-size: 0.85rem; }
+
+  /* ─── LOADING ─── */
+  .loading { display: flex; align-items: center; justify-content: center; padding: 2rem; }
+
+  .spinner {
+    width: 24px; height: 24px;
+    border: 2.5px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ─── AVATAR GROUP ─── */
+  .avatar {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    background: var(--ink-soft);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: white;
+    font-family: var(--font-display);
+    flex-shrink: 0;
+  }
+
+  .avatar-sm { width: 26px; height: 26px; font-size: 0.65rem; }
+  .avatar-lg { width: 42px; height: 42px; font-size: 0.95rem; }
+
+  /* ─── GRID LAYOUTS ─── */
+  .two-col { display: grid; grid-template-columns: 2fr 1fr; gap: 1.2rem; }
+  .three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1.2rem; }
+
+  /* ─── TIMELINE ─── */
+  .timeline { position: relative; padding-left: 1.5rem; }
+
+  .timeline::before {
+    content: '';
+    position: absolute;
+    left: 6px; top: 0; bottom: 0;
+    width: 1px;
+    background: var(--border);
+  }
+
+  .timeline-item { position: relative; margin-bottom: 1.2rem; }
+
+  .timeline-dot {
+    position: absolute;
+    left: -1.5rem;
+    top: 3px;
+    width: 13px; height: 13px;
+    border-radius: 50%;
+    background: var(--accent);
+    border: 2px solid white;
+    box-shadow: 0 0 0 2px var(--border);
+  }
+
+  .timeline-time { font-size: 0.75rem; color: var(--ink-mute); margin-bottom: 2px; }
+  .timeline-text { font-size: 0.86rem; }
+
+  /* ─── PROGRESS ─── */
+  .progress-bar { height: 6px; background: var(--paper-warm); border-radius: 10px; overflow: hidden; }
+  .progress-fill { height: 100%; background: var(--accent); border-radius: 10px; transition: width 0.6s ease; }
+  .progress-fill-blue { background: var(--accent-2); }
+  .progress-fill-green { background: var(--accent-3); }
+
+  /* ─── TOAST ─── */
+  #toast-container {
+    position: fixed;
+    bottom: 1.5rem;
+    right: 1.5rem;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .toast {
+    padding: 12px 16px;
+    border-radius: var(--radius);
+    font-size: 0.86rem;
+    font-weight: 500;
+    box-shadow: var(--shadow-lg);
+    animation: toastIn 0.3s ease;
+    max-width: 320px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  @keyframes toastIn {
+    from { opacity: 0; transform: translateX(20px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+
+  .toast-success { background: #065f46; color: white; }
+  .toast-error { background: #991b1b; color: white; }
+  .toast-info { background: var(--ink); color: white; }
+
+  /* ─── RESPONSIVE ─── */
+  @media (max-width: 900px) {
+    .two-col, .three-col { grid-template-columns: 1fr; }
+    .form-row { grid-template-columns: 1fr; }
+    #auth-page { grid-template-columns: 1fr; }
+    .auth-left { display: none; }
+    .sidebar { transform: translateX(-100%); }
+    .sidebar.open { transform: translateX(0); }
+    .main-content { margin-left: 0; }
+  }
+
+  /* ─── DETAIL VIEW ─── */
+  .detail-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.8rem 1.5rem;
+  }
+
+  .detail-item {}
+  .detail-label { font-size: 0.75rem; color: var(--ink-mute); text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; margin-bottom: 3px; }
+  .detail-value { font-size: 0.9rem; font-weight: 500; }
+
+  /* ─── CHIP ─── */
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 10px;
+    background: var(--paper-warm);
+    border: 1px solid var(--border);
+    border-radius: 100px;
+    font-size: 0.78rem;
+    color: var(--ink-mute);
+    font-weight: 500;
+  }
+
+  /* Calendar mini */
+  .mini-calendar { font-size: 0.83rem; }
+  .mini-cal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-weight: 600;
+    margin-bottom: 0.6rem;
+    font-family: var(--font-display);
+  }
+
+  .mini-cal-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 2px;
+    text-align: center;
+  }
+
+  .mini-cal-grid .day-label { color: var(--ink-mute); font-size: 0.72rem; padding: 4px 0; }
+  .mini-cal-grid .day {
+    padding: 5px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.1s;
+  }
+
+  .mini-cal-grid .day:hover { background: var(--paper-warm); }
+  .mini-cal-grid .day.today { background: var(--ink); color: white; }
+  .mini-cal-grid .day.has-event { position: relative; }
+  .mini-cal-grid .day.has-event::after {
+    content: '';
+    position: absolute;
+    bottom: 2px; left: 50%; transform: translateX(-50%);
+    width: 4px; height: 4px;
+    border-radius: 50%;
+    background: var(--accent);
+  }
+
+  .mini-cal-grid .day.other-month { color: var(--border-strong); }
+
+  /* Leave balance bar */
+  .leave-balance-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.8rem 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .leave-balance-item:last-child { border-bottom: none; }
+
+  .leave-bal-icon { width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1rem; flex-shrink: 0; }
+  .leave-bal-info { flex: 1; }
+  .leave-bal-name { font-size: 0.86rem; font-weight: 500; }
+  .leave-bal-num { font-size: 0.78rem; color: var(--ink-mute); margin-top: 2px; }
+  .leave-bal-bar { margin-top: 6px; }
+
+  /* Paginator */
+  .paginator {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.9rem 1.4rem;
+    border-top: 1px solid var(--border);
+    font-size: 0.82rem;
+    color: var(--ink-mute);
+  }
+
+  .page-btns { display: flex; gap: 4px; }
+
+  .page-btn {
+    width: 30px; height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.82rem;
+    background: white;
+    transition: all 0.1s;
+  }
+
+  .page-btn:hover { background: var(--paper); }
+  .page-btn.active { background: var(--ink); color: white; border-color: var(--ink); }
+  .page-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  /* Section divider */
+  .section-divider {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 1.5rem 0;
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--ink-mute);
+    font-weight: 600;
+  }
+
+  .section-divider::before, .section-divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* Alerts */
+  .alert {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 12px 14px;
+    border-radius: var(--radius);
+    font-size: 0.86rem;
+    margin-bottom: 1rem;
+  }
+
+  .alert-icon { font-size: 1rem; flex-shrink: 0; margin-top: 1px; }
+  .alert-warning { background: #fef3c7; border: 1px solid #fde68a; color: #92400e; }
+  .alert-info { background: #dbeafe; border: 1px solid #bfdbfe; color: #1e40af; }
+  .alert-success { background: #d1fae5; border: 1px solid #a7f3d0; color: #065f46; }
+  .alert-error { background: #fee2e2; border: 1px solid #fecaca; color: #991b1b; }
+
+  /* ─── PAGES HIDDEN ─── */
+  .page { display: none; }
+  .page.active { display: block; }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════ AUTH PAGE ═══════════════ -->
+<div id="auth-page">
+  <div class="auth-left">
+    <div class="auth-logo">
+      <div class="auth-logo-icon">N</div>
+      NextHR
+    </div>
+    <div class="auth-hero">
+      <h1>Quản trị <span>nhân sự</span> thông minh.</h1>
+      <p>Hệ thống HR toàn diện — từ chấm công, nghỉ phép đến tính lương, tất cả trong một nền tảng.</p>
+    </div>
+    <div class="auth-stats">
+      <div>
+        <div class="auth-stat-num">5+</div>
+        <div class="auth-stat-label">Module</div>
+      </div>
+      <div>
+        <div class="auth-stat-num">∞</div>
+        <div class="auth-stat-label">Nhân viên</div>
+      </div>
+      <div>
+        <div class="auth-stat-num">24/7</div>
+        <div class="auth-stat-label">Uptime</div>
+      </div>
+    </div>
+  </div>
+  <div class="auth-right">
+    <div class="auth-form-wrap">
+      <h2>Đăng nhập</h2>
+      <p>Chào mừng trở lại! Vui lòng nhập thông tin đăng nhập.</p>
+
+      <div id="auth-error" class="auth-error" style="display:none;"></div>
+
+      <div class="form-group">
+        <label class="form-label">Email</label>
+        <input type="email" class="form-input" id="login-email" placeholder="admin@nexthr.com" value="admin@nexthr.com"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Mật khẩu</label>
+        <input type="password" class="form-input" id="login-pass" placeholder="••••••••" value="123456"/>
+      </div>
+      <button class="btn btn-primary" onclick="doLogin()" id="login-btn">
+        Đăng nhập
+      </button>
+
+      <div class="auth-divider">hoặc dùng tài khoản demo</div>
+
+      <div class="auth-hint">
+        🔑 <strong>Admin:</strong> admin@nexthr.com / 123456<br/>
+        🔑 <strong>Manager:</strong> lan.tran@nexthr.vn / 123456<br/>
+        🔑 <strong>Staff:</strong> ha.pham@nexthr.vn / 123456
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ APP LAYOUT ═══════════════ -->
+<div id="app-layout">
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <div class="sidebar-logo-icon">N</div>
+      NextHR
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Tổng quan</div>
+      <div class="nav-item active" onclick="navigate('dashboard')" id="nav-dashboard">
+        <span class="nav-icon">📊</span> Dashboard
+      </div>
+
+      <div class="nav-section-label">Nhân sự</div>
+      <div class="nav-item" onclick="navigate('employees')" id="nav-employees">
+        <span class="nav-icon">👥</span> Nhân viên
+      </div>
+      <div class="nav-item" onclick="navigate('organization')" id="nav-organization">
+        <span class="nav-icon">🏢</span> Cơ cấu tổ chức
+      </div>
+      <div class="nav-item" onclick="navigate('contracts')" id="nav-contracts">
+        <span class="nav-icon">📄</span> Hợp đồng
+        <span class="nav-badge" id="badge-contracts">2</span>
+      </div>
+
+      <div class="nav-section-label">Chấm công & Nghỉ phép</div>
+      <div class="nav-item" onclick="navigate('attendance')" id="nav-attendance">
+        <span class="nav-icon">⏱️</span> Chấm công
+      </div>
+      <div class="nav-item" onclick="navigate('leave')" id="nav-leave">
+        <span class="nav-icon">🏖️</span> Nghỉ phép
+        <span class="nav-badge" id="badge-leave">3</span>
+      </div>
+      <div class="nav-item" onclick="navigate('overtime')" id="nav-overtime">
+        <span class="nav-icon">🕐</span> Làm thêm giờ
+      </div>
+
+      <div class="nav-section-label">Tài chính</div>
+      <div class="nav-item" onclick="navigate('payroll')" id="nav-payroll">
+        <span class="nav-icon">💰</span> Bảng lương
+      </div>
+      <div class="nav-item" onclick="navigate('salary-history')" id="nav-salary-history">
+        <span class="nav-icon">📈</span> Lịch sử lương
+      </div>
+
+      <div class="nav-section-label">Hệ thống</div>
+      <div class="nav-item" onclick="navigate('reports')" id="nav-reports">
+        <span class="nav-icon">📋</span> Báo cáo
+      </div>
+      <div class="nav-item" onclick="navigate('holidays')" id="nav-holidays">
+        <span class="nav-icon">🗓️</span> Ngày lễ
+      </div>
+      <div class="nav-item" onclick="navigate('audit')" id="nav-audit">
+        <span class="nav-icon">🔍</span> Nhật ký
+      </div>
+    </nav>
+    <div class="sidebar-user">
+      <div class="user-avatar" id="user-avatar-sidebar">A</div>
+      <div class="user-info">
+        <div class="user-name" id="user-name-sidebar">Nguyễn Văn Hùng</div>
+        <div class="user-role" id="user-role-sidebar">Admin</div>
+      </div>
+      <button class="logout-btn" onclick="doLogout()" title="Đăng xuất">⎋</button>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main-content">
+    <div class="topbar">
+      <div class="topbar-title" id="topbar-title">Dashboard</div>
+      <div class="topbar-actions">
+        <div class="notif-btn" onclick="navigate('leave')">
+          🔔 <span class="notif-dot"></span>
+        </div>
+        <div class="chip" id="topbar-user">
+          <span id="topbar-avatar">👤</span>
+          <span id="topbar-username">Admin</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="page-content">
+      <!-- ── DASHBOARD ── -->
+      <div class="page active" id="page-dashboard">
+        <div class="page-header">
+          <div class="page-header-left">
+            <h1>Dashboard</h1>
+            <p id="dash-greeting">Xin chào! Hôm nay là thứ Hai, 21/04/2026</p>
+          </div>
+          <div class="page-header-actions">
+            <button class="btn btn-secondary btn-sm" onclick="navigate('reports')">📋 Xuất báo cáo</button>
+            <button class="btn btn-accent btn-sm" onclick="navigate('attendance')">⏱️ Chấm công</button>
+          </div>
+        </div>
+
+        <div class="stats-grid" id="stats-grid">
+          <div class="stat-card">
+            <div class="stat-card-accent"></div>
+            <div class="stat-icon stat-icon-blue">👥</div>
+            <div class="stat-num" id="stat-total">5</div>
+            <div class="stat-label">Tổng nhân viên</div>
+            <div class="stat-change change-up">↑ 1 tháng này</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card-accent" style="background:var(--accent-3)"></div>
+            <div class="stat-icon stat-icon-green">✅</div>
+            <div class="stat-num" id="stat-present">4</div>
+            <div class="stat-label">Có mặt hôm nay</div>
+            <div class="stat-change change-up">↑ 80% tỷ lệ</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card-accent" style="background:var(--accent-warn)"></div>
+            <div class="stat-icon stat-icon-amber">⏳</div>
+            <div class="stat-num" id="stat-pending">3</div>
+            <div class="stat-label">Đơn chờ duyệt</div>
+            <div class="stat-change change-down">↓ cần xử lý</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card-accent" style="background:var(--accent)"></div>
+            <div class="stat-icon stat-icon-red">⚠️</div>
+            <div class="stat-num" id="stat-expiring">2</div>
+            <div class="stat-label">HĐ sắp hết hạn</div>
+            <div class="stat-change change-down">↓ trong 30 ngày</div>
+          </div>
+        </div>
+
+        <div class="two-col">
+          <div>
+            <!-- Recent Leave Requests -->
+            <div class="card" style="margin-bottom:1.2rem">
+              <div class="card-header">
+                <span class="card-title">🏖️ Đơn nghỉ phép gần đây</span>
+                <button class="btn btn-ghost btn-sm" onclick="navigate('leave')">Xem tất cả →</button>
+              </div>
+              <div class="table-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Nhân viên</th>
+                      <th>Loại phép</th>
+                      <th>Ngày</th>
+                      <th>Trạng thái</th>
+                      <th></th>
+                    </tr>
+                  </thead>
+                  <tbody id="dash-leave-table">
+                    <tr>
+                      <td><div style="display:flex;align-items:center;gap:8px"><div class="avatar avatar-sm" style="background:#2563eb">P</div> Phạm Thu Hà</div></td>
+                      <td>Phép năm</td>
+                      <td>10/03 – 11/03</td>
+                      <td><span class="badge badge-green">✓ Đã duyệt</span></td>
+                      <td><button class="btn btn-ghost btn-sm">···</button></td>
+                    </tr>
+                    <tr>
+                      <td><div style="display:flex;align-items:center;gap:8px"><div class="avatar avatar-sm" style="background:#059669">B</div> Đỗ Quốc Bảo</div></td>
+                      <td>Phép năm</td>
+                      <td>20/03</td>
+                      <td><span class="badge badge-amber">⏳ Chờ duyệt</span></td>
+                      <td><button class="btn btn-ghost btn-sm">···</button></td>
+                    </tr>
+                    <tr>
+                      <td><div style="display:flex;align-items:center;gap:8px"><div class="avatar avatar-sm" style="background:#7c3aed">L</div> Trần Thị Lan</div></td>
+                      <td>Nghỉ ốm</td>
+                      <td>15/02 – 16/02</td>
+                      <td><span class="badge badge-green">✓ Đã duyệt</span></td>
+                      <td><button class="btn btn-ghost btn-sm">···</button></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- Attendance Today -->
+            <div class="card">
+              <div class="card-header">
+                <span class="card-title">⏱️ Chấm công hôm nay</span>
+                <span class="badge badge-green">4/5 có mặt</span>
+              </div>
+              <div class="table-wrap">
+                <table>
+                  <thead>
+                    <tr><th>Nhân viên</th><th>Vào</th><th>Ra</th><th>Trạng thái</th></tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td><div style="display:flex;align-items:center;gap:8px"><div class="avatar avatar-sm">L</div> Trần Thị Lan</div></td>
+                      <td>08:00</td><td>17:30</td>
+                      <td><span class="badge badge-green">Có mặt</span></td>
+                    </tr>
+                    <tr>
+                      <td><div style="display:flex;align-items:center;gap:8px"><div class="avatar avatar-sm" style="background:#059669">K</div> Lê Minh Khoa</div></td>
+                      <td>08:10</td><td>17:40</td>
+                      <td><span class="badge badge-amber">Đi muộn</span></td>
+                    </tr>
+                    <tr>
+                      <td><div style="display:flex;align-items:center;gap:8px"><div class="avatar avatar-sm" style="background:#2563eb">P</div> Phạm Thu Hà</div></td>
+                      <td>08:00</td><td>18:00</td>
+                      <td><span class="badge badge-green">Có mặt</span></td>
+                    </tr>
+                    <tr>
+                      <td><div style="display:flex;align-items:center;gap:8px"><div class="avatar avatar-sm" style="background:#d97706">B</div> Đỗ Quốc Bảo</div></td>
+                      <td>08:05</td><td>17:15</td>
+                      <td><span class="badge badge-amber">Đi muộn</span></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right column -->
+          <div>
+            <!-- Mini calendar -->
+            <div class="card" style="margin-bottom:1.2rem">
+              <div class="card-header"><span class="card-title">📅 Tháng 4/2026</span></div>
+              <div class="card-body">
+                <div class="mini-calendar" id="mini-calendar"></div>
+              </div>
+            </div>
+
+            <!-- Leave balance -->
+            <div class="card" style="margin-bottom:1.2rem">
+              <div class="card-header">
+                <span class="card-title">🌿 Số dư phép của tôi</span>
+                <span style="font-size:0.78rem;color:var(--ink-mute)">2026</span>
+              </div>
+              <div class="card-body" style="padding-top:0.5rem;padding-bottom:0.5rem">
+                <div class="leave-balance-item">
+                  <div class="leave-bal-icon" style="background:#d1fae5;color:#059669">🏖️</div>
+                  <div class="leave-bal-info">
+                    <div class="leave-bal-name">Phép năm</div>
+                    <div class="leave-bal-num">Đã dùng 3/12 ngày</div>
+                    <div class="leave-bal-bar"><div class="progress-bar"><div class="progress-fill" style="width:25%"></div></div></div>
+                  </div>
+                  <div style="font-family:var(--font-display);font-weight:700;font-size:1.1rem">9</div>
+                </div>
+                <div class="leave-balance-item">
+                  <div class="leave-bal-icon" style="background:#fee2e2;color:#dc2626">🤒</div>
+                  <div class="leave-bal-info">
+                    <div class="leave-bal-name">Nghỉ ốm</div>
+                    <div class="leave-bal-num">Đã dùng 1/30 ngày</div>
+                    <div class="leave-bal-bar"><div class="progress-bar"><div class="progress-fill progress-fill-blue" style="width:3%"></div></div></div>
+                  </div>
+                  <div style="font-family:var(--font-display);font-weight:700;font-size:1.1rem">29</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Quick actions -->
+            <div class="card">
+              <div class="card-header"><span class="card-title">⚡ Thao tác nhanh</span></div>
+              <div class="card-body" style="display:flex;flex-direction:column;gap:8px">
+                <button class="btn btn-secondary" style="width:100%;justify-content:flex-start" onclick="openModal('modal-checkin')">
+                  ⏱️ Chấm công vào/ra
+                </button>
+                <button class="btn btn-secondary" style="width:100%;justify-content:flex-start" onclick="openLeaveModal()">
+                  🏖️ Gửi đơn nghỉ phép
+                </button>
+                <button class="btn btn-secondary" style="width:100%;justify-content:flex-start" onclick="openModal('modal-ot')">
+                  🕐 Đăng ký làm thêm giờ
+                </button>
+                <button class="btn btn-secondary" style="width:100%;justify-content:flex-start" onclick="navigate('payroll')">
+                  💰 Xem phiếu lương
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── EMPLOYEES ── -->
+      <div class="page" id="page-employees">
+        <div class="page-header">
+          <div class="page-header-left">
+            <h1>Nhân viên</h1>
+            <p>Quản lý thông tin toàn bộ nhân viên</p>
+          </div>
+          <div class="page-header-actions">
+            <button class="btn btn-secondary btn-sm">📤 Xuất Excel</button>
+            <button class="btn btn-accent btn-sm" onclick="openModal('modal-add-employee')">+ Thêm nhân viên</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div class="search-bar">
+              <div class="search-input-wrap">
+                <span class="search-icon">🔍</span>
+                <input type="text" placeholder="Tìm theo tên, mã NV, email..." oninput="filterEmployees(this.value)"/>
+              </div>
+              <select class="form-select" style="width:150px" onchange="filterByDept(this.value)">
+                <option value="">Tất cả phòng</option>
+                <option>Ban Giám đốc</option>
+                <option>Nhân sự</option>
+                <option>Công nghệ</option>
+                <option>Kế toán</option>
+              </select>
+              <select class="form-select" style="width:130px">
+                <option value="">Trạng thái</option>
+                <option>Active</option>
+                <option>Inactive</option>
+              </select>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Nhân viên</th>
+                  <th>Mã NV</th>
+                  <th>Phòng ban</th>
+                  <th>Chức vụ</th>
+                  <th>Vai trò</th>
+                  <th>Ngày vào</th>
+                  <th>Trạng thái</th>
+                  <th>Thao tác</th>
+                </tr>
+              </thead>
+              <tbody id="employees-table">
+              </tbody>
+            </table>
+          </div>
+          <div class="paginator">
+            <span>Hiển thị 1–5 / 5 nhân viên</span>
+            <div class="page-btns">
+              <button class="page-btn" disabled>‹</button>
+              <button class="page-btn active">1</button>
+              <button class="page-btn" disabled>›</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── ORGANIZATION ── -->
+      <div class="page" id="page-organization">
+        <div class="page-header">
+          <div class="page-header-left">
+            <h1>Cơ cấu tổ chức</h1>
+            <p>Sơ đồ phòng ban và chức vụ</p>
+          </div>
+          <div class="page-header-actions">
+            <button class="btn btn-accent btn-sm" onclick="openModal('modal-add-dept')">+ Thêm phòng ban</button>
+          </div>
+        </div>
+        <div class="two-col">
+          <div class="card">
+            <div class="card-header"><span class="card-title">🏢 Phòng ban</span></div>
+            <div class="card-body" id="dept-tree"></div>
+          </div>
+          <div>
+            <div class="card" style="margin-bottom:1.2rem">
+              <div class="card-header"><span class="card-title">👔 Chức vụ</span>
+                <button class="btn btn-accent btn-sm" onclick="openModal('modal-add-position')">+ Thêm</button>
+              </div>
+              <div class="table-wrap">
+                <table>
+                  <thead><tr><th>Chức vụ</th><th>Cấp độ</th><th></th></tr></thead>
+                  <tbody id="positions-table"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── CONTRACTS ── -->
+      <div class="page" id="page-contracts">
+        <div class="page-header">
+          <div class="page-header-left">
+            <h1>Hợp đồng lao động</h1>
+            <p>Quản lý và theo dõi hợp đồng nhân viên</p>
+          </div>
+          <div class="page-header-actions">
+            <button class="btn btn-accent btn-sm" onclick="openModal('modal-add-contract')">+ Tạo hợp đồng</button>
+          </div>
+        </div>
+        <div class="alert alert-warning">
+          <span class="alert-icon">⚠️</span>
+          <div><strong>2 hợp đồng sắp hết hạn</strong> trong 30 ngày tới. Vui lòng gia hạn kịp thời.</div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <div class="tabs">
+              <button class="tab active" onclick="switchContractTab('all',this)">Tất cả</button>
+              <button class="tab" onclick="switchContractTab('expiring',this)">Sắp hết hạn</button>
+              <button class="tab" onclick="switchContractTab('expired',this)">Hết hạn</button>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Nhân viên</th>
+                  <th>Số HĐ</th>
+                  <th>Loại HĐ</th>
+                  <th>Bắt đầu</th>
+                  <th>Kết thúc</th>
+                  <th>Trạng thái</th>
+                  <th>Thao tác</th>
+                </tr>
+              </thead>
+              <tbody id="contracts-table"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── ATTENDANCE ── -->
+      <div class="page" id="page-attendance">
+        <div class="page-header">
+          <div class="page-header-left">
+            <h1>Chấm công</h1>
+            <p>Lịch sử và quản lý chấm công nhân viên</p>
+          </div>
+          <div class="page-header-actions">
+            <button class="btn btn-accent btn-sm" onclick="openModal('modal-checkin')">⏱️ Chấm công</button>
+            <button class="btn btn-secondary btn-sm">📤 Xuất Excel</button>
+          </div>
+        </div>
+
+        <div class="stats-grid" style="grid-template-columns:repeat(4,1fr)">
+          <div class="stat-card">
+            <div class="stat-icon stat-icon-green">✅</div>
+            <div class="stat-num">4</div>
+            <div class="stat-label">Có mặt</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon stat-icon-amber">⏰</div>
+            <div class="stat-num">2</div>
+            <div class="stat-label">Đi muộn</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon stat-icon-red">❌</div>
+            <div class="stat-num">1</div>
+            <div class="stat-label">Vắng mặt</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon stat-icon-blue">📋</div>
+            <div class="stat-num">1</div>
+            <div class="stat-label">Nghỉ phép</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div class="search-bar">
+              <div class="search-input-wrap">
+                <span class="search-icon">🔍</span>
+                <input type="text" placeholder="Tìm nhân viên..."/>
+              </div>
+              <input type="date" class="form-input" style="width:auto" value="2026-04-21"/>
+              <select class="form-select" style="width:140px">
+                <option>Tất cả</option>
+                <option>Có mặt</option>
+                <option>Đi muộn</option>
+                <option>Vắng mặt</option>
+              </select>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Nhân viên</th>
+                  <th>Ngày</th>
+                  <th>Giờ vào</th>
+                  <th>Giờ ra</th>
+                  <th>Số giờ</th>
+                  <th>Muộn (phút)</th>
+                  <th>Trạng thái</th>
+                  <th>Nguồn</th>
+                </tr>
+              </thead>
+              <tbody id="attendance-table"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── LEAVE ── -->
+      <div class="page" id="page-leave">
+        <div class="page-header">
+          <div class="page-header-left">
+            <h1>Nghỉ phép</h1>
+            <p>Quản lý đơn xin nghỉ và số dư phép</p>
+          </div>
+          <div class="page-header-actions">
+            <button class="btn btn-accent btn-sm" onclick="openLeaveModal()">+ Gửi đơn nghỉ phép</button>
+          </div>
+        </div>
+
+        <div class="tabs">
+          <button class="tab active" onclick="switchLeaveTab('all',this)">Tất cả đơn</button>
+          <button class="tab" onclick="switchLeaveTab('pending',this)">Chờ duyệt <span class="nav-badge" style="background:var(--accent-warn);color:white">3</span></button>
+          <button class="tab" onclick="switchLeaveTab('approved',this)">Đã duyệt</button>
+          <button class="tab" onclick="switchLeaveTab('rejected',this)">Từ chối</button>
+          <button class="tab" onclick="switchLeaveTab('types',this)">Loại phép</button>
+        </div>
+
+        <div id="leave-content-all" class="leave-content">
+          <div class="card">
+            <div class="card-header">
+              <div class="search-bar">
+                <div class="search-input-wrap">
+                  <span class="search-icon">🔍</span>
+                  <input type="text" placeholder="Tìm nhân viên..."/>
+                </div>
+              </div>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Nhân viên</th>
+                    <th>Loại phép</th>
+                    <th>Từ ngày</th>
+                    <th>Đến ngày</th>
+                    <th>Số ngày</th>
+                    <th>Lý do</th>
+                    <th>Trạng thái</th>
+                    <th>Thao tác</th>
+                  </tr>
+                </thead>
+                <tbody id="leave-table"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div id="leave-content-types" class="leave-content" style="display:none">
+          <div class="card">
+            <div class="card-header">
+              <span class="card-title">Danh sách loại nghỉ phép</span>
+              <button class="btn btn-accent btn-sm" onclick="openModal('modal-add-leave-type')">+ Thêm loại phép</button>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr><th>Tên loại phép</th><th>Hưởng lương</th><th>Số ngày/năm</th><th>Mô tả</th><th></th></tr>
+                </thead>
+                <tbody id="leave-types-table"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── OVERTIME ── -->
+      <div class="page" id="page-overtime">
+        <div class="page-header">
+          <div class="page-header-left">
+            <h1>Làm thêm giờ (OT)</h1>
+            <p>Quản lý đơn đăng ký làm thêm</p>
+          </div>
+          <div class="page-header-actions">
+            <button class="btn btn-accent btn-sm" onclick="openModal('modal-ot')">+ Đăng ký OT</button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <div class="search-bar">
+              <div class="search-input-wrap">
+                <span class="search-icon">🔍</span>
+                <input type="text" placeholder="Tìm nhân viên..."/>
+              </div>
+              <select class="form-select" style="width:140px">
+                <option>Tất cả</option>
+                <option>Chờ duyệt</option>
+                <option>Đã duyệt</option>
+                <option>Từ chối</option>
+              </select>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Nhân viên</th>
+                  <th>Ngày OT</th>
+                  <th>Giờ bắt đầu</th>
+                  <th>Giờ kết thúc</th>
+                  <th>Tổng giờ</th>
+                  <th>Loại OT</th>
+                  <th>Hệ số</th>
+                  <th>Trạng thái</th>
+                  <th>Thao tác</th>
+                </tr>
+              </thead>
+              <tbody id="ot-table"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── PAYROLL ── -->
+      <div class="page" id="page-payroll">
+        <div class="page-header">
+          <div class="page-header-left">
+            <h1>Bảng lương</h1>
+            <p>Quản lý và tính toán lương nhân viên</p>
+          </div>
+          <div class="page-header-actions">
+            <select class="form-select" style="width:100px" id="payroll-month">
+              <option value="3" selected>T3</option>
+              <option value="2">T2</option>
+              <option value="1">T1</option>
+            </select>
+            <select class="form-select" style="width:90px">
+              <option>2026</option>
+              <option>2025</option>
+            </select>
+            <button class="btn btn-secondary btn-sm">🧮 Tính lương</button>
+            <button class="btn btn-accent btn-sm">📤 Xuất Excel</button>
+          </div>
+        </div>
+
+        <div class="stats-grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:1.2rem">
+          <div class="stat-card">
+            <div class="stat-icon stat-icon-green">💰</div>
+            <div class="stat-num" style="font-size:1.4rem">86.4M</div>
+            <div class="stat-label">Tổng lương gộp</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon stat-icon-blue">💳</div>
+            <div class="stat-num" style="font-size:1.4rem">72.8M</div>
+            <div class="stat-label">Tổng thực nhận</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon stat-icon-amber">📊</div>
+            <div class="stat-num" style="font-size:1.4rem">5</div>
+            <div class="stat-label">Số phiếu lương</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon stat-icon-red">⏳</div>
+            <div class="stat-num" style="font-size:1.4rem">2</div>
+            <div class="stat-label">Chờ thanh toán</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Nhân viên</th>
+                  <th>Ngày công</th>
+                  <th>Lương CB</th>
+                  <th>Phụ cấp</th>
+                  <th>OT</th>
+                  <th>Bảo hiểm</th>
+                  <th>Thuế TNCN</th>
+                  <th>Thực nhận</th>
+                  <th>Trạng thái</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="payroll-table"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── SALARY HISTORY ── -->
+      <div class="page" id="page-salary-history">
+        <div class="page-header">
+          <div class="page-header-left">
+            <h1>Lịch sử lương</h1>
+            <p>Theo dõi thay đổi mức lương nhân viên</p>
+          </div>
+          <div class="page-header-actions">
+            <button class="btn btn-accent btn-sm" onclick="openModal('modal-update-salary')">📝 Cập nhật lương</button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Nhân viên</th>
+                  <th>Lương cơ bản</th>
+                  <th>Phụ cấp</th>
+                  <th>Ngày hiệu lực</th>
+                  <th>Người thay đổi</th>
+                  <th>Ghi chú</th>
+                  <th>Hiệu lực</th>
+                </tr>
+              </thead>
+              <tbody id="salary-history-table"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── REPORTS ── -->
+      <div class="page" id="page-reports">
+        <div class="page-header">
+          <div class="page-header-left">
+            <h1>Báo cáo</h1>
+            <p>Xuất và phân tích dữ liệu HR</p>
+          </div>
+        </div>
+        <div class="three-col" style="margin-bottom:1.2rem">
+          <div class="card" style="cursor:pointer;transition:all 0.2s" onmouseenter="this.style.transform='translateY(-3px)'" onmouseleave="this.style.transform=''">
+            <div class="card-body" style="text-align:center;padding:2rem">
+              <div style="font-size:2.5rem;margin-bottom:1rem">📊</div>
+              <div style="font-family:var(--font-display);font-weight:700;font-size:1rem;margin-bottom:0.5rem">Báo cáo chấm công</div>
+              <p style="font-size:0.82rem;color:var(--ink-mute);margin-bottom:1.2rem">Tổng hợp chấm công theo tháng</p>
+              <button class="btn btn-accent btn-sm" style="width:100%">📤 Xuất Excel</button>
+            </div>
+          </div>
+          <div class="card" style="cursor:pointer;transition:all 0.2s" onmouseenter="this.style.transform='translateY(-3px)'" onmouseleave="this.style.transform=''">
+            <div class="card-body" style="text-align:center;padding:2rem">
+              <div style="font-size:2.5rem;margin-bottom:1rem">💰</div>
+              <div style="font-family:var(--font-display);font-weight:700;font-size:1rem;margin-bottom:0.5rem">Báo cáo bảng lương</div>
+              <p style="font-size:0.82rem;color:var(--ink-mute);margin-bottom:1.2rem">Phiếu lương tổng hợp theo tháng</p>
+              <button class="btn btn-accent btn-sm" style="width:100%">📤 Xuất Excel</button>
+            </div>
+          </div>
+          <div class="card" style="cursor:pointer;transition:all 0.2s" onmouseenter="this.style.transform='translateY(-3px)'" onmouseleave="this.style.transform=''">
+            <div class="card-body" style="text-align:center;padding:2rem">
+              <div style="font-size:2.5rem;margin-bottom:1rem">👥</div>
+              <div style="font-family:var(--font-display);font-weight:700;font-size:1rem;margin-bottom:0.5rem">Báo cáo nhân sự</div>
+              <p style="font-size:0.82rem;color:var(--ink-mute);margin-bottom:1.2rem">Danh sách và cơ cấu nhân viên</p>
+              <button class="btn btn-accent btn-sm" style="width:100%">📤 Xuất Excel</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">📅 Chọn kỳ báo cáo</span>
+          </div>
+          <div class="card-body">
+            <div class="form-row" style="max-width:400px">
+              <div class="form-group">
+                <label class="form-label">Tháng</label>
+                <select class="form-select">
+                  <option>Tháng 1</option><option>Tháng 2</option><option>Tháng 3</option>
+                  <option selected>Tháng 4</option><option>Tháng 5</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Năm</label>
+                <select class="form-select"><option>2026</option><option>2025</option></select>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── HOLIDAYS ── -->
+      <div class="page" id="page-holidays">
+        <div class="page-header">
+          <div class="page-header-left">
+            <h1>Ngày lễ</h1>
+            <p>Quản lý lịch nghỉ lễ của công ty</p>
+          </div>
+          <div class="page-header-actions">
+            <button class="btn btn-accent btn-sm" onclick="openModal('modal-add-holiday')">+ Thêm ngày lễ</button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr><th>Ngày lễ</th><th>Tên</th><th>Lặp lại hàng năm</th><th></th></tr>
+              </thead>
+              <tbody id="holidays-table"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── AUDIT ── -->
+      <div class="page" id="page-audit">
+        <div class="page-header">
+          <div class="page-header-left">
+            <h1>Nhật ký hệ thống</h1>
+            <p>Theo dõi mọi thay đổi trong hệ thống</p>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <div class="search-bar">
+              <select class="form-select" style="width:160px">
+                <option>Tất cả hành động</option>
+                <option>INSERT</option><option>UPDATE</option>
+                <option>DELETE</option><option>APPROVE</option>
+                <option>LOGIN</option><option>EXPORT</option>
+              </select>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr><th>Thời gian</th><th>Người thực hiện</th><th>Bảng</th><th>Hành động</th><th>Chi tiết</th></tr>
+              </thead>
+              <tbody id="audit-table"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /page-content -->
+  </main>
+</div><!-- /app-layout -->
+
+<!-- ═══════════════ MODALS ═══════════════ -->
+
+<!-- Checkin -->
+<div class="modal-overlay" id="modal-checkin">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">⏱️ Chấm công</span>
+      <button class="modal-close" onclick="closeModal('modal-checkin')">✕</button>
+    </div>
+    <div class="modal-body" style="text-align:center;padding:2rem">
+      <div style="font-size:3rem;margin-bottom:0.5rem">⏱️</div>
+      <div id="clock-time" style="font-family:var(--font-display);font-size:2.5rem;font-weight:800;letter-spacing:-2px"></div>
+      <div style="color:var(--ink-mute);font-size:0.85rem;margin-top:4px" id="clock-date"></div>
+      <div style="margin:1.5rem 0;padding:1rem;background:var(--paper);border-radius:var(--radius)">
+        <div style="font-size:0.82rem;color:var(--ink-mute)">Nhân viên</div>
+        <div style="font-weight:600;margin-top:3px" id="checkin-user-name">Nguyễn Văn Hùng</div>
+      </div>
+      <button class="btn btn-accent" style="width:100%;padding:14px;font-size:1rem" onclick="doCheckIn()">
+        ✅ Xác nhận chấm công
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Add Employee -->
+<div class="modal-overlay" id="modal-add-employee">
+  <div class="modal modal-lg">
+    <div class="modal-header">
+      <span class="modal-title">👤 Thêm nhân viên mới</span>
+      <button class="modal-close" onclick="closeModal('modal-add-employee')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Họ và tên *</label>
+          <input type="text" class="form-input" placeholder="Nguyễn Văn A"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Email *</label>
+          <input type="email" class="form-input" placeholder="nv@nexthr.com"/>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Mật khẩu khởi tạo *</label>
+          <input type="password" class="form-input" placeholder="Tối thiểu 6 ký tự"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Số điện thoại</label>
+          <input type="text" class="form-input" placeholder="09xx xxx xxx"/>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Phòng ban *</label>
+          <select class="form-select">
+            <option>Ban Giám đốc</option>
+            <option>Phòng Nhân sự</option>
+            <option>Phòng Công nghệ</option>
+            <option>Phòng Kế toán</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Chức vụ *</label>
+          <select class="form-select">
+            <option>Nhân viên</option>
+            <option>Trưởng nhóm</option>
+            <option>Trưởng phòng</option>
+            <option>Giám đốc</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Vai trò *</label>
+          <select class="form-select">
+            <option>Staff</option>
+            <option>Manager</option>
+            <option>Admin</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Ngày vào làm *</label>
+          <input type="date" class="form-input"/>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Giới tính</label>
+          <select class="form-select">
+            <option>Nam</option><option>Nữ</option><option>Khác</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Ngày sinh</label>
+          <input type="date" class="form-input"/>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modal-add-employee')">Hủy</button>
+      <button class="btn btn-accent" onclick="saveEmployee()">Lưu nhân viên</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add Leave Request -->
+<div class="modal-overlay" id="modal-leave">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">🏖️ Gửi đơn nghỉ phép</span>
+      <button class="modal-close" onclick="closeModal('modal-leave')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">Loại nghỉ phép *</label>
+        <select class="form-select">
+          <option>Phép năm</option>
+          <option>Nghỉ ốm</option>
+          <option>Thai sản</option>
+          <option>Nghỉ không lương</option>
+        </select>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Ngày bắt đầu *</label>
+          <input type="date" class="form-input"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Ngày kết thúc *</label>
+          <input type="date" class="form-input"/>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Số ngày nghỉ</label>
+        <input type="number" class="form-input" placeholder="Tự tính" readonly style="background:var(--paper)"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Lý do</label>
+        <textarea class="form-textarea" placeholder="Nêu lý do xin nghỉ..."></textarea>
+      </div>
+      <div class="alert alert-info" style="margin-bottom:0">
+        <span class="alert-icon">ℹ️</span>
+        <span>Số dư phép năm còn lại: <strong>9 ngày</strong></span>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modal-leave')">Hủy</button>
+      <button class="btn btn-accent" onclick="submitLeave()">Gửi đơn</button>
+    </div>
+  </div>
+</div>
+
+<!-- OT Request -->
+<div class="modal-overlay" id="modal-ot">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">🕐 Đăng ký làm thêm giờ</span>
+      <button class="modal-close" onclick="closeModal('modal-ot')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">Ngày làm thêm *</label>
+        <input type="date" class="form-input"/>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Giờ bắt đầu *</label>
+          <input type="time" class="form-input" value="18:00"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Giờ kết thúc *</label>
+          <input type="time" class="form-input" value="20:00"/>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Loại OT *</label>
+          <select class="form-select">
+            <option>Ngày thường (×1.5)</option>
+            <option>Cuối tuần (×2.0)</option>
+            <option>Ngày lễ (×3.0)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Tổng giờ</label>
+          <input type="number" class="form-input" value="2" min="0.5" step="0.5"/>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Lý do làm thêm</label>
+        <textarea class="form-textarea" placeholder="Mô tả công việc cần làm thêm..."></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modal-ot')">Hủy</button>
+      <button class="btn btn-accent" onclick="submitOT()">Đăng ký OT</button>
+    </div>
+  </div>
+</div>
+
+<!-- Update Salary -->
+<div class="modal-overlay" id="modal-update-salary">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">💰 Cập nhật mức lương</span>
+      <button class="modal-close" onclick="closeModal('modal-update-salary')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">Nhân viên *</label>
+        <select class="form-select">
+          <option>Nguyễn Văn Hùng</option>
+          <option>Trần Thị Lan</option>
+          <option>Lê Minh Khoa</option>
+          <option>Phạm Thu Hà</option>
+          <option>Đỗ Quốc Bảo</option>
+        </select>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Lương cơ bản mới *</label>
+          <input type="number" class="form-input" placeholder="VD: 15000000"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Phụ cấp</label>
+          <input type="number" class="form-input" placeholder="VD: 2000000"/>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Ghi chú</label>
+        <textarea class="form-textarea" placeholder="Lý do điều chỉnh lương..."></textarea>
+      </div>
+      <div class="alert alert-warning" style="margin-bottom:0">
+        <span class="alert-icon">⚠️</span>
+        <span>Thao tác này sẽ kết thúc mức lương cũ và tạo bản ghi lương mới (SCD Type 2).</span>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modal-update-salary')">Hủy</button>
+      <button class="btn btn-accent" onclick="updateSalary()">Cập nhật lương</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add Holiday -->
+<div class="modal-overlay" id="modal-add-holiday">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">🗓️ Thêm ngày lễ</span>
+      <button class="modal-close" onclick="closeModal('modal-add-holiday')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">Ngày lễ *</label>
+        <input type="date" class="form-input"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Tên ngày lễ *</label>
+        <input type="text" class="form-input" placeholder="VD: Tết Nguyên Đán"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label" style="display:flex;align-items:center;gap:8px;cursor:pointer">
+          <input type="checkbox" checked/> Lặp lại hàng năm
+        </label>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modal-add-holiday')">Hủy</button>
+      <button class="btn btn-accent" onclick="addHoliday()">Lưu</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add Contract -->
+<div class="modal-overlay" id="modal-add-contract">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">📄 Tạo hợp đồng mới</span>
+      <button class="modal-close" onclick="closeModal('modal-add-contract')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">Nhân viên *</label>
+        <select class="form-select">
+          <option>Nguyễn Văn Hùng</option>
+          <option>Trần Thị Lan</option>
+          <option>Lê Minh Khoa</option>
+        </select>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Số hợp đồng *</label>
+          <input type="text" class="form-input" placeholder="HD-2026-001"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Loại hợp đồng *</label>
+          <select class="form-select">
+            <option>Thử việc</option>
+            <option>Xác định thời hạn</option>
+            <option>Không xác định thời hạn</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Ngày bắt đầu *</label>
+          <input type="date" class="form-input"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Ngày kết thúc</label>
+          <input type="date" class="form-input"/>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Ngày ký *</label>
+        <input type="date" class="form-input"/>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modal-add-contract')">Hủy</button>
+      <button class="btn btn-accent" onclick="saveContract()">Lưu hợp đồng</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add Leave Type -->
+<div class="modal-overlay" id="modal-add-leave-type">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">🌿 Thêm loại nghỉ phép</span>
+      <button class="modal-close" onclick="closeModal('modal-add-leave-type')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">Tên loại phép *</label>
+        <input type="text" class="form-input" placeholder="VD: Nghỉ tang"/>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Số ngày/năm *</label>
+          <input type="number" class="form-input" value="12"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Hưởng lương</label>
+          <select class="form-select">
+            <option value="1">Có hưởng lương</option>
+            <option value="0">Không hưởng lương</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Mô tả</label>
+        <textarea class="form-textarea" placeholder="Mô tả chi tiết loại phép..."></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modal-add-leave-type')">Hủy</button>
+      <button class="btn btn-accent">Lưu</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add Dept -->
+<div class="modal-overlay" id="modal-add-dept">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">🏢 Thêm phòng ban</span>
+      <button class="modal-close" onclick="closeModal('modal-add-dept')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">Tên phòng ban *</label>
+        <input type="text" class="form-input" placeholder="VD: Phòng Marketing"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Mã phòng *</label>
+        <input type="text" class="form-input" placeholder="VD: MKT"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Phòng ban cha</label>
+        <select class="form-select">
+          <option value="">-- Không có --</option>
+          <option>Ban Giám đốc</option>
+          <option>Phòng Công nghệ</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Quản lý phòng</label>
+        <select class="form-select">
+          <option>-- Chọn quản lý --</option>
+          <option>Nguyễn Văn Hùng</option>
+          <option>Trần Thị Lan</option>
+          <option>Lê Minh Khoa</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modal-add-dept')">Hủy</button>
+      <button class="btn btn-accent">Lưu</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add Position -->
+<div class="modal-overlay" id="modal-add-position">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">👔 Thêm chức vụ</span>
+      <button class="modal-close" onclick="closeModal('modal-add-position')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">Tên chức vụ *</label>
+        <input type="text" class="form-input" placeholder="VD: Trưởng dự án"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Cấp độ (1-4) *</label>
+        <select class="form-select">
+          <option value="1">1 - Nhân viên</option>
+          <option value="2">2 - Trưởng nhóm</option>
+          <option value="3">3 - Trưởng phòng</option>
+          <option value="4">4 - Giám đốc</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Mô tả</label>
+        <textarea class="form-textarea" placeholder="Mô tả công việc..."></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modal-add-position')">Hủy</button>
+      <button class="btn btn-accent">Lưu</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast container -->
+<div id="toast-container"></div>
+
+<script>
+// ════════════════════════════════════════
+//  MOCK DATA
+// ════════════════════════════════════════
+const MOCK = {
+  currentUser: null,
+  users: [
+    { id:1, MaNhanVien:'EMP-2025-001', HoTen:'Nguyễn Văn Hùng', Email:'admin@nexthr.com', pass:'123456', SoDienThoai:'0901000001', GioiTinh:'Nam', MaPhong:'BOD', TenPhong:'Ban Giám đốc', TenChucVu:'Giám đốc', TenVaiTro:'Admin', NgayVaoLam:'2025-01-02', TrangThai:'Active' },
+    { id:2, MaNhanVien:'EMP-2025-002', HoTen:'Trần Thị Lan', Email:'lan.tran@nexthr.vn', pass:'123456', SoDienThoai:'0901000002', GioiTinh:'Nữ', MaPhong:'HR', TenPhong:'Phòng Nhân sự', TenChucVu:'Trưởng phòng', TenVaiTro:'Manager', NgayVaoLam:'2025-01-05', TrangThai:'Active' },
+    { id:3, MaNhanVien:'EMP-2025-003', HoTen:'Lê Minh Khoa', Email:'khoa.le@nexthr.vn', pass:'123456', SoDienThoai:'0901000003', GioiTinh:'Nam', MaPhong:'DEV', TenPhong:'Phòng Công nghệ', TenChucVu:'Trưởng phòng', TenVaiTro:'Manager', NgayVaoLam:'2025-01-10', TrangThai:'Active' },
+    { id:4, MaNhanVien:'EMP-2025-004', HoTen:'Phạm Thu Hà', Email:'ha.pham@nexthr.vn', pass:'123456', SoDienThoai:'0901000004', GioiTinh:'Nữ', MaPhong:'DEV-BE', TenPhong:'Nhóm Backend', TenChucVu:'Nhân viên', TenVaiTro:'Staff', NgayVaoLam:'2025-02-01', TrangThai:'Active' },
+    { id:5, MaNhanVien:'EMP-2025-005', HoTen:'Đỗ Quốc Bảo', Email:'bao.do@nexthr.vn', pass:'123456', SoDienThoai:'0901000005', GioiTinh:'Nam', MaPhong:'ACC', TenPhong:'Phòng Kế toán', TenChucVu:'Nhân viên', TenVaiTro:'Staff', NgayVaoLam:'2025-02-15', TrangThai:'Active' },
+  ],
+  leave: [
+    { id:1, MaNhanVienId:4, hoTen:'Phạm Thu Hà', loai:'Phép năm', TuNgay:'2026-03-10', DenNgay:'2026-03-11', SoNgay:2, LyDo:'Nghỉ phép cá nhân', TrangThai:'Approved', NguoiDuyet:'Lê Minh Khoa', NgayDuyet:'2026-03-05' },
+    { id:2, hoTen:'Đỗ Quốc Bảo', loai:'Phép năm', TuNgay:'2026-03-20', DenNgay:'2026-03-20', SoNgay:1, LyDo:'Giải quyết việc gia đình', TrangThai:'Pending', NguoiDuyet:null },
+    { id:3, hoTen:'Trần Thị Lan', loai:'Nghỉ ốm', TuNgay:'2026-02-15', DenNgay:'2026-02-16', SoNgay:2, LyDo:'Nghỉ ốm', TrangThai:'Approved', NguoiDuyet:'Nguyễn Văn Hùng' },
+    { id:4, hoTen:'Lê Minh Khoa', loai:'Phép năm', TuNgay:'2026-04-10', DenNgay:'2026-04-12', SoNgay:3, LyDo:'Đi du lịch gia đình', TrangThai:'Pending', NguoiDuyet:null },
+    { id:5, hoTen:'Phạm Thu Hà', loai:'Nghỉ ốm', TuNgay:'2026-04-01', DenNgay:'2026-04-01', SoNgay:1, LyDo:'Bị cúm', TrangThai:'Pending', NguoiDuyet:null },
+  ],
+  overtime: [
+    { id:1, hoTen:'Phạm Thu Hà', NgayOT:'2026-03-02', GioBD:'18:00', GioKT:'21:00', TongGio:3, Loai:'Ngày thường', HeSo:1.5, TrangThai:'Approved', NguoiDuyet:'Lê Minh Khoa' },
+    { id:2, hoTen:'Lê Minh Khoa', NgayOT:'2026-03-08', GioBD:'09:00', GioKT:'12:00', TongGio:3, Loai:'Cuối tuần', HeSo:2.0, TrangThai:'Approved', NguoiDuyet:'Nguyễn Văn Hùng' },
+    { id:3, hoTen:'Đỗ Quốc Bảo', NgayOT:'2026-03-15', GioBD:'18:30', GioKT:'20:30', TongGio:2, Loai:'Ngày thường', HeSo:1.5, TrangThai:'Pending', NguoiDuyet:null },
+  ],
+  contracts: [
+    { id:1, hoTen:'Nguyễn Văn Hùng', SoHD:'HD-2025-001', Loai:'Không xác định thời hạn', NgayBD:'2025-01-02', NgayKT:null, TrangThai:'Active' },
+    { id:2, hoTen:'Trần Thị Lan', SoHD:'HD-2025-002', Loai:'Xác định thời hạn', NgayBD:'2025-01-05', NgayKT:'2026-05-04', TrangThai:'Active' },
+    { id:3, hoTen:'Lê Minh Khoa', SoHD:'HD-2025-003', Loai:'Xác định thời hạn', NgayBD:'2025-01-10', NgayKT:'2026-05-09', TrangThai:'Active' },
+    { id:4, hoTen:'Phạm Thu Hà', SoHD:'HD-2025-004', Loai:'Thử việc', NgayBD:'2025-02-01', NgayKT:'2025-04-30', TrangThai:'Expired' },
+    { id:5, hoTen:'Đỗ Quốc Bảo', SoHD:'HD-2025-005', Loai:'Xác định thời hạn', NgayBD:'2025-02-15', NgayKT:'2026-08-14', TrangThai:'Active' },
+  ],
+  attendance: [
+    { hoTen:'Trần Thị Lan', Ngay:'2026-03-01', GioVao:'08:00', GioRa:'17:30', SoGio:8.5, Muon:0, TrangThai:'CoMat', Nguon:'Machine' },
+    { hoTen:'Lê Minh Khoa', Ngay:'2026-03-01', GioVao:'08:10', GioRa:'17:40', SoGio:8.5, Muon:10, TrangThai:'DiMuon', Nguon:'Machine' },
+    { hoTen:'Phạm Thu Hà', Ngay:'2026-03-01', GioVao:'08:00', GioRa:'18:00', SoGio:9.0, Muon:0, TrangThai:'CoMat', Nguon:'MobileApp' },
+    { hoTen:'Đỗ Quốc Bảo', Ngay:'2026-03-01', GioVao:'08:05', GioRa:'17:15', SoGio:8.17, Muon:5, TrangThai:'DiMuon', Nguon:'Machine' },
+  ],
+  payroll: [
+    { hoTen:'Trần Thị Lan', NgayCong:'24/26', LuongCB:'25,000,000', PhuCap:'5,000,000', OT:'0', BH:'2,625,000', Thue:'1,200,000', ThucNhan:'26,175,000', TrangThai:'Paid' },
+    { hoTen:'Lê Minh Khoa', NgayCong:'25/26', LuongCB:'30,000,000', PhuCap:'7,000,000', OT:'1,500,000', BH:'3,150,000', Thue:'2,500,000', ThucNhan:'32,650,000', TrangThai:'Paid' },
+    { hoTen:'Phạm Thu Hà', NgayCong:'23/26', LuongCB:'15,000,000', PhuCap:'2,000,000', OT:'450,000', BH:'1,575,000', Thue:'300,000', ThucNhan:'15,575,000', TrangThai:'Approved' },
+    { hoTen:'Đỗ Quốc Bảo', NgayCong:'25/26', LuongCB:'14,000,000', PhuCap:'1,500,000', OT:'250,000', BH:'1,470,000', Thue:'150,000', ThucNhan:'14,030,000', TrangThai:'Draft' },
+  ],
+  salaryHistory: [
+    { hoTen:'Nguyễn Văn Hùng', LuongCB:'50,000,000', PhuCap:'10,000,000', NgayHieuLuc:'2025-01-02', NguoiTD:'Nguyễn Văn Hùng', GhiChu:'Lương giám đốc', DangHL:true },
+    { hoTen:'Trần Thị Lan', LuongCB:'25,000,000', PhuCap:'5,000,000', NgayHieuLuc:'2025-01-05', NguoiTD:'Nguyễn Văn Hùng', GhiChu:'Lương trưởng phòng nhân sự', DangHL:true },
+    { hoTen:'Lê Minh Khoa', LuongCB:'30,000,000', PhuCap:'7,000,000', NgayHieuLuc:'2025-01-10', NguoiTD:'Nguyễn Văn Hùng', GhiChu:'Lương trưởng phòng công nghệ', DangHL:true },
+    { hoTen:'Phạm Thu Hà', LuongCB:'15,000,000', PhuCap:'2,000,000', NgayHieuLuc:'2025-02-01', NguoiTD:'Lê Minh Khoa', GhiChu:'Lương nhân viên backend', DangHL:true },
+    { hoTen:'Đỗ Quốc Bảo', LuongCB:'14,000,000', PhuCap:'1,500,000', NgayHieuLuc:'2025-02-15', NguoiTD:'Trần Thị Lan', GhiChu:'Lương nhân viên kế toán', DangHL:true },
+  ],
+  leaveTypes: [
+    { id:1, TenLoai:'Phép năm', CoLuong:true, SoNgay:12, MoTa:'Nghỉ phép năm theo chế độ' },
+    { id:2, TenLoai:'Nghỉ ốm', CoLuong:true, SoNgay:30, MoTa:'Nghỉ do ốm đau' },
+    { id:3, TenLoai:'Thai sản', CoLuong:true, SoNgay:180, MoTa:'Nghỉ thai sản' },
+    { id:4, TenLoai:'Nghỉ không lương', CoLuong:false, SoNgay:30, MoTa:'Nghỉ cá nhân không hưởng lương' },
+  ],
+  holidays: [
+    { id:1, NgayLe:'2026-01-01', TenNgayLe:'Tết Dương lịch', LapLai:true },
+    { id:2, NgayLe:'2026-04-30', TenNgayLe:'Giải phóng miền Nam', LapLai:true },
+    { id:3, NgayLe:'2026-05-01', TenNgayLe:'Quốc tế Lao động', LapLai:true },
+    { id:4, NgayLe:'2026-09-02', TenNgayLe:'Quốc khánh', LapLai:true },
+  ],
+  audit: [
+    { time:'2026-04-21 09:15', nguoi:'Nguyễn Văn Hùng', bang:'NhanVien', hd:'UPDATE', ct:'Cập nhật thông tin nhân viên #4' },
+    { time:'2026-04-21 08:02', nguoi:'Nguyễn Văn Hùng', bang:'NhanVien', hd:'LOGIN', ct:'Đăng nhập hệ thống' },
+    { time:'2026-04-20 17:30', nguoi:'Lê Minh Khoa', bang:'DonNghiPhep', hd:'APPROVE', ct:'Duyệt đơn nghỉ phép #1' },
+    { time:'2026-04-20 15:00', nguoi:'Trần Thị Lan', bang:'PhieuLuong', hd:'EXPORT', ct:'Xuất bảng lương T3/2026' },
+    { time:'2026-04-19 10:30', nguoi:'Nguyễn Văn Hùng', bang:'LichSuLuong', hd:'INSERT', ct:'Cập nhật lương Phạm Thu Hà' },
+    { time:'2026-04-18 14:00', nguoi:'Phạm Thu Hà', bang:'DonNghiPhep', hd:'INSERT', ct:'Gửi đơn nghỉ phép mới' },
+  ],
+  depts: [
+    { id:1, MaPhong:'BOD', TenPhong:'Ban Giám đốc', MaPhongCha:null, QuanLy:'Nguyễn Văn Hùng', NVCount:1 },
+    { id:2, MaPhong:'HR', TenPhong:'Phòng Nhân sự', MaPhongCha:null, QuanLy:'Trần Thị Lan', NVCount:1 },
+    { id:3, MaPhong:'DEV', TenPhong:'Phòng Công nghệ', MaPhongCha:null, QuanLy:'Lê Minh Khoa', NVCount:2 },
+    { id:4, MaPhong:'ACC', TenPhong:'Phòng Kế toán', MaPhongCha:null, QuanLy:'Đỗ Quốc Bảo', NVCount:1 },
+    { id:5, MaPhong:'DEV-BE', TenPhong:'Nhóm Backend', MaPhongCha:3, QuanLy:'Lê Minh Khoa', NVCount:1 },
+  ],
+  positions: [
+    { id:1, TenCV:'Nhân viên', CapDo:1 },
+    { id:2, TenCV:'Trưởng nhóm', CapDo:2 },
+    { id:3, TenCV:'Trưởng phòng', CapDo:3 },
+    { id:4, TenCV:'Giám đốc', CapDo:4 },
+  ],
+};
+
+// ════════════════════════════════════════
+//  HELPERS
+// ════════════════════════════════════════
+function fmt(n) {
+  return new Intl.NumberFormat('vi-VN').format(n);
+}
+
+function fmtDate(d) {
+  if (!d) return '—';
+  return new Date(d).toLocaleDateString('vi-VN');
+}
+
+function initials(name) {
+  return name.split(' ').pop().charAt(0).toUpperCase();
+}
+
+const COLORS = ['#c84b31','#2563eb','#059669','#d97706','#7c3aed','#0891b2','#be185d'];
+function pickColor(str) {
+  let h = 0;
+  for (let c of str) h = (h * 31 + c.charCodeAt(0)) & 0xffffffff;
+  return COLORS[Math.abs(h) % COLORS.length];
+}
+
+function badge(status) {
+  const map = {
+    'Active':'badge-green', 'Inactive':'badge-gray', 'Terminated':'badge-red',
+    'Approved':'badge-green', 'Pending':'badge-amber', 'Rejected':'badge-red', 'Cancelled':'badge-gray',
+    'Paid':'badge-green', 'Draft':'badge-gray', 'Expired':'badge-red',
+    'CoMat':'badge-green', 'DiMuon':'badge-amber', 'VeSom':'badge-amber', 'Vang':'badge-red', 'NghiPhep':'badge-blue',
+    'Admin':'badge-red', 'Manager':'badge-blue', 'Staff':'badge-green',
+  };
+  const labels = {
+    'Active':'Đang làm', 'Inactive':'Đã nghỉ', 'Terminated':'Chấm dứt',
+    'Approved':'Đã duyệt', 'Pending':'Chờ duyệt', 'Rejected':'Từ chối', 'Cancelled':'Đã hủy',
+    'Paid':'Đã trả', 'Draft':'Nháp', 'Expired':'Hết hạn',
+    'CoMat':'Có mặt', 'DiMuon':'Đi muộn', 'VeSom':'Về sớm', 'Vang':'Vắng', 'NghiPhep':'Nghỉ phép',
+  };
+  const cls = map[status] || 'badge-gray';
+  const lbl = labels[status] || status;
+  return `<span class="badge ${cls}">${lbl}</span>`;
+}
+
+// ════════════════════════════════════════
+//  TOAST
+// ════════════════════════════════════════
+function toast(msg, type='success') {
+  const icons = { success:'✅', error:'❌', info:'ℹ️' };
+  const el = document.createElement('div');
+  el.className = `toast toast-${type}`;
+  el.innerHTML = `${icons[type]} ${msg}`;
+  document.getElementById('toast-container').appendChild(el);
+  setTimeout(() => el.remove(), 3500);
+}
+
+// ════════════════════════════════════════
+//  AUTH
+// ════════════════════════════════════════
+function doLogin() {
+  const email = document.getElementById('login-email').value.trim();
+  const pass = document.getElementById('login-pass').value;
+  const errEl = document.getElementById('auth-error');
+  errEl.style.display = 'none';
+
+  const user = MOCK.users.find(u => u.Email === email && u.pass === pass);
+  if (!user) {
+    errEl.textContent = '❌ Email hoặc mật khẩu không đúng';
+    errEl.style.display = 'block';
+    return;
+  }
+
+  MOCK.currentUser = user;
+  document.getElementById('auth-page').style.display = 'none';
+  document.getElementById('app-layout').classList.add('visible');
+
+  // Set user info
+  const av = initials(user.HoTen);
+  const col = pickColor(user.HoTen);
+  document.getElementById('user-avatar-sidebar').textContent = av;
+  document.getElementById('user-avatar-sidebar').style.background = col;
+  document.getElementById('user-name-sidebar').textContent = user.HoTen;
+  document.getElementById('user-role-sidebar').textContent = user.TenVaiTro;
+  document.getElementById('topbar-username').textContent = user.HoTen.split(' ').pop();
+  document.getElementById('checkin-user-name').textContent = user.HoTen;
+
+  // Greeting
+  const days = ['Chủ nhật','Thứ 2','Thứ 3','Thứ 4','Thứ 5','Thứ 6','Thứ 7'];
+  const now = new Date();
+  document.getElementById('dash-greeting').textContent =
+    `Xin chào, ${user.HoTen.split(' ').pop()}! Hôm nay là ${days[now.getDay()]}, ${now.toLocaleDateString('vi-VN')}`;
+
+  initApp();
+  navigate('dashboard');
+  toast(`Chào mừng ${user.HoTen} trở lại! 👋`);
+}
+
+function doLogout() {
+  MOCK.currentUser = null;
+  document.getElementById('app-layout').classList.remove('visible');
+  document.getElementById('auth-page').style.display = 'grid';
+  toast('Đã đăng xuất thành công', 'info');
+}
+
+// ════════════════════════════════════════
+//  NAVIGATION
+// ════════════════════════════════════════
+const PAGE_TITLES = {
+  dashboard:'Dashboard', employees:'Nhân viên', organization:'Cơ cấu tổ chức',
+  contracts:'Hợp đồng', attendance:'Chấm công', leave:'Nghỉ phép',
+  overtime:'Làm thêm giờ', payroll:'Bảng lương', 'salary-history':'Lịch sử lương',
+  reports:'Báo cáo', holidays:'Ngày lễ', audit:'Nhật ký',
+};
+
+function navigate(page) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+
+  const pg = document.getElementById(`page-${page}`);
+  if (pg) pg.classList.add('active');
+
+  const nav = document.getElementById(`nav-${page}`);
+  if (nav) nav.classList.add('active');
+
+  const title = PAGE_TITLES[page] || page;
+  document.getElementById('topbar-title').textContent = title;
+
+  // Scroll to top
+  window.scrollTo(0,0);
+}
+
+// ════════════════════════════════════════
+//  MODALS
+// ════════════════════════════════════════
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+function openLeaveModal() { openModal('modal-leave'); }
+
+document.querySelectorAll('.modal-overlay').forEach(overlay => {
+  overlay.addEventListener('click', e => {
+    if (e.target === overlay) overlay.classList.remove('open');
+  });
+});
+
+// ════════════════════════════════════════
+//  CLOCK
+// ════════════════════════════════════════
+function updateClock() {
+  const now = new Date();
+  const timeEl = document.getElementById('clock-time');
+  const dateEl = document.getElementById('clock-date');
+  if (timeEl) {
+    timeEl.textContent = now.toLocaleTimeString('vi-VN', { hour:'2-digit', minute:'2-digit', second:'2-digit' });
+    const days = ['Chủ nhật','Thứ 2','Thứ 3','Thứ 4','Thứ 5','Thứ 6','Thứ 7'];
+    dateEl.textContent = `${days[now.getDay()]}, ${now.toLocaleDateString('vi-VN')}`;
+  }
+}
+setInterval(updateClock, 1000);
+updateClock();
+
+// ════════════════════════════════════════
+//  MINI CALENDAR
+// ════════════════════════════════════════
+function renderMiniCalendar() {
+  const cal = document.getElementById('mini-calendar');
+  if (!cal) return;
+  const now = new Date();
+  const year = now.getFullYear(), month = now.getMonth();
+  const today = now.getDate();
+  const firstDay = new Date(year, month, 1).getDay();
+  const daysInMonth = new Date(year, month+1, 0).getDate();
+  const dayLabels = ['CN','T2','T3','T4','T5','T6','T7'];
+
+  let html = `<div class="mini-cal-grid">`;
+  dayLabels.forEach(d => html += `<div class="day-label">${d}</div>`);
+
+  for (let i=0; i<firstDay; i++) {
+    const prevDate = new Date(year, month, -firstDay+i+1).getDate();
+    html += `<div class="day other-month">${prevDate}</div>`;
+  }
+  for (let d=1; d<=daysInMonth; d++) {
+    const isToday = d === today;
+    const hasEvent = [10,11,20].includes(d);
+    html += `<div class="day${isToday?' today':''}${hasEvent?' has-event':''}">${d}</div>`;
+  }
+  html += `</div>`;
+  cal.innerHTML = html;
+}
+
+// ════════════════════════════════════════
+//  RENDER EMPLOYEES
+// ════════════════════════════════════════
+function renderEmployees(list) {
+  const tbody = document.getElementById('employees-table');
+  if (!tbody) return;
+  tbody.innerHTML = list.map(u => `
+    <tr>
+      <td>
+        <div style="display:flex;align-items:center;gap:10px">
+          <div class="avatar" style="background:${pickColor(u.HoTen)}">${initials(u.HoTen)}</div>
+          <div>
+            <div style="font-weight:500;font-size:0.88rem">${u.HoTen}</div>
+            <div style="color:var(--ink-mute);font-size:0.77rem">${u.Email}</div>
+          </div>
+        </div>
+      </td>
+      <td><span class="chip">${u.MaNhanVien}</span></td>
+      <td>${u.TenPhong}</td>
+      <td>${u.TenChucVu}</td>
+      <td>${badge(u.TenVaiTro)}</td>
+      <td>${fmtDate(u.NgayVaoLam)}</td>
+      <td>${badge(u.TrangThai)}</td>
+      <td>
+        <div style="display:flex;gap:4px">
+          <button class="btn btn-ghost btn-sm btn-icon" title="Chi tiết">👁️</button>
+          <button class="btn btn-ghost btn-sm btn-icon" title="Sửa" onclick="openModal('modal-add-employee')">✏️</button>
+          <button class="btn btn-danger btn-sm btn-icon" title="Vô hiệu hóa">🗑️</button>
+        </div>
+      </td>
+    </tr>
+  `).join('');
+}
+
+function filterEmployees(q) {
+  const filtered = MOCK.users.filter(u =>
+    u.HoTen.toLowerCase().includes(q.toLowerCase()) ||
+    u.Email.toLowerCase().includes(q.toLowerCase()) ||
+    u.MaNhanVien.toLowerCase().includes(q.toLowerCase())
+  );
+  renderEmployees(filtered);
+}
+
+function filterByDept(dept) {
+  const filtered = dept ? MOCK.users.filter(u => u.TenPhong.includes(dept)) : MOCK.users;
+  renderEmployees(filtered);
+}
+
+// ════════════════════════════════════════
+//  RENDER LEAVE
+// ════════════════════════════════════════
+function renderLeave(list) {
+  const tbody = document.getElementById('leave-table');
+  if (!tbody) return;
+  tbody.innerHTML = list.map(l => `
+    <tr>
+      <td>
+        <div style="display:flex;align-items:center;gap:8px">
+          <div class="avatar avatar-sm" style="background:${pickColor(l.hoTen)}">${initials(l.hoTen)}</div>
+          ${l.hoTen}
+        </div>
+      </td>
+      <td>${l.loai}</td>
+      <td>${fmtDate(l.TuNgay)}</td>
+      <td>${fmtDate(l.DenNgay)}</td>
+      <td><strong>${l.SoNgay}</strong> ngày</td>
+      <td style="max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${l.LyDo||'—'}</td>
+      <td>${badge(l.TrangThai)}</td>
+      <td>
+        <div style="display:flex;gap:4px">
+          ${l.TrangThai === 'Pending' ? `
+            <button class="btn btn-success btn-sm" onclick="approveLeave(${l.id})">✓ Duyệt</button>
+            <button class="btn btn-danger btn-sm" onclick="rejectLeave(${l.id})">✕</button>
+          ` : `<button class="btn btn-ghost btn-sm">···</button>`}
+        </div>
+      </td>
+    </tr>
+  `).join('');
+}
+
+function approveLeave(id) {
+  const idx = MOCK.leave.findIndex(l => l.id === id);
+  if (idx > -1) {
+    MOCK.leave[idx].TrangThai = 'Approved';
+    MOCK.leave[idx].NguoiDuyet = MOCK.currentUser.HoTen;
+    renderLeave(MOCK.leave);
+    toast('Đã phê duyệt đơn nghỉ phép');
+    document.getElementById('badge-leave').textContent = MOCK.leave.filter(l=>l.TrangThai==='Pending').length;
+  }
+}
+
+function rejectLeave(id) {
+  const idx = MOCK.leave.findIndex(l => l.id === id);
+  if (idx > -1) {
+    MOCK.leave[idx].TrangThai = 'Rejected';
+    renderLeave(MOCK.leave);
+    toast('Đã từ chối đơn nghỉ phép', 'error');
+    document.getElementById('badge-leave').textContent = MOCK.leave.filter(l=>l.TrangThai==='Pending').length;
+  }
+}
+
+function submitLeave() {
+  MOCK.leave.unshift({ id: Date.now(), hoTen: MOCK.currentUser.HoTen, loai:'Phép năm', TuNgay:'2026-04-25', DenNgay:'2026-04-25', SoNgay:1, LyDo:'Việc cá nhân', TrangThai:'Pending' });
+  closeModal('modal-leave');
+  renderLeave(MOCK.leave);
+  toast('Đã gửi đơn nghỉ phép thành công!');
+  document.getElementById('badge-leave').textContent = MOCK.leave.filter(l=>l.TrangThai==='Pending').length;
+}
+
+function switchLeaveTab(type, btn) {
+  document.querySelectorAll('.leave-content').forEach(el => el.style.display='none');
+  document.querySelectorAll('.tabs .tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+
+  if (type === 'types') {
+    document.getElementById('leave-content-types').style.display='block';
+    renderLeaveTypes();
+  } else {
+    document.getElementById('leave-content-all').style.display='block';
+    const filtered = type === 'all' ? MOCK.leave : MOCK.leave.filter(l=>l.TrangThai===type.charAt(0).toUpperCase()+type.slice(1));
+    renderLeave(filtered);
+  }
+}
+
+// ════════════════════════════════════════
+//  RENDER LEAVE TYPES
+// ════════════════════════════════════════
+function renderLeaveTypes() {
+  const tbody = document.getElementById('leave-types-table');
+  if (!tbody) return;
+  tbody.innerHTML = MOCK.leaveTypes.map(lt => `
+    <tr>
+      <td><strong>${lt.TenLoai}</strong></td>
+      <td>${lt.CoLuong ? '<span class="badge badge-green">Có</span>' : '<span class="badge badge-gray">Không</span>'}</td>
+      <td>${lt.SoNgay} ngày</td>
+      <td style="color:var(--ink-mute);font-size:0.85rem">${lt.MoTa}</td>
+      <td><button class="btn btn-ghost btn-sm btn-icon">✏️</button></td>
+    </tr>
+  `).join('');
+}
+
+// ════════════════════════════════════════
+//  RENDER OT
+// ════════════════════════════════════════
+function renderOT() {
+  const tbody = document.getElementById('ot-table');
+  if (!tbody) return;
+  tbody.innerHTML = MOCK.overtime.map(o => `
+    <tr>
+      <td><div style="display:flex;align-items:center;gap:8px"><div class="avatar avatar-sm" style="background:${pickColor(o.hoTen)}">${initials(o.hoTen)}</div>${o.hoTen}</div></td>
+      <td>${fmtDate(o.NgayOT)}</td>
+      <td>${o.GioBD}</td>
+      <td>${o.GioKT}</td>
+      <td><strong>${o.TongGio}h</strong></td>
+      <td>${o.Loai}</td>
+      <td>×${o.HeSo}</td>
+      <td>${badge(o.TrangThai)}</td>
+      <td>
+        ${o.TrangThai==='Pending' ?
+          `<div style="display:flex;gap:4px">
+            <button class="btn btn-success btn-sm" onclick="approveOT(this)">✓</button>
+            <button class="btn btn-danger btn-sm">✕</button>
+          </div>` :
+          `<span style="color:var(--ink-mute);font-size:0.82rem">${o.NguoiDuyet||'—'}</span>`}
+      </td>
+    </tr>
+  `).join('');
+}
+
+function approveOT(btn) {
+  btn.closest('tr').querySelector('td:last-child').innerHTML = '<span class="badge badge-green">✓ Đã duyệt</span>';
+  toast('Đã duyệt đơn OT');
+}
+
+function submitOT() {
+  closeModal('modal-ot');
+  toast('Đã đăng ký làm thêm giờ thành công!');
+}
+
+// ════════════════════════════════════════
+//  RENDER ATTENDANCE
+// ════════════════════════════════════════
+function renderAttendance() {
+  const tbody = document.getElementById('attendance-table');
+  if (!tbody) return;
+  tbody.innerHTML = MOCK.attendance.map(a => `
+    <tr>
+      <td><div style="display:flex;align-items:center;gap:8px"><div class="avatar avatar-sm" style="background:${pickColor(a.hoTen)}">${initials(a.hoTen)}</div>${a.hoTen}</div></td>
+      <td>${a.Ngay}</td>
+      <td>${a.GioVao}</td>
+      <td>${a.GioRa}</td>
+      <td>${a.SoGio}h</td>
+      <td>${a.Muon > 0 ? `<span style="color:var(--accent)">${a.Muon}'</span>` : '<span style="color:var(--accent-3)">0</span>'}</td>
+      <td>${badge(a.TrangThai)}</td>
+      <td><span class="chip" style="font-size:0.72rem">${a.Nguon}</span></td>
+    </tr>
+  `).join('');
+}
+
+// ════════════════════════════════════════
+//  RENDER CONTRACTS
+// ════════════════════════════════════════
+function renderContracts(list) {
+  const tbody = document.getElementById('contracts-table');
+  if (!tbody) return;
+  tbody.innerHTML = list.map(c => {
+    const today = new Date();
+    const end = c.NgayKT ? new Date(c.NgayKT) : null;
+    const daysLeft = end ? Math.ceil((end - today) / 86400000) : null;
+    const isExpiring = daysLeft !== null && daysLeft > 0 && daysLeft <= 30;
+
+    return `
+    <tr ${isExpiring ? 'style="background:#fffbeb"' : ''}>
+      <td><div style="display:flex;align-items:center;gap:8px"><div class="avatar avatar-sm" style="background:${pickColor(c.hoTen)}">${initials(c.hoTen)}</div>${c.hoTen}</div></td>
+      <td><span class="chip">${c.SoHD}</span></td>
+      <td>${c.Loai}</td>
+      <td>${fmtDate(c.NgayBD)}</td>
+      <td>
+        ${c.NgayKT ? `
+          ${fmtDate(c.NgayKT)}
+          ${isExpiring ? `<br/><span style="color:var(--accent-warn);font-size:0.75rem">⚠️ còn ${daysLeft} ngày</span>` : ''}
+        ` : '<span class="badge badge-blue">Không thời hạn</span>'}
+      </td>
+      <td>${badge(c.TrangThai)}</td>
+      <td>
+        <div style="display:flex;gap:4px">
+          <button class="btn btn-ghost btn-sm btn-icon">👁️</button>
+          <button class="btn btn-ghost btn-sm btn-icon" onclick="openModal('modal-add-contract')">✏️</button>
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function switchContractTab(type, btn) {
+  document.querySelectorAll('.card-header .tabs .tab').forEach(t=>t.classList.remove('active'));
+  btn.classList.add('active');
+  const today = new Date();
+  const in30 = new Date(); in30.setDate(in30.getDate()+30);
+  if (type === 'all') renderContracts(MOCK.contracts);
+  else if (type === 'expiring') renderContracts(MOCK.contracts.filter(c => {
+    if (!c.NgayKT) return false;
+    const e = new Date(c.NgayKT);
+    return e >= today && e <= in30;
+  }));
+  else renderContracts(MOCK.contracts.filter(c => c.TrangThai === 'Expired'));
+}
+
+// ════════════════════════════════════════
+//  RENDER PAYROLL
+// ════════════════════════════════════════
+function renderPayroll() {
+  const tbody = document.getElementById('payroll-table');
+  if (!tbody) return;
+  tbody.innerHTML = MOCK.payroll.map(p => `
+    <tr>
+      <td><div style="display:flex;align-items:center;gap:8px"><div class="avatar avatar-sm" style="background:${pickColor(p.hoTen)}">${initials(p.hoTen)}</div>${p.hoTen}</div></td>
+      <td>${p.NgayCong}</td>
+      <td>${p.LuongCB}</td>
+      <td>${p.PhuCap}</td>
+      <td>${p.OT || '0'}</td>
+      <td>${p.BH}</td>
+      <td>${p.Thue}</td>
+      <td><strong style="color:var(--accent-3)">${p.ThucNhan}</strong></td>
+      <td>${badge(p.TrangThai)}</td>
+      <td>
+        <div style="display:flex;gap:4px">
+          <button class="btn btn-ghost btn-sm btn-icon" title="Xem phiếu">👁️</button>
+          ${p.TrangThai==='Approved'?'<button class="btn btn-success btn-sm">💳 Thanh toán</button>':''}
+        </div>
+      </td>
+    </tr>
+  `).join('');
+}
+
+// ════════════════════════════════════════
+//  RENDER SALARY HISTORY
+// ════════════════════════════════════════
+function renderSalaryHistory() {
+  const tbody = document.getElementById('salary-history-table');
+  if (!tbody) return;
+  tbody.innerHTML = MOCK.salaryHistory.map(s => `
+    <tr>
+      <td><div style="display:flex;align-items:center;gap:8px"><div class="avatar avatar-sm" style="background:${pickColor(s.hoTen)}">${initials(s.hoTen)}</div>${s.hoTen}</div></td>
+      <td><strong style="font-family:var(--font-display)">${s.LuongCB}</strong>đ</td>
+      <td>${s.PhuCap}đ</td>
+      <td>${fmtDate(s.NgayHieuLuc)}</td>
+      <td>${s.NguoiTD}</td>
+      <td style="color:var(--ink-mute);font-size:0.83rem">${s.GhiChu}</td>
+      <td>${s.DangHL ? '<span class="badge badge-green">Đang áp dụng</span>' : '<span class="badge badge-gray">Kết thúc</span>'}</td>
+    </tr>
+  `).join('');
+}
+
+// ════════════════════════════════════════
+//  RENDER HOLIDAYS
+// ════════════════════════════════════════
+function renderHolidays() {
+  const tbody = document.getElementById('holidays-table');
+  if (!tbody) return;
+  tbody.innerHTML = MOCK.holidays.map(h => `
+    <tr>
+      <td><strong>${fmtDate(h.NgayLe)}</strong></td>
+      <td>${h.TenNgayLe}</td>
+      <td>${h.LapLai ? '<span class="badge badge-green">Có</span>' : '<span class="badge badge-gray">Không</span>'}</td>
+      <td><button class="btn btn-danger btn-sm" onclick="deleteHolidayRow(this)">🗑️ Xóa</button></td>
+    </tr>
+  `).join('');
+}
+
+function addHoliday() {
+  MOCK.holidays.push({ id: Date.now(), NgayLe:'2026-12-25', TenNgayLe:'Giáng sinh', LapLai:true });
+  renderHolidays();
+  closeModal('modal-add-holiday');
+  toast('Đã thêm ngày lễ mới!');
+}
+
+function deleteHolidayRow(btn) {
+  btn.closest('tr').style.opacity='0';
+  btn.closest('tr').style.transition='opacity 0.3s';
+  setTimeout(()=>btn.closest('tr').remove(),300);
+  toast('Đã xóa ngày lễ', 'info');
+}
+
+// ════════════════════════════════════════
+//  RENDER AUDIT
+// ════════════════════════════════════════
+function renderAudit() {
+  const tbody = document.getElementById('audit-table');
+  if (!tbody) return;
+  const hdColors = { INSERT:'badge-blue', UPDATE:'badge-amber', DELETE:'badge-red', APPROVE:'badge-green', LOGIN:'badge-purple', EXPORT:'badge-gray' };
+  tbody.innerHTML = MOCK.audit.map(a => `
+    <tr>
+      <td style="font-size:0.8rem;color:var(--ink-mute);white-space:nowrap">${a.time}</td>
+      <td><div style="display:flex;align-items:center;gap:6px"><div class="avatar avatar-sm" style="background:${pickColor(a.nguoi)}">${initials(a.nguoi)}</div>${a.nguoi}</div></td>
+      <td><span class="chip">${a.bang}</span></td>
+      <td><span class="badge ${hdColors[a.hd]||'badge-gray'}">${a.hd}</span></td>
+      <td style="font-size:0.83rem;color:var(--ink-mute)">${a.ct}</td>
+    </tr>
+  `).join('');
+}
+
+// ════════════════════════════════════════
+//  RENDER ORGANIZATION
+// ════════════════════════════════════════
+function renderOrgTree() {
+  const container = document.getElementById('dept-tree');
+  if (!container) return;
+  const topLevel = MOCK.depts.filter(d=>!d.MaPhongCha);
+  container.innerHTML = topLevel.map(dept => {
+    const children = MOCK.depts.filter(d=>d.MaPhongCha===dept.id);
+    return `
+      <div style="margin-bottom:0.8rem">
+        <div style="display:flex;align-items:center;gap:10px;padding:10px;background:var(--paper);border-radius:var(--radius);border:1px solid var(--border)">
+          <div style="width:38px;height:38px;background:var(--ink);border-radius:8px;display:flex;align-items:center;justify-content:center;color:white;font-size:0.9rem">🏢</div>
+          <div>
+            <div style="font-weight:600;font-size:0.88rem">${dept.TenPhong}</div>
+            <div style="font-size:0.76rem;color:var(--ink-mute)">QL: ${dept.QuanLy} · ${dept.NVCount} NV</div>
+          </div>
+          <span class="chip" style="margin-left:auto;font-size:0.7rem">${dept.MaPhong}</span>
+        </div>
+        ${children.length ? `<div style="padding-left:1.5rem;margin-top:0.4rem;border-left:2px solid var(--border);margin-left:1.2rem">
+          ${children.map(c=>`
+            <div style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:white;border:1px solid var(--border);border-radius:var(--radius);margin-top:0.4rem">
+              <div style="width:30px;height:30px;background:var(--ink-soft);border-radius:6px;display:flex;align-items:center;justify-content:center;color:white;font-size:0.8rem">👥</div>
+              <div>
+                <div style="font-weight:500;font-size:0.85rem">${c.TenPhong}</div>
+                <div style="font-size:0.75rem;color:var(--ink-mute)">${c.NVCount} NV</div>
+              </div>
+              <span class="chip" style="margin-left:auto;font-size:0.7rem">${c.MaPhong}</span>
+            </div>
+          `).join('')}
+        </div>` : ''}
+      </div>
+    `;
+  }).join('');
+}
+
+function renderPositions() {
+  const tbody = document.getElementById('positions-table');
+  if (!tbody) return;
+  const capLabels = ['','Nhân viên','Trưởng nhóm','Trưởng phòng','Giám đốc'];
+  const capColors = ['','badge-gray','badge-blue','badge-amber','badge-red'];
+  tbody.innerHTML = MOCK.positions.map(p => `
+    <tr>
+      <td><strong>${p.TenCV}</strong></td>
+      <td><span class="badge ${capColors[p.CapDo]}">Cấp ${p.CapDo}</span></td>
+      <td>
+        <div style="display:flex;gap:4px">
+          <button class="btn btn-ghost btn-sm btn-icon">✏️</button>
+          <button class="btn btn-danger btn-sm btn-icon">🗑️</button>
+        </div>
+      </td>
+    </tr>
+  `).join('');
+}
+
+// ════════════════════════════════════════
+//  ACTION HANDLERS
+// ════════════════════════════════════════
+function doCheckIn() {
+  closeModal('modal-checkin');
+  toast('✅ Chấm công thành công! ' + new Date().toLocaleTimeString('vi-VN'));
+}
+
+function saveEmployee() {
+  closeModal('modal-add-employee');
+  toast('Đã thêm nhân viên mới thành công!');
+}
+
+function saveContract() {
+  closeModal('modal-add-contract');
+  toast('Đã tạo hợp đồng mới!');
+}
+
+function updateSalary() {
+  closeModal('modal-update-salary');
+  toast('Đã cập nhật mức lương thành công!');
+}
+
+// ════════════════════════════════════════
+//  INIT APP
+// ════════════════════════════════════════
+function initApp() {
+  renderEmployees(MOCK.users);
+  renderLeave(MOCK.leave);
+  renderOT();
+  renderAttendance();
+  renderContracts(MOCK.contracts);
+  renderPayroll();
+  renderSalaryHistory();
+  renderHolidays();
+  renderAudit();
+  renderOrgTree();
+  renderPositions();
+  renderMiniCalendar();
+}
+
+// Enter key on login
+document.getElementById('login-pass').addEventListener('keydown', e => {
+  if (e.key === 'Enter') doLogin();
+});
+</script>
+</body>
+</html>
