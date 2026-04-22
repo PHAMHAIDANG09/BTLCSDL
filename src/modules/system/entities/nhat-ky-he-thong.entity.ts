@@ -16,8 +16,8 @@ export class NhatKyHeThong {
   @Column({ type: 'varchar', length: 100 })
   TenBang: string;
 
-  @Column({ type: 'int' })
-  MaBanGhi: number;
+  @Column({ type: 'int', nullable: true })
+  MaBanGhi: number | null;
 
   @Column({ type: 'nvarchar', length: 20 })
   HanhDong: string;
@@ -28,8 +28,8 @@ export class NhatKyHeThong {
   @Column({ type: 'nvarchar', length: 'max', nullable: true })
   GiaTriMoi: string;
 
-  @Column({ type: 'int' })
-  MaNguoiThucHienId: number;
+  @Column({ type: 'int', nullable: true })
+  MaNguoiThucHienId: number | null;
 
   @CreateDateColumn({ type: 'datetime' })
   NgayThucHien: Date;
