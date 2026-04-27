@@ -249,7 +249,7 @@ FE/
 │   │   │   └── page.tsx
 │   │   └── layout.tsx
 │   │
-│   ├── (admin)/
+│   ├── admin/
 │   │   ├── layout.tsx                       # Admin Layout (Sidebar + Header)
 │   │   │
 │   │   ├── dashboard/

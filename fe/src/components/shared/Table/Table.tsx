@@ -44,6 +44,7 @@ export interface TableProps<
   onSearch?: (searchText: string) => void;
   rowKey?: AntTableProps<T>["rowKey"];
   className?: string;
+  totalText?: string;
 }
 
 /**
@@ -59,6 +60,7 @@ export const Table = <T extends object = Record<string, unknown>>({
   onSearch,
   rowKey = "id",
   className = "",
+  totalText = "nhân viên",
   ...restProps
 }: TableProps<T>) => {
   const [searchText, setSearchText] = useState("");
@@ -94,19 +96,32 @@ export const Table = <T extends object = Record<string, unknown>>({
   /**
    * Pagination config for Ant Table
    */
-  const paginationConfig: TablePaginationConfig | false =
-    pagination && dataSource.length > 0
-      ? {
-          current: pagination.current,
-          pageSize: pagination.pageSize,
-          total: pagination.total,
-          onChange: handlePaginationChange,
-          showSizeChanger: true,
-          showTotal: (total: number, range: [number, number]) =>
-            `${range[0]}-${range[1]} của ${total} kết quả`,
-          pageSizeOptions: ["10", "20", "50", "100"],
-        }
-      : false;
+  const paginationConfig: TablePaginationConfig | false = useMemo(() => {
+    if (dataSource.length === 0) return false;
+
+    const baseConfig: TablePaginationConfig = {
+      showSizeChanger: true,
+      showTotal: (total: number, range: [number, number]) =>
+        `Hiển thị ${range[0]}-${range[1]} / ${total} ${totalText}`,
+      pageSizeOptions: ["5", "10", "20", "50"],
+      position: ["bottomRight"],
+    };
+
+    if (pagination) {
+      return {
+        ...baseConfig,
+        current: pagination.current,
+        pageSize: pagination.pageSize,
+        total: pagination.total,
+        onChange: handlePaginationChange,
+      };
+    }
+
+    return {
+      ...baseConfig,
+      defaultPageSize: 10,
+    };
+  }, [pagination, dataSource.length]);
 
   return (
     <div className={`custom-table-wrapper ${className}`}>
@@ -136,7 +151,6 @@ export const Table = <T extends object = Record<string, unknown>>({
             pagination={paginationConfig}
             loading={loading}
             scroll={{ x: "max-content" }}
-            bordered
             className="bg-white rounded-lg overflow-hidden"
             {...restProps}
           />

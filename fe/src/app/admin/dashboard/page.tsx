@@ -94,18 +94,6 @@ export default function DashboardPage() {
         </Col>
       </Row>
 
-      {/* Welcome Message */}
-      <Card className="border-0 shadow-sm bg-gradient-to-r from-blue-50 to-indigo-50">
-        <div className="text-center py-6">
-          <h2 className="text-xl font-semibold text-gray-900 mb-2">
-            🎉 Chào mừng bạn đến với NextHR
-          </h2>
-          <p className="text-gray-600">
-            Hệ thống quản lý nhân sự toàn diện giúp bạn quản lý đội ngũ một cách
-            hiệu quả
-          </p>
-        </div>
-      </Card>
     </div>
   );
 }

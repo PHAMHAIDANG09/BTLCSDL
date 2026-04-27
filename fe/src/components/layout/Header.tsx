@@ -121,12 +121,17 @@ export const Header: React.FC<HeaderProps> = ({
 
   return (
     <AntHeader
-      className="fixed top-0 right-0 z-40 bg-white/95 backdrop-blur border-b border-slate-200/80 flex items-center justify-between px-4 sm:px-6"
+      className="bg-white/95 backdrop-blur flex items-center justify-between px-4 sm:px-6"
       style={{
+        position: "fixed",
+        top: 0,
+        right: 0,
         left: isMobile ? 0 : `${sidebarWidth}px`,
         width: isMobile ? "100%" : `calc(100% - ${sidebarWidth}px)`,
         height,
+        zIndex: 1000,
         backgroundColor: "#fff",
+        boxShadow: "0 4px 12px rgba(0, 0, 0, 0.05)",
         transition: "left 0.2s, width 0.2s",
       }}
     >

@@ -32,7 +32,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
 }) => {
   const [collapsed, setCollapsed] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
-  const HEADER_HEIGHT = 88;
+  const HEADER_HEIGHT = 64;
 
   // Detect mobile screen
   useEffect(() => {
@@ -49,7 +49,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  const sidebarWidth = collapsed ? 80 : 250;
+  const sidebarWidth = collapsed ? 80 : 260;
 
   return (
     <Layout className="min-h-screen" hasSider>
@@ -65,7 +65,9 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
         className="admin-main-layout"
         style={{
           marginLeft: isMobile ? 0 : sidebarWidth,
-          transition: "margin-left 0.2s",
+          width: isMobile ? '100%' : `calc(100% - ${sidebarWidth}px)`,
+          transition: "margin-left 0.2s, width 0.2s",
+          backgroundColor: "#fff",
         }}
       >
         {/* Header */}
@@ -79,23 +81,17 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
 
         {/* Content Area */}
         <Content
-          className="p-4 sm:p-6 bg-slate-100"
+          className="p-6 sm:p-10 overflow-y-auto bg-white"
           style={{
             marginTop: HEADER_HEIGHT,
             minHeight: `calc(100vh - ${HEADER_HEIGHT}px)`,
           }}
         >
-          <div className="rounded-2xl bg-white shadow-sm p-4 sm:p-6 min-h-[calc(100vh-140px)]">
+          <div style={{ minHeight: `calc(100vh - ${HEADER_HEIGHT}px - 64px)` }}>
             {children}
           </div>
         </Content>
 
-        {/* Footer (Optional) */}
-        <footer className="text-center text-gray-500 text-sm py-4 bg-white/90">
-          <p>
-            &copy; 2024 NextHR - Hệ Thống Quản Trị Nhân Sự. All rights reserved.
-          </p>
-        </footer>
       </Layout>
     </Layout>
   );
