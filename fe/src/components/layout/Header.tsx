@@ -5,7 +5,7 @@
 
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 import {
   Layout,
   Breadcrumb,
@@ -14,6 +14,7 @@ import {
   Space,
   Badge,
   Button,
+  type MenuProps,
 } from "antd";
 import {
   UserOutlined,
@@ -36,7 +37,9 @@ interface User {
 interface HeaderProps {
   user?: User;
   onLogout?: () => void;
-  collapsed?: boolean;
+  isMobile?: boolean;
+  sidebarWidth?: number;
+  height?: number;
 }
 
 const getBreadcrumbs = (
@@ -74,15 +77,17 @@ const getBreadcrumbs = (
 export const Header: React.FC<HeaderProps> = ({
   user,
   onLogout,
-  collapsed = false,
+  isMobile = false,
+  sidebarWidth = 250,
+  height = 88,
 }) => {
   const pathname = usePathname();
   const router = useRouter();
-  const [notificationCount, setNotificationCount] = useState(3);
+  const notificationCount = 3;
 
   const breadcrumbs = getBreadcrumbs(pathname);
 
-  const userMenuItems = [
+  const userMenuItems: MenuProps["items"] = [
     {
       key: "profile",
       icon: <UserOutlined />,
@@ -116,15 +121,17 @@ export const Header: React.FC<HeaderProps> = ({
 
   return (
     <AntHeader
-      className={`fixed top-0 right-0 left-0 md:left-[${collapsed ? "80px" : "250px"}] 
-        z-40 bg-white border-b border-gray-200 flex items-center justify-between px-6`}
+      className="fixed top-0 right-0 z-40 bg-white/95 backdrop-blur border-b border-slate-200/80 flex items-center justify-between px-4 sm:px-6"
       style={{
-        marginLeft: collapsed ? "80px" : "250px",
-        transition: "margin-left 0.2s",
+        left: isMobile ? 0 : `${sidebarWidth}px`,
+        width: isMobile ? "100%" : `calc(100% - ${sidebarWidth}px)`,
+        height,
+        backgroundColor: "#fff",
+        transition: "left 0.2s, width 0.2s",
       }}
     >
       {/* Breadcrumbs */}
-      <div className="flex-1">
+      <div className="flex-1 min-w-0 pr-4">
         <Breadcrumb items={breadcrumbs} />
       </div>
 

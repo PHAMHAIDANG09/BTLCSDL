@@ -9,10 +9,10 @@ import React, { useState, useMemo } from "react";
 import {
   Table as AntTable,
   Input,
-  Space,
   Spin,
   Empty,
   TableProps as AntTableProps,
+  TablePaginationConfig,
 } from "antd";
 import { SearchOutlined } from "@ant-design/icons";
 
@@ -29,9 +29,11 @@ export interface PaginationConfig {
 /**
  * Custom Table Props
  */
-export interface TableProps<T = any> extends Omit<
+export interface TableProps<
+  T extends object = Record<string, unknown>,
+> extends Omit<
   AntTableProps<T>,
-  "pagination"
+  "pagination" | "columns" | "dataSource" | "rowKey"
 > {
   columns: AntTableProps<T>["columns"];
   dataSource: T[];
@@ -40,14 +42,14 @@ export interface TableProps<T = any> extends Omit<
   searchable?: boolean;
   searchPlaceholder?: string;
   onSearch?: (searchText: string) => void;
-  rowKey?: string | ((record: T) => string);
+  rowKey?: AntTableProps<T>["rowKey"];
   className?: string;
 }
 
 /**
  * Custom Table Component
  */
-export const Table: React.FC<TableProps> = ({
+export const Table = <T extends object = Record<string, unknown>>({
   columns,
   dataSource,
   loading = false,
@@ -58,7 +60,7 @@ export const Table: React.FC<TableProps> = ({
   rowKey = "id",
   className = "",
   ...restProps
-}) => {
+}: TableProps<T>) => {
   const [searchText, setSearchText] = useState("");
 
   /**
@@ -92,7 +94,7 @@ export const Table: React.FC<TableProps> = ({
   /**
    * Pagination config for Ant Table
    */
-  const paginationConfig =
+  const paginationConfig: TablePaginationConfig | false =
     pagination && dataSource.length > 0
       ? {
           current: pagination.current,
@@ -127,7 +129,7 @@ export const Table: React.FC<TableProps> = ({
         {filteredData.length === 0 && !loading ? (
           <Empty description="Không có dữ liệu" />
         ) : (
-          <AntTable<any>
+          <AntTable<T>
             columns={columns}
             dataSource={filteredData}
             rowKey={rowKey}

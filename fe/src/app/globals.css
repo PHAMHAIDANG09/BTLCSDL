@@ -41,14 +41,6 @@
   }
 }
 
-/* Dark mode support */
-html.dark {
-  --bg-primary: #1f1f1f;
-  --bg-secondary: #2a2a2a;
-  --text-primary: #ffffff;
-  --text-secondary: #e0e0e0;
-}
-
 /* Admin layout specific */
 .custom-table-wrapper {
   animation: fadeIn 0.3s ease-in-out;
@@ -63,6 +55,39 @@ html.dark {
 /* Button animations */
 .ant-btn {
   transition: all 0.3s ease !important;
+}
+
+/* Admin shell polish */
+.admin-main-layout {
+  background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
+}
+
+.admin-sider {
+  background: #ffffff !important;
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08) !important;
+}
+
+.admin-sider-menu.ant-menu {
+  background: transparent !important;
+}
+
+.admin-sider-menu .ant-menu-item {
+  border-radius: 10px;
+  margin: 6px 0;
+  height: 42px;
+  line-height: 42px;
+  color: #334155;
+}
+
+.admin-sider-menu .ant-menu-item:hover {
+  color: #0f172a !important;
+  background-color: #f1f5f9 !important;
+}
+
+.admin-sider-menu .ant-menu-item-selected {
+  color: #1d4ed8 !important;
+  background-color: #dbeafe !important;
+  font-weight: 600;
 }
 
 /* Form inputs */
@@ -82,4 +107,3 @@ html.dark {
     padding: 8px 4px !important;
   }
 }
-

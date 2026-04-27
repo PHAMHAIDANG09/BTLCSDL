@@ -5,8 +5,8 @@
 
 "use client";
 
-import React from "antd";
-import { Modal as AntModal, ModalProps as AntModalProps, Button } from "antd";
+import React from "react";
+import { Modal as AntModal, ModalProps as AntModalProps } from "antd";
 import { ExclamationCircleOutlined } from "@ant-design/icons";
 
 /**
@@ -21,8 +21,8 @@ export interface ModalProps extends Omit<AntModalProps, "onOk" | "onCancel"> {
   cancelText?: string;
   onOk?: () => void | Promise<void>;
   onCancel?: () => void;
-  okButtonProps?: any;
-  cancelButtonProps?: any;
+  okButtonProps?: AntModalProps["okButtonProps"];
+  cancelButtonProps?: AntModalProps["cancelButtonProps"];
   centered?: boolean;
   width?: number;
 }

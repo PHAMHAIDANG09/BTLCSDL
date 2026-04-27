@@ -83,11 +83,15 @@ const menuItems: MenuItem[] = [
 interface SidebarProps {
   collapsed?: boolean;
   onCollapse?: (collapsed: boolean) => void;
+  isMobile?: boolean;
+  headerHeight?: number;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
   collapsed = false,
   onCollapse,
+  isMobile = false,
+  headerHeight = 88,
 }) => {
   const pathname = usePathname();
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
@@ -112,21 +116,25 @@ export const Sidebar: React.FC<SidebarProps> = ({
         collapsed={collapsed}
         onCollapse={onCollapse}
         width={250}
-        className="fixed left-0 top-0 h-screen overflow-y-auto hidden md:block bg-gray-50"
+        className="admin-sider fixed left-0 top-0 h-screen overflow-y-auto"
         style={{
-          backgroundColor: "#fff",
-          boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+          display: isMobile ? "none" : "block",
         }}
       >
         {/* Logo */}
-        <div className="p-4 border-b border-gray-200">
+        <div
+          className="admin-sider-brand border-b border-slate-200/70 bg-gradient-to-r from-slate-50 to-blue-50"
+          style={{ height: headerHeight }}
+        >
           <h1
-            className={`text-lg font-bold text-blue-600 ${collapsed ? "hidden" : ""}`}
+            className={`text-2xl font-extrabold tracking-tight text-slate-800 ${collapsed ? "hidden" : ""}`}
           >
             NextHR
           </h1>
           {collapsed && (
-            <div className="text-center text-blue-600 font-bold">HR</div>
+            <div className="text-center text-slate-800 font-black text-lg">
+              HR
+            </div>
           )}
         </div>
 
@@ -135,21 +143,23 @@ export const Sidebar: React.FC<SidebarProps> = ({
           mode="inline"
           selectedKeys={[getActiveKey()]}
           items={menuItemsForAnt}
-          className="border-r-0"
+          className="admin-sider-menu border-r-0 px-2 pt-2"
         />
       </Sider>
 
       {/* Mobile Menu Button */}
-      <div className="md:hidden fixed bottom-6 right-6 z-40">
-        <Button
-          type="primary"
-          shape="circle"
-          size="large"
-          icon={<MenuOutlined />}
-          onClick={() => setMobileDrawerOpen(true)}
-          className="bg-blue-600"
-        />
-      </div>
+      {isMobile && (
+        <div className="fixed bottom-6 right-6 z-40">
+          <Button
+            type="primary"
+            shape="circle"
+            size="large"
+            icon={<MenuOutlined />}
+            onClick={() => setMobileDrawerOpen(true)}
+            className="bg-blue-600"
+          />
+        </div>
+      )}
 
       {/* Mobile Drawer */}
       <Drawer

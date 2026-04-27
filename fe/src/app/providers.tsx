@@ -10,7 +10,7 @@ export function AntdProvider({ children }: { children: React.ReactNode }) {
       locale={viVN}
       theme={{
         token: {
-          colorPrimary: '#1890ff',
+          colorPrimary: '#d01010',
           borderRadius: 6,
         },
       }}

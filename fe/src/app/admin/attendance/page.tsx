@@ -1,42 +1,42 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { Card, Button, Space, Badge } from 'antd';
-import { Table } from '@/components/shared/Table/Table';
+import { useState } from "react";
+import { Card, Button, Space, Badge } from "antd";
+import { Table } from "../../../components/shared/Table/Table";
 
 interface Attendance {
   id: number;
   employeeName: string;
   checkIn: string;
   checkOut: string;
-  status: 'on-time' | 'late' | 'absent';
+  status: "on-time" | "late" | "absent";
   date: string;
 }
 
 const MOCK_ATTENDANCE: Attendance[] = [
   {
     id: 1,
-    employeeName: 'Nguyễn Văn A',
-    checkIn: '08:00',
-    checkOut: '17:30',
-    status: 'on-time',
-    date: '2024-04-27',
+    employeeName: "Nguyễn Văn A",
+    checkIn: "08:00",
+    checkOut: "17:30",
+    status: "on-time",
+    date: "2024-04-27",
   },
   {
     id: 2,
-    employeeName: 'Trần Thị B',
-    checkIn: '08:15',
-    checkOut: '17:45',
-    status: 'late',
-    date: '2024-04-27',
+    employeeName: "Trần Thị B",
+    checkIn: "08:15",
+    checkOut: "17:45",
+    status: "late",
+    date: "2024-04-27",
   },
   {
     id: 3,
-    employeeName: 'Lê Văn C',
-    checkIn: '-',
-    checkOut: '-',
-    status: 'absent',
-    date: '2024-04-27',
+    employeeName: "Lê Văn C",
+    checkIn: "-",
+    checkOut: "-",
+    status: "absent",
+    date: "2024-04-27",
   },
 ];
 
@@ -48,43 +48,43 @@ export default function AttendancePage() {
 
   const columns = [
     {
-      title: 'Tên Nhân Viên',
-      dataIndex: 'employeeName',
-      key: 'employeeName',
+      title: "Tên Nhân Viên",
+      dataIndex: "employeeName",
+      key: "employeeName",
       width: 150,
     },
     {
-      title: 'Ngày',
-      dataIndex: 'date',
-      key: 'date',
+      title: "Ngày",
+      dataIndex: "date",
+      key: "date",
       width: 130,
     },
     {
-      title: 'Giờ Vào',
-      dataIndex: 'checkIn',
-      key: 'checkIn',
+      title: "Giờ Vào",
+      dataIndex: "checkIn",
+      key: "checkIn",
       width: 100,
     },
     {
-      title: 'Giờ Ra',
-      dataIndex: 'checkOut',
-      key: 'checkOut',
+      title: "Giờ Ra",
+      dataIndex: "checkOut",
+      key: "checkOut",
       width: 100,
     },
     {
-      title: 'Trạng Thái',
-      dataIndex: 'status',
-      key: 'status',
+      title: "Trạng Thái",
+      dataIndex: "status",
+      key: "status",
       render: (status: string) => {
-        let color = 'green';
-        let label = 'Đúng Giờ';
+        let color = "green";
+        let label = "Đúng Giờ";
 
-        if (status === 'late') {
-          color = 'orange';
-          label = 'Muộn';
-        } else if (status === 'absent') {
-          color = 'red';
-          label = 'Vắng';
+        if (status === "late") {
+          color = "orange";
+          label = "Muộn";
+        } else if (status === "absent") {
+          color = "red";
+          label = "Vắng";
         }
 
         return <Badge status={color as any} text={label} />;
@@ -103,7 +103,9 @@ export default function AttendancePage() {
       {/* Header */}
       <div>
         <h1 className="text-3xl font-bold text-gray-900">Chấm Công</h1>
-        <p className="text-gray-600 mt-1">Theo dõi giờ làm việc của nhân viên</p>
+        <p className="text-gray-600 mt-1">
+          Theo dõi giờ làm việc của nhân viên
+        </p>
       </div>
 
       {/* Table Card */}

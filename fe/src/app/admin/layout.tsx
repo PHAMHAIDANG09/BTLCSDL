@@ -6,7 +6,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import AdminLayout from "@/components/layout/AdminLayout";
+import AdminLayout from "../../components/layout/AdminLayout";
 import { useRouter } from "next/navigation";
 
 interface User {

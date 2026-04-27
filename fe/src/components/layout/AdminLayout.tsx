@@ -32,6 +32,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
 }) => {
   const [collapsed, setCollapsed] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const HEADER_HEIGHT = 88;
 
   // Detect mobile screen
   useEffect(() => {
@@ -51,34 +52,46 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
   const sidebarWidth = collapsed ? 80 : 250;
 
   return (
-    <Layout className="min-h-screen">
-      {/* Sidebar - Desktop only */}
-      <div className="hidden md:block">
-        <Sidebar collapsed={collapsed} onCollapse={setCollapsed} />
-      </div>
+    <Layout className="min-h-screen" hasSider>
+      <Sidebar
+        collapsed={collapsed}
+        onCollapse={setCollapsed}
+        isMobile={isMobile}
+        headerHeight={HEADER_HEIGHT}
+      />
 
       {/* Main Content */}
       <Layout
+        className="admin-main-layout"
         style={{
           marginLeft: isMobile ? 0 : sidebarWidth,
           transition: "margin-left 0.2s",
         }}
       >
         {/* Header */}
-        <Header user={user} onLogout={onLogout} collapsed={collapsed} />
+        <Header
+          user={user}
+          onLogout={onLogout}
+          isMobile={isMobile}
+          sidebarWidth={sidebarWidth}
+          height={HEADER_HEIGHT}
+        />
 
         {/* Content Area */}
         <Content
-          className="mt-16 p-4 sm:p-6 bg-gray-50"
+          className="p-4 sm:p-6 bg-slate-100"
           style={{
-            minHeight: "calc(100vh - 64px)",
+            marginTop: HEADER_HEIGHT,
+            minHeight: `calc(100vh - ${HEADER_HEIGHT}px)`,
           }}
         >
-          {children}
+          <div className="rounded-2xl bg-white shadow-sm p-4 sm:p-6 min-h-[calc(100vh-140px)]">
+            {children}
+          </div>
         </Content>
 
         {/* Footer (Optional) */}
-        <footer className="text-center text-gray-500 text-sm py-4 border-t">
+        <footer className="text-center text-gray-500 text-sm py-4 bg-white/90">
           <p>
             &copy; 2024 NextHR - Hệ Thống Quản Trị Nhân Sự. All rights reserved.
           </p>

@@ -1,12 +1,12 @@
-'use client';
+"use client";
 
-import { Card, Row, Col, Statistic, Chart } from 'antd';
+import { Card, Row, Col, Statistic } from "antd";
 import {
   UserOutlined,
   ClockCircleOutlined,
   DollarOutlined,
   TeamOutlined,
-} from '@ant-design/icons';
+} from "@ant-design/icons";
 
 export default function DashboardPage() {
   return (
@@ -14,7 +14,9 @@ export default function DashboardPage() {
       {/* Page Title */}
       <div>
         <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
-        <p className="text-gray-600 mt-1">Tổng quan về hệ thống quản lý nhân sự</p>
+        <p className="text-gray-600 mt-1">
+          Tổng quan về hệ thống quản lý nhân sự
+        </p>
       </div>
 
       {/* Stats Cards */}
@@ -25,7 +27,7 @@ export default function DashboardPage() {
               title="Tổng Nhân Viên"
               value={156}
               prefix={<UserOutlined className="text-blue-600" />}
-              valueStyle={{ color: '#1890ff', fontSize: '28px' }}
+              valueStyle={{ color: "#1890ff", fontSize: "28px" }}
             />
           </Card>
         </Col>
@@ -36,7 +38,7 @@ export default function DashboardPage() {
               title="Hôm Nay Vắng"
               value={5}
               prefix={<ClockCircleOutlined className="text-red-600" />}
-              valueStyle={{ color: '#ff4d4f', fontSize: '28px' }}
+              valueStyle={{ color: "#ff4d4f", fontSize: "28px" }}
             />
           </Card>
         </Col>
@@ -48,7 +50,7 @@ export default function DashboardPage() {
               value={45000000}
               prefix={<DollarOutlined className="text-green-600" />}
               suffix="VND"
-              valueStyle={{ color: '#52c41a', fontSize: '24px' }}
+              valueStyle={{ color: "#52c41a", fontSize: "24px" }}
             />
           </Card>
         </Col>
@@ -59,7 +61,7 @@ export default function DashboardPage() {
               title="Đơn Chờ Duyệt"
               value={12}
               prefix={<TeamOutlined className="text-orange-600" />}
-              valueStyle={{ color: '#faad14', fontSize: '28px' }}
+              valueStyle={{ color: "#faad14", fontSize: "28px" }}
             />
           </Card>
         </Col>
@@ -71,7 +73,7 @@ export default function DashboardPage() {
           <Card
             title="Nhân Viên Theo Phòng Ban"
             className="border-0 shadow-sm"
-            bodyStyle={{ height: '300px' }}
+            bodyStyle={{ height: "300px" }}
           >
             <div className="flex items-center justify-center h-full text-gray-400">
               📊 Biểu đồ sẽ được thêm sau
@@ -83,7 +85,7 @@ export default function DashboardPage() {
           <Card
             title="Chi Phí Lương Theo Tháng"
             className="border-0 shadow-sm"
-            bodyStyle={{ height: '300px' }}
+            bodyStyle={{ height: "300px" }}
           >
             <div className="flex items-center justify-center h-full text-gray-400">
               📈 Biểu đồ sẽ được thêm sau
@@ -99,7 +101,8 @@ export default function DashboardPage() {
             🎉 Chào mừng bạn đến với NextHR
           </h2>
           <p className="text-gray-600">
-            Hệ thống quản lý nhân sự toàn diện giúp bạn quản lý đội ngũ một cách hiệu quả
+            Hệ thống quản lý nhân sự toàn diện giúp bạn quản lý đội ngũ một cách
+            hiệu quả
           </p>
         </div>
       </Card>
