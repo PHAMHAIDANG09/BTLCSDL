@@ -1,0 +1,147 @@
+/**
+ * Custom Table Component
+ * Bọc Ant Design Table với tích hợp search và pagination
+ */
+
+"use client";
+
+import React, { useState, useMemo } from "react";
+import {
+  Table as AntTable,
+  Input,
+  Space,
+  Spin,
+  Empty,
+  TableProps as AntTableProps,
+} from "antd";
+import { SearchOutlined } from "@ant-design/icons";
+
+/**
+ * Pagination config interface
+ */
+export interface PaginationConfig {
+  current: number;
+  pageSize: number;
+  total: number;
+  onChange?: (page: number, pageSize: number) => void;
+}
+
+/**
+ * Custom Table Props
+ */
+export interface TableProps<T = any> extends Omit<
+  AntTableProps<T>,
+  "pagination"
+> {
+  columns: AntTableProps<T>["columns"];
+  dataSource: T[];
+  loading?: boolean;
+  pagination?: PaginationConfig;
+  searchable?: boolean;
+  searchPlaceholder?: string;
+  onSearch?: (searchText: string) => void;
+  rowKey?: string | ((record: T) => string);
+  className?: string;
+}
+
+/**
+ * Custom Table Component
+ */
+export const Table: React.FC<TableProps> = ({
+  columns,
+  dataSource,
+  loading = false,
+  pagination,
+  searchable = true,
+  searchPlaceholder = "Tìm kiếm...",
+  onSearch,
+  rowKey = "id",
+  className = "",
+  ...restProps
+}) => {
+  const [searchText, setSearchText] = useState("");
+
+  /**
+   * Filter data based on search text
+   */
+  const filteredData = useMemo(() => {
+    if (!searchText || !searchable) return dataSource;
+
+    return dataSource.filter((item) => {
+      const itemStr = JSON.stringify(item).toLowerCase();
+      return itemStr.includes(searchText.toLowerCase());
+    });
+  }, [dataSource, searchText, searchable]);
+
+  /**
+   * Handle search input change
+   */
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setSearchText(value);
+    onSearch?.(value);
+  };
+
+  /**
+   * Handle pagination change
+   */
+  const handlePaginationChange = (page: number, pageSize: number) => {
+    pagination?.onChange?.(page, pageSize);
+  };
+
+  /**
+   * Pagination config for Ant Table
+   */
+  const paginationConfig =
+    pagination && dataSource.length > 0
+      ? {
+          current: pagination.current,
+          pageSize: pagination.pageSize,
+          total: pagination.total,
+          onChange: handlePaginationChange,
+          showSizeChanger: true,
+          showTotal: (total: number, range: [number, number]) =>
+            `${range[0]}-${range[1]} của ${total} kết quả`,
+          pageSizeOptions: ["10", "20", "50", "100"],
+        }
+      : false;
+
+  return (
+    <div className={`custom-table-wrapper ${className}`}>
+      {/* Search Bar */}
+      {searchable && (
+        <div className="mb-4">
+          <Input
+            placeholder={searchPlaceholder}
+            prefix={<SearchOutlined />}
+            value={searchText}
+            onChange={handleSearchChange}
+            allowClear
+            className="w-full sm:w-64"
+          />
+        </div>
+      )}
+
+      {/* Table */}
+      <Spin spinning={loading}>
+        {filteredData.length === 0 && !loading ? (
+          <Empty description="Không có dữ liệu" />
+        ) : (
+          <AntTable<any>
+            columns={columns}
+            dataSource={filteredData}
+            rowKey={rowKey}
+            pagination={paginationConfig}
+            loading={loading}
+            scroll={{ x: "max-content" }}
+            bordered
+            className="bg-white rounded-lg overflow-hidden"
+            {...restProps}
+          />
+        )}
+      </Spin>
+    </div>
+  );
+};
+
+export default Table;
