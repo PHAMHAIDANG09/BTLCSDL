@@ -1,5 +1,6 @@
 "use client";
 
+import React from "react";
 import { Row, Col } from "antd";
 import {
   CheckCircleOutlined,
@@ -7,6 +8,7 @@ import {
   MinusCircleOutlined,
   FileTextOutlined,
 } from "@ant-design/icons";
+import StatsCard from "@/components/shared/StatsCard/StatsCard";
 
 interface AttendanceStatsProps {
   present: number;
@@ -15,100 +17,54 @@ interface AttendanceStatsProps {
   onLeave: number;
 }
 
-interface StatCardProps {
-  icon: React.ReactNode;
-  label: string;
-  value: number;
-  backgroundColor: string;
-  color: string;
-}
-
-function StatCard({
-  icon,
-  label,
-  value,
-  backgroundColor,
-  color,
-}: StatCardProps) {
-  return (
-    <div
-      style={{
-        backgroundColor,
-        borderRadius: 8,
-        padding: "12px 12px",
-        display: "flex",
-        flexDirection: "row",
-        alignItems: "center",
-        justifyContent: "space-between",
-        minHeight: 80,
-      }}
-    >
-      <div style={{ display: "flex", flexDirection: "column" }}>
-        <div style={{ marginBottom: 6, fontSize: 18, color }}>{icon}</div>
-        <div
-          style={{
-            fontSize: 12,
-            color: "rgba(0,0,0,0.65)",
-          }}
-        >
-          {label}
-        </div>
-      </div>
-      <div
-        style={{
-          fontSize: 24,
-          fontWeight: 600,
-          color,
-        }}
-      >
-        {value}
-      </div>
-    </div>
-  );
-}
-
 export default function AttendanceStats({
   present,
   late,
   absent,
   onLeave,
 }: AttendanceStatsProps) {
+  const total = present + late + absent + onLeave;
+
   return (
-    <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
+    <Row gutter={[16, 16]}>
       <Col xs={24} sm={12} md={6}>
-        <StatCard
-          icon={<MinusCircleOutlined />}
+        <StatsCard 
           label="Tổng số"
-          value={present + late + absent + onLeave}
-          backgroundColor="#ffe7e7"
-          color="#d4380d"
+          value={total}
+          icon={<MinusCircleOutlined />}
+          color="#e00c10ff"
+          bg="#fff1f0"
+          size="small"
         />
       </Col>
       <Col xs={24} sm={12} md={6}>
-        <StatCard
-          icon={<CheckCircleOutlined />}
-          label="Đã hoàn thành"
+        <StatsCard 
+          label="Đúng giờ"
           value={present}
-          backgroundColor="#f6ffed"
-          color="#52c41a"
+          icon={<CheckCircleOutlined />}
+          color="#13940cff"
+          bg="#f6ffed"
+          size="small"
         />
       </Col>
       <Col xs={24} sm={12} md={6}>
-        <StatCard
-          icon={<ClockCircleOutlined />}
-          label="Đang diễn ra"
+        <StatsCard 
+          label="Đi muộn"
           value={late}
-          backgroundColor="#fffbe6"
-          color="#faad14"
+          icon={<ClockCircleOutlined />}
+          color="#dba211ff"
+          bg="#fff7e6"
+          size="small"
         />
       </Col>
       <Col xs={24} sm={12} md={6}>
-        <StatCard
-          icon={<FileTextOutlined />}
+        <StatsCard 
           label="Nghỉ phép"
           value={onLeave}
-          backgroundColor="#e6f7ff"
-          color="#1890ff"
+          icon={<FileTextOutlined />}
+          color="#1545c9ff"
+          bg="#e6f7ff"
+          size="small"
         />
       </Col>
     </Row>

@@ -1,7 +1,15 @@
 "use client";
 
-import { Typography, Tag } from "antd";
+import { Typography, Tag, Row, Col } from "antd";
+import { 
+  MinusCircleOutlined, 
+  ClockCircleOutlined, 
+  CheckCircleOutlined, 
+  FileTextOutlined,
+  DashboardOutlined 
+} from "@ant-design/icons";
 import Table from "@/components/shared/Table/Table";
+import StatsCard from "@/components/shared/StatsCard/StatsCard";
 import type { TableColumnsType } from "antd";
 
 const { Title, Text } = Typography;
@@ -49,12 +57,37 @@ export default function StaffAttendancePage() {
     },
   ];
 
+  const stats = [
+    { label: "Có mặt", value: 2, icon: <CheckCircleOutlined />, color: "#13940cff", bg: "#f6ffed" },
+    { label: "Đi muộn", value: 2, icon: <ClockCircleOutlined />, color: "#dba211ff", bg: "#fff7e6" },
+    { label: "Vắng mặt", value: 0, icon: <MinusCircleOutlined />, color: "#e00c10ff", bg: "#fff1f0" },
+    { label: "Nghỉ phép", value: 1, icon: <FileTextOutlined />, color: "#1572c9ff", bg: "#e6f7ff" },
+    { label: "Tổng giờ", value: "34 h", icon: <DashboardOutlined />, color: "#262626", bg: "#f5f5f5" },
+  ];
+
   return (
     <div>
       <div style={{ marginBottom: 24 }}>
         <Title level={2} style={{ margin: 0 }}>Chấm công của tôi</Title>
-        <Text type="secondary">Lịch sử chấm công cá nhân</Text>
+        <Text type="secondary">Lịch sử chấm công cá nhân và thống kê tháng này</Text>
       </div>
+
+      {/* Stats Cards */}
+      <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
+        {stats.map((item, idx) => (
+          <Col xs={24} sm={12} md={idx === 4 ? 8 : 4} key={idx}>
+            <StatsCard 
+              label={item.label}
+              value={item.value}
+              icon={item.icon}
+              color={item.color}
+              bg={item.bg}
+              size="small"
+            />
+          </Col>
+        ))}
+      </Row>
+
       <Table<AttendanceRecord>
         columns={columns}
         dataSource={MOCK_DATA}
