@@ -291,7 +291,7 @@ FE/
 │   │   │   └── _components/
 │   │   │       ├── AttendanceTable.tsx      # Table chấm công
 │   │   │       ├── LateAlert.tsx            # Cảnh báo đi muộn/về sớm
-│   │   │       ├── AttendanceFilter.tsx     # Bộ lọc (ngày, phòng ban)
+│   │   │       ├── AttendanceFilter.tsx     # Bộ lọc (ngày, phòng ban, trạng thái )
 │   │   │       └── AttendanceStats.tsx      # Thống kê chấm công
 │   │   │
 │   │   ├── payroll/                         # Quản lý lương

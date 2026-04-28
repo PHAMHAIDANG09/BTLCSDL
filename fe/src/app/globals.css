@@ -4,7 +4,8 @@
 
 /* Custom Ant Design Styles */
 :root {
-  --primary-color: #d01010;
+  --primary-color: rgb(20, 64, 209);
+  --primary-rgb: 29, 78, 216;
   --success-color: #52c41a;
   --warning-color: #faad14;
   --error-color: #ff4d4f;
@@ -44,6 +45,12 @@
 /* Admin layout specific */
 .custom-table-wrapper {
   animation: fadeIn 0.3s ease-in-out;
+}
+
+/* Make table action icons red */
+.custom-table-wrapper .ant-btn-text .anticon {
+  color: var(--primary-color) !important;
+  font-size: 14px;
 }
 
 /* Ant Design Card hover effect */

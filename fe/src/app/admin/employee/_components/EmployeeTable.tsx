@@ -1,10 +1,11 @@
 "use client";
 
-import React from "react";
-import { Space, Tag, Avatar } from "antd";
+import React, { useState } from "react";
+import { Space, Tag, Avatar, Tooltip } from "antd";
 import { EyeOutlined, EditOutlined, DeleteOutlined } from "@ant-design/icons";
-import { Table } from "../../../../components/shared/Table/Table";
-import Button from "../../../../components/shared/Button/Button";
+import type { TableColumnsType } from "antd";
+import Button from "@/components/shared/Button/Button";
+import Table from "@/components/shared/Table/Table";
 
 interface Employee {
   id: number;
@@ -22,100 +23,166 @@ interface Employee {
 interface EmployeeTableProps {
   data: Employee[];
   loading?: boolean;
-  onEdit: (record: Employee) => void;
-  onDelete: (id: number) => void;
-  onView: (record: Employee) => void;
+  onEdit?: (record: Employee) => void;
+  onDelete?: (id: number) => void;
+  onView?: (record: Employee) => void;
+  rowSelection?: any;
   onSelectionChange?: (selectedRowKeys: React.Key[]) => void;
 }
 
-const EmployeeTable: React.FC<EmployeeTableProps> = ({ data, loading, onEdit, onDelete, onView, onSelectionChange }) => {
-  const [selectedRowKeys, setSelectedRowKeys] = React.useState<React.Key[]>([]);
+const getRoleColor = (role: string) => {
+  const colorMap: Record<string, string> = {
+    Admin: "purple",
+    Manager: "blue",
+    Staff: "green",
+  };
+  return colorMap[role] || "default";
+};
+
+export default function EmployeeTable({
+  data,
+  loading,
+  onView,
+  onEdit,
+  onDelete,
+  rowSelection: externalRowSelection,
+  onSelectionChange,
+}: EmployeeTableProps) {
+  const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
 
   const onSelectChange = (newSelectedRowKeys: React.Key[]) => {
     setSelectedRowKeys(newSelectedRowKeys);
     onSelectionChange?.(newSelectedRowKeys);
   };
 
-  const rowSelection = {
+  const rowSelection = externalRowSelection || {
     selectedRowKeys,
     onChange: onSelectChange,
   };
-  const columns = [
+
+  const columns: TableColumnsType<Employee> = [
     {
-      title: "NHÂN VIÊN",
+      title: "Nhân viên",
       key: "employee",
-      render: (_: any, record: Employee) => (
+      width: 220,
+      sorter: (a, b) => a.fullName.localeCompare(b.fullName),
+      render: (_, record) => (
         <Space size="middle">
-          <Avatar style={{ backgroundColor: record.avatarColor || '#ccc' }} size={32}>
+          <Avatar style={{ backgroundColor: record.avatarColor || "#ccc" }} size={32}>
             {record.fullName.charAt(0).toUpperCase()}
           </Avatar>
-          <div className="flex flex-col">
-            <span className="font-bold text-gray-900 leading-tight">{record.fullName}</span>
-            <span className="text-gray-400 text-[11px]">{record.email}</span>
+          <div>
+            <div style={{ fontWeight: 600, lineHeight: 1.3 }}>{record.fullName}</div>
+            <div style={{ color: "#999", fontSize: 11 }}>{record.email}</div>
           </div>
         </Space>
       ),
-      width: 220,
     },
     {
-      title: "MÃ NV",
+      title: "Mã NV",
       dataIndex: "code",
       key: "code",
-      render: (code: string) => <Tag className="rounded-full px-2 py-0 bg-gray-100 border-0 text-gray-600 text-[11px] font-medium">{code}</Tag>,
-      width: 120,
-    },
-    { title: "PHÒNG BAN", dataIndex: "department", key: "department" },
-    { title: "CHỨC VỤ", dataIndex: "position", key: "position" },
-    {
-      title: "VAI TRÒ",
-      dataIndex: "role",
-      key: "role",
-      render: (role: string) => {
-        let color = "default";
-        if (role === "Admin") color = "purple";
-        if (role === "Manager") color = "blue";
-        if (role === "Staff") color = "success";
-        return <Tag color={color} className="min-w-[70px] text-center rounded-full text-[11px] font-semibold border-0">{role}</Tag>;
-      },
-    },
-    { title: "NGÀY VÀO", dataIndex: "joiningDate", key: "joiningDate" },
-    {
-      title: "TRẠNG THÁI",
-      dataIndex: "status",
-      key: "status",
-      render: (status: string) => (
-        <Tag color={status === "Đang làm" ? "success" : "default"} className="border-0 bg-opacity-10 px-2 rounded text-[11px] font-medium">
-          {status}
-        </Tag>
+      width: 100,
+      sorter: (a, b) => a.code.localeCompare(b.code),
+      render: (code: string) => (
+        <Tag style={{ borderRadius: 12, fontSize: 11, fontWeight: 500 }}>{code}</Tag>
       ),
     },
     {
-      title: "THAO TÁC",
+      title: "Phòng ban",
+      dataIndex: "department",
+      key: "department",
+      width: 120,
+      sorter: (a, b) => a.department.localeCompare(b.department),
+    },
+    {
+      title: "Chức vụ",
+      dataIndex: "position",
+      key: "position",
+      width: 140,
+      sorter: (a, b) => a.position.localeCompare(b.position),
+    },
+    {
+      title: "Vai trò",
+      dataIndex: "role",
+      key: "role",
+      width: 100,
+      render: (role: string) => (
+        <Tag color={getRoleColor(role)}>{role}</Tag>
+      ),
+    },
+    {
+      title: "Ngày vào",
+      dataIndex: "joiningDate",
+      key: "joiningDate",
+      width: 110,
+      sorter: (a, b) =>
+        new Date(a.joiningDate).getTime() - new Date(b.joiningDate).getTime(),
+    },
+    {
+      title: "Trạng thái",
+      dataIndex: "status",
+      key: "status",
+      width: 110,
+      render: (status: string) => (
+        <Tag color={status === "Đang làm" ? "green" : "default"}>{status}</Tag>
+      ),
+    },
+    {
+      title: "Thao tác",
       key: "action",
       width: 120,
-      render: (_: any, record: Employee) => (
-        <Space className="mt-1">
-          <Button type="text" size="small" icon={<EyeOutlined style={{ color: '#d13538ff', fontSize: '14px' }} />} onClick={() => onView(record)} />
-          <Button type="text" size="small" icon={<EditOutlined style={{ color: '#d13538ff', fontSize: '14px' }} />} onClick={() => onEdit(record)} />
-          <Button type="text" size="small" icon={<DeleteOutlined style={{ color: '#d13538ff', fontSize: '14px' }} />} onClick={() => onDelete(record.id)} />
+      render: (_, record) => (
+        <Space size="small">
+          {onView && (
+            <Tooltip title="Xem chi tiết">
+              <Button
+                type="text"
+                size="small"
+                icon={<EyeOutlined />}
+                onClick={() => onView(record)}
+              />
+            </Tooltip>
+          )}
+          {onEdit && (
+            <Tooltip title="Chỉnh sửa">
+              <Button
+                type="text"
+                size="small"
+                icon={<EditOutlined />}
+                onClick={() => onEdit(record)}
+              />
+            </Tooltip>
+          )}
+          {onDelete && (
+            <Tooltip title="Xóa">
+              <Button
+                type="text"
+                size="small"
+                icon={<DeleteOutlined />}
+                onClick={() => onDelete(record.id)}
+              />
+            </Tooltip>
+          )}
         </Space>
       ),
     },
   ];
 
   return (
-    <div className="overflow-hidden">
-      <Table
-        className="admin-table"
-        rowSelection={rowSelection}
-        columns={columns}
-        dataSource={data}
-        loading={loading}
-        searchable={false}
-        rowKey="id"
-      />
-    </div>
+    <Table<Employee>
+      columns={columns}
+      dataSource={data}
+      loading={loading}
+      rowKey="id"
+      searchable={false}
+      rowSelection={rowSelection}
+      pagination={undefined}
+      totalText="nhân viên"
+      scroll={{ x: 1000 }}
+      locale={{
+        emptyText: "Không có dữ liệu",
+      }}
+    />
   );
-};
-
-export default EmployeeTable;
+}

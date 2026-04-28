@@ -24,24 +24,22 @@ export const Button: React.FC<CustomButtonProps> = ({
   style,
   ...restProps
 }) => {
-  // Style bổ sung dựa trên theme dự án
   const isPrimary = type === "primary";
   
   const customStyle: React.CSSProperties = {
     borderRadius: "8px",
+    fontWeight: 600,
     display: "inline-flex",
     alignItems: "center",
     justifyContent: "center",
-    fontWeight: 600,
     transition: "all 0.3s cubic-bezier(0.645, 0.045, 0.355, 1)",
     
-    // Đảm bảo kích thước đồng nhất
-    height: size === 'small' ? '26px' : size === 'large' ? '40px' : '32px',
-    padding: size === 'small' ? '0 8px' : size === 'large' ? '0 16px' : '0 12px',
-    fontSize: size === 'small' ? '11px' : '12.5px',
+    // Ant Design Standard Heights
+    height: size === 'small' ? '24px' : size === 'large' ? '40px' : '32px',
     
-    boxShadow: isPrimary ? "0 4px 12px rgba(208, 16, 16, 0.15)" : "none",
-    border: (isPrimary || type === 'text' || type === 'link') ? 'none' : '1px solid #e5e7eb',
+    // Primary specific styles
+    boxShadow: isPrimary ? "0 2px 0 rgba(var(--primary-rgb), 0.045)" : undefined,
+    
     ...style,
   };
 
@@ -50,7 +48,7 @@ export const Button: React.FC<CustomButtonProps> = ({
       type={type}
       size={size}
       loading={loading}
-      className={`admin-btn ${isPrimary ? 'bg-[#d01010] border-[#d01010] hover:bg-[#a00d0d]!' : ''} ${className}`}
+      className={`admin-btn ${isPrimary ? 'bg-[var(--primary-color)] border-[var(--primary-color)] text-white hover:opacity-90' : ''} ${className}`}
       style={customStyle}
       {...restProps}
     >

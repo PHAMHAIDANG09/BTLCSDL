@@ -45,6 +45,8 @@ export interface TableProps<
   rowKey?: AntTableProps<T>["rowKey"];
   className?: string;
   totalText?: string;
+  rowSelection?: AntTableProps<T>["rowSelection"];
+  onSelectionChange?: (selectedRowKeys: React.Key[]) => void;
 }
 
 /**
@@ -61,6 +63,8 @@ export const Table = <T extends object = Record<string, unknown>>({
   rowKey = "id",
   className = "",
   totalText = "nhân viên",
+  rowSelection,
+  onSelectionChange,
   ...restProps
 }: TableProps<T>) => {
   const [searchText, setSearchText] = useState("");
@@ -150,6 +154,7 @@ export const Table = <T extends object = Record<string, unknown>>({
             rowKey={rowKey}
             pagination={paginationConfig}
             loading={loading}
+            rowSelection={rowSelection}
             scroll={{ x: "max-content" }}
             className="bg-white rounded-lg overflow-hidden"
             {...restProps}
