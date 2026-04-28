@@ -87,7 +87,7 @@
 }
 
 .admin-sider-menu .ant-menu-item {
-  border-radius: 10px;
+  border-radius: 8px;
   margin: 6px 0;
   height: 42px;
   line-height: 42px;
@@ -143,8 +143,8 @@
   background-color: transparent !important;
 }
 
-/* Custom Select Styling */
+/* Custom Select Styling - Standardized with Button */
 .admin-select .ant-select-selector {
-  border-radius: 12px !important;
+  border-radius: 8px !important;
   border-color: #e5e7eb !important;
 }

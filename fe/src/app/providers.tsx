@@ -11,7 +11,7 @@ export function AntdProvider({ children }: { children: React.ReactNode }) {
       theme={{
         token: {
           colorPrimary: 'rgb(20, 64, 209)',
-          borderRadius: 6,
+          borderRadius: 8,
         },
       }}
     >

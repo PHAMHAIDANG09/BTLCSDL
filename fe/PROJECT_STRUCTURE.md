@@ -334,7 +334,7 @@ FE/
 │   │           ├── UserManagement.tsx
 │   │           └── SystemLogs.tsx
 │   │
-│   ├── (staff)/                             # Staff Portal
+│   ├── staff/                             # Staff Portal
 │   │   ├── layout.tsx                       # Staff Layout
 │   │   │
 │   │   ├── home/
