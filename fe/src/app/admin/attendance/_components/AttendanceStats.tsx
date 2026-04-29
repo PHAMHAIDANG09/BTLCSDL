@@ -32,7 +32,7 @@ export default function AttendanceStats({
           label="Tổng số"
           value={total}
           icon={<MinusCircleOutlined />}
-          color="#e00c10ff"
+          color="var(--error-color)"
           bg="#fff1f0"
           size="small"
         />
@@ -42,7 +42,7 @@ export default function AttendanceStats({
           label="Đúng giờ"
           value={present}
           icon={<CheckCircleOutlined />}
-          color="#13940cff"
+          color="var(--success-color)"
           bg="#f6ffed"
           size="small"
         />
@@ -52,7 +52,7 @@ export default function AttendanceStats({
           label="Đi muộn"
           value={late}
           icon={<ClockCircleOutlined />}
-          color="#dba211ff"
+          color="var(--warning-color)"
           bg="#fff7e6"
           size="small"
         />
@@ -62,7 +62,7 @@ export default function AttendanceStats({
           label="Nghỉ phép"
           value={onLeave}
           icon={<FileTextOutlined />}
-          color="#1545c9ff"
+          color="var(--info-color)"
           bg="#e6f7ff"
           size="small"
         />

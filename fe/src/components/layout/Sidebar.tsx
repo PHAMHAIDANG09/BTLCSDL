@@ -50,7 +50,7 @@ const adminMenuItems = [
       {
         key: "dashboard",
         icon: <DashboardOutlined />,
-        label: <Link href="/admin/dashboard">Dashboard</Link>,
+        label: <Link href="/admin/bang-dieu-khien">Dashboard</Link>,
       },
     ],
   },
@@ -62,7 +62,7 @@ const adminMenuItems = [
       {
         key: "profile",
         icon: <UserOutlined />,
-        label: <Link href="/admin/profile">Hồ sơ cá nhân</Link>,
+        label: <Link href="/admin/ho-so">Hồ sơ cá nhân</Link>,
       },
     ],
   },
@@ -74,7 +74,7 @@ const adminMenuItems = [
       {
         key: "employee",
         icon: <UserOutlined />,
-        label: <Link href="/admin/employee">Nhân viên</Link>,
+        label: <Link href="/admin/nhan-vien">Nhân viên</Link>,
       },
       {
         key: "structure",
@@ -96,12 +96,12 @@ const adminMenuItems = [
       {
         key: "attendance",
         icon: <ClockCircleOutlined />,
-        label: <Link href="/admin/attendance">Chấm công</Link>,
+        label: <Link href="/admin/cham-cong">Chấm công</Link>,
       },
       {
         key: "leave",
         icon: <CalendarOutlined />,
-        label: <Link href="/admin/leave">Nghỉ phép</Link>,
+        label: <Link href="/admin/nghi-phep">Nghỉ phép</Link>,
       },
       {
         key: "overtime",
@@ -118,7 +118,7 @@ const adminMenuItems = [
       {
         key: "payroll",
         icon: <DollarOutlined />,
-        label: <Link href="/admin/payroll">Bảng lương</Link>,
+        label: <Link href="/admin/luong">Bảng lương</Link>,
       },
       {
         key: "salary-history",
@@ -161,7 +161,7 @@ const staffMenuItems = [
       {
         key: "home",
         icon: <HomeOutlined />,
-        label: <Link href="/staff/home">Trang chủ</Link>,
+        label: <Link href="/staff/trang-chu">Trang chủ</Link>,
       },
     ],
   },
@@ -173,7 +173,7 @@ const staffMenuItems = [
       {
         key: "profile",
         icon: <UserOutlined />,
-        label: <Link href="/staff/profile">Thông tin cá nhân</Link>,
+        label: <Link href="/staff/ho-so">Thông tin cá nhân</Link>,
       },
     ],
   },
@@ -185,7 +185,7 @@ const staffMenuItems = [
       {
         key: "attendance",
         icon: <ClockCircleOutlined />,
-        label: <Link href="/staff/attendance">Chấm công</Link>,
+        label: <Link href="/staff/cham-cong">Chấm công</Link>,
       },
       {
         key: "leave",
@@ -202,7 +202,7 @@ const staffMenuItems = [
       {
         key: "payslip",
         icon: <DollarOutlined />,
-        label: <Link href="/staff/payslip">Phiếu lương</Link>,
+        label: <Link href="/staff/phieu-luong">Phiếu lương</Link>,
       },
     ],
   },
@@ -273,7 +273,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 letterSpacing: "1px",
               }}
             >
-              {isAdmin ? "SYSTEM ADMIN" : "STAFF PORTAL"}
+              {isAdmin ? "QUẢN TRỊ HỆ THỐNG" : "CỔNG NHÂN VIÊN"}
             </Text>
           </Space>
         ) : (

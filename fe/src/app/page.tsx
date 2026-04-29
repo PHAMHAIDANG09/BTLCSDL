@@ -10,7 +10,7 @@ export default function Home() {
         <p className="text-gray-500 mb-8 font-medium">Hệ thống quản trị nhân sự tổng thể</p>
         
         <div className="space-y-4">
-          <Link href="/admin/dashboard" className="block">
+          <Link href="/admin/bang-dieu-khien" className="block">
             <Button 
               type="primary" 
               size="large" 

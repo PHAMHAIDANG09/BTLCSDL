@@ -1,22 +1,28 @@
 "use client";
 
 import React from "react";
-import { ConfirmModal } from "../../../../components/shared/Modal/Modal";
-import Toast from "../../../../components/shared/Toast/Toast";
+import ConfirmDialog from "../../../../components/shared/ConfirmDialog/ConfirmDialog";
 
 interface DeleteConfirmProps {
   title?: string;
   content?: string;
-  onConfirm: () => void;
+  onConfirm: () => void | Promise<void>;
 }
 
 const DeleteConfirm = {
-  show: ({ title = "Xác nhận xoá", content = "Dữ liệu này sẽ bị xoá vĩnh viễn và không thể khôi phục. Bạn có chắc chắn?", onConfirm }: DeleteConfirmProps) => {
-    ConfirmModal.confirm({
+  show: ({ 
+    title = "Xác nhận xoá nhân viên", 
+    content = "Dữ liệu nhân viên này sẽ bị xoá vĩnh viễn và không thể khôi phục. Bạn có chắc chắn muốn tiếp tục?", 
+    onConfirm 
+  }: DeleteConfirmProps) => {
+    ConfirmDialog.show({
       title,
       content,
-      onOk: () => {
-        onConfirm();
+      type: "danger",
+      okText: "Xoá nhân viên",
+      cancelText: "Hủy bỏ",
+      onConfirm: async () => {
+        await onConfirm();
       },
     });
   }

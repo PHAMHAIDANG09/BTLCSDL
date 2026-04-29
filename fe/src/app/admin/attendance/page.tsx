@@ -212,7 +212,7 @@ export default function AttendancePage() {
   };
 
   const handleViewDetail = (id: string) => {
-    router.push(`/admin/attendance/${id}`);
+    router.push(`/admin/cham-cong/${id}`);
   };
 
   return (

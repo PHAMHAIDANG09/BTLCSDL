@@ -4,11 +4,12 @@
 
 /* Custom Ant Design Styles */
 :root {
-  --primary-color: rgb(20, 64, 209);
-  --primary-rgb: 29, 78, 216;
-  --success-color: #52c41a;
-  --warning-color: #faad14;
-  --error-color: #ff4d4f;
+  --primary-color: rgb(201, 12, 12);
+  --primary-rgb: 20, 64, 209;
+  --success-color: #13940c;
+  --warning-color: #dba211;
+  --error-color: #e00c10;
+  --info-color: #1572c9;
 }
 
 /* Scrollbar styling */

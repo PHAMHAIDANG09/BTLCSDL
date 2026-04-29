@@ -48,10 +48,10 @@ export default function MyRequestsPage() {
   ];
 
   const stats = [
-    { label: "Tổng số", value: 5, icon: <MinusCircleOutlined />, color: "#e00c10ff", bg: "#fff1f0" },
-    { label: "Đã hoàn thành", value: 1, icon: <CheckCircleOutlined />, color: "#13940cff", bg: "#f6ffed" },
-    { label: "Đang diễn ra", value: 2, icon: <ClockCircleOutlined />, color: "#dba211ff", bg: "#fff7e6" },
-    { label: "Nghỉ phép", value: 1, icon: <FileTextOutlined />, color: "#1572c9ff", bg: "#e6f7ff" },
+    { label: "Tổng số", value: 5, icon: <MinusCircleOutlined />, color: "var(--error-color)", bg: "#fff1f0" },
+    { label: "Đã hoàn thành", value: 1, icon: <CheckCircleOutlined />, color: "var(--success-color)", bg: "#f6ffed" },
+    { label: "Đang diễn ra", value: 2, icon: <ClockCircleOutlined />, color: "var(--warning-color)", bg: "#fff7e6" },
+    { label: "Nghỉ phép", value: 1, icon: <FileTextOutlined />, color: "var(--info-color)", bg: "#e6f7ff" },
   ];
 
   return (

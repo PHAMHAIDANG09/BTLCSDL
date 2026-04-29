@@ -5,78 +5,78 @@
 
 // ============ AUTH ENDPOINTS ============
 export const AUTH_ENDPOINTS = {
-  LOGIN: "/auth/login",
-  LOGOUT: "/auth/logout",
-  PROFILE: "/auth/profile",
-  REFRESH_TOKEN: "/auth/refresh",
+  LOGIN: "/xac-thuc/dang-nhap",
+  LOGOUT: "/xac-thuc/dang-xuat",
+  PROFILE: "/xac-thuc/ho-so",
+  REFRESH_TOKEN: "/xac-thuc/lam-moi",
 } as const;
 
 // ============ EMPLOYEE ENDPOINTS ============
 export const EMPLOYEE_ENDPOINTS = {
-  GET_ALL: "/employee",
-  GET_BY_ID: (id: string | number) => `/employee/${id}`,
-  CREATE: "/employee",
-  UPDATE: (id: string | number) => `/employee/${id}`,
-  DELETE: (id: string | number) => `/employee/${id}`,
-  TRANSFER: (id: string | number) => `/employee/${id}/transfer`,
+  GET_ALL: "/nhan-vien",
+  GET_BY_ID: (id: string | number) => `/nhan-vien/${id}`,
+  CREATE: "/nhan-vien",
+  UPDATE: (id: string | number) => `/nhan-vien/${id}`,
+  DELETE: (id: string | number) => `/nhan-vien/${id}`,
+  TRANSFER: (id: string | number) => `/nhan-vien/${id}/dieu-chuyen`,
 } as const;
 
 // ============ ATTENDANCE ENDPOINTS ============
 export const ATTENDANCE_ENDPOINTS = {
-  GET_ALL: "/attendance",
-  GET_BY_ID: (id: string | number) => `/attendance/${id}`,
-  CREATE: "/attendance",
-  GET_OT: (id: string | number) => `/attendance/${id}/ot`,
-  CREATE_OT: (id: string | number) => `/attendance/${id}/ot`,
+  GET_ALL: "/cham-cong",
+  GET_BY_ID: (id: string | number) => `/cham-cong/${id}`,
+  CREATE: "/cham-cong",
+  GET_OT: (id: string | number) => `/cham-cong/${id}/tang-ca`,
+  CREATE_OT: (id: string | number) => `/cham-cong/${id}/tang-ca`,
 } as const;
 
 // ============ LEAVE ENDPOINTS ============
 export const LEAVE_ENDPOINTS = {
-  GET_TYPES: "/leave/types",
-  REQUEST_LEAVE: "/leave/request",
-  GET_REQUESTS: "/leave/requests",
-  UPDATE_REQUEST: (id: string | number) => `/leave/requests/${id}`,
-  GET_BALANCE: "/leave/balance",
+  GET_TYPES: "/nghi-phep/loai",
+  REQUEST_LEAVE: "/nghi-phep/yeu-cau",
+  GET_REQUESTS: "/nghi-phep/danh-sach-yeu-cau",
+  UPDATE_REQUEST: (id: string | number) => `/nghi-phep/yeu-cau/${id}`,
+  GET_BALANCE: "/nghi-phep/so-du",
 } as const;
 
 // ============ PAYROLL ENDPOINTS ============
 export const PAYROLL_ENDPOINTS = {
-  GET_ALL: "/payroll",
-  GET_BY_ID: (id: string | number) => `/payroll/${id}`,
-  CALCULATE: "/payroll/calculate",
+  GET_ALL: "/luong",
+  GET_BY_ID: (id: string | number) => `/luong/${id}`,
+  CALCULATE: "/luong/tinh-luong",
 } as const;
 
 // ============ APPROVAL ENDPOINTS ============
 export const APPROVAL_ENDPOINTS = {
-  GET_PENDING: "/approval/pending",
-  APPROVE: (id: string | number) => `/approval/${id}/approve`,
-  REJECT: (id: string | number) => `/approval/${id}/reject`,
+  GET_PENDING: "/phe-duyet/cho-duyet",
+  APPROVE: (id: string | number) => `/phe-duyet/${id}/dong-y`,
+  REJECT: (id: string | number) => `/phe-duyet/${id}/tu-choi`,
 } as const;
 
 // ============ DASHBOARD ENDPOINTS ============
 export const DASHBOARD_ENDPOINTS = {
-  GET_STATS: "/dashboard/stats",
-  GET_CHARTS: "/dashboard/charts",
-  GET_ANALYTICS: "/dashboard/analytics",
+  GET_STATS: "/bang-dieu-khien/thong-ke",
+  GET_CHARTS: "/bang-dieu-khien/bieu-do",
+  GET_ANALYTICS: "/bang-dieu-khien/phan-tich",
 } as const;
 
 // ============ ORGANIZATION ENDPOINTS ============
 export const ORGANIZATION_ENDPOINTS = {
-  GET_TREE: "/organization/tree",
+  GET_TREE: "/co-cau-to-chuc/so-do",
 } as const;
 
 // ============ NOTIFICATION ENDPOINTS ============
 export const NOTIFICATION_ENDPOINTS = {
-  GET_ALL: "/notification",
-  MARK_AS_READ: (id: string | number) => `/notification/${id}/read`,
-  DELETE: (id: string | number) => `/notification/${id}`,
+  GET_ALL: "/thong-bao",
+  MARK_AS_READ: (id: string | number) => `/thong-bao/${id}/da-doc`,
+  DELETE: (id: string | number) => `/thong-bao/${id}`,
 } as const;
 
 // ============ REPORT ENDPOINTS ============
 export const REPORT_ENDPOINTS = {
-  EMPLOYEES: "/report/employees",
-  ATTENDANCE: "/report/attendance",
-  PAYROLL: "/report/payroll",
+  EMPLOYEES: "/bao-cao/nhan-vien",
+  ATTENDANCE: "/bao-cao/cham-cong",
+  PAYROLL: "/bao-cao/luong",
 } as const;
 
 // ============ HTTP STATUS CODES ============

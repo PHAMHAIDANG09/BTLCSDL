@@ -58,10 +58,10 @@ export default function StaffAttendancePage() {
   ];
 
   const stats = [
-    { label: "Có mặt", value: 2, icon: <CheckCircleOutlined />, color: "#13940cff", bg: "#f6ffed" },
-    { label: "Đi muộn", value: 2, icon: <ClockCircleOutlined />, color: "#dba211ff", bg: "#fff7e6" },
-    { label: "Vắng mặt", value: 0, icon: <MinusCircleOutlined />, color: "#e00c10ff", bg: "#fff1f0" },
-    { label: "Nghỉ phép", value: 1, icon: <FileTextOutlined />, color: "#1572c9ff", bg: "#e6f7ff" },
+    { label: "Có mặt", value: 2, icon: <CheckCircleOutlined />, color: "var(--success-color)", bg: "#f6ffed" },
+    { label: "Đi muộn", value: 2, icon: <ClockCircleOutlined />, color: "var(--warning-color)", bg: "#fff7e6" },
+    { label: "Vắng mặt", value: 0, icon: <MinusCircleOutlined />, color: "var(--error-color)", bg: "#fff1f0" },
+    { label: "Nghỉ phép", value: 1, icon: <FileTextOutlined />, color: "var(--info-color)", bg: "#e6f7ff" },
     { label: "Tổng giờ", value: "34 h", icon: <DashboardOutlined />, color: "#262626", bg: "#f5f5f5" },
   ];
 

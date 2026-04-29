@@ -133,7 +133,7 @@ export default function EmployeePage() {
             Quản lý và cập nhật thông tin nhân sự toàn hệ thống
           </p>
           <Space size="middle">
-            <Button icon={<FileExcelOutlined />} className="px-4 border-gray-200">Xuất dữ liệu</Button>
+            <Button icon={<FileExcelOutlined />} className="px-4">Xuất dữ liệu</Button>
             <Button type="primary" icon={<PlusOutlined />} onClick={handleAdd} className="px-6 h-10 font-bold">
               Thêm nhân viên
             </Button>
@@ -177,7 +177,7 @@ export default function EmployeePage() {
         open={isModalOpen}
         onCancel={closeModal}
         footer={null}
-        width={modalMode === "view" ? 600 : 900}
+        width={modalMode === "view" ? 600 : 800}
       >
         {modalMode === "view" ? (
           <EmployeeDetail employee={selectedEmployee} />

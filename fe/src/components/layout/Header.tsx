@@ -42,22 +42,52 @@ interface HeaderProps {
   height?: number;
 }
 
+const SEGMENT_MAP: Record<string, string> = {
+  dashboard: "Bảng điều khiển",
+  staff: "Nhân viên",
+  attendance: "Chấm công",
+  employee: "Nhân viên",
+  profile: "Hồ sơ",
+  notifications: "Thông báo",
+  settings: "Cài đặt",
+  payroll: "Lương",
+  leave: "Nghỉ phép",
+  approval: "Phê duyệt",
+  report: "Báo cáo",
+  structure: "Cơ cấu",
+  contract: "Hợp đồng",
+  overtime: "Làm thêm giờ",
+  holiday: "Ngày lễ",
+  log: "Nhật ký",
+  home: "Trang chủ",
+  payslip: "Phiếu lương",
+  "my-requests": "Yêu cầu của tôi",
+};
+
 const getBreadcrumbs = (
   pathname: string,
 ): Array<{ title: React.ReactNode; href?: string }> => {
-  const segments = pathname.split("/").filter((seg) => seg && seg !== "admin");
+  const segments = pathname.split("/").filter((seg) => seg && seg !== "admin" && seg !== "staff");
+  
+  // Determine the root based on the pathname
+  const isStaff = pathname.startsWith("/staff");
+  const rootHref = isStaff ? "/staff/trang-chu" : "/admin/bang-dieu-khien";
+  const rootLabel = isStaff ? "Trang chủ" : "Bảng điều khiển";
+
   const breadcrumbs: Array<{ title: React.ReactNode; href?: string }> = [
     {
-      title: <Link href="/admin/dashboard">Dashboard</Link>,
-      href: "/admin/dashboard",
+      title: <Link href={rootHref}>{rootLabel}</Link>,
+      href: rootHref,
     },
   ];
 
-  let path = "/admin";
+  let path = isStaff ? "/staff" : "/admin";
   segments.forEach((segment, index) => {
     path += `/${segment}`;
     const isLast = index === segments.length - 1;
-    const label = segment.charAt(0).toUpperCase() + segment.slice(1);
+    
+    // Map segment to Vietnamese label or capitalize if not found
+    const label = SEGMENT_MAP[segment] || (segment.charAt(0).toUpperCase() + segment.slice(1));
 
     if (!isLast) {
       breadcrumbs.push({

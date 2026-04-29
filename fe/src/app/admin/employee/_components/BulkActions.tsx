@@ -15,7 +15,7 @@ const BulkActions: React.FC<BulkActionsProps> = ({ selectedCount, onBulkDelete, 
   if (selectedCount === 0) return null;
 
   return (
-    <div className="fixed bottom-8 left-1/2 -translate-x-1/2 bg-white px-6 py-3 rounded-full shadow-2xl border border-gray-100 animate-in slide-in-from-bottom-4 duration-300">
+    <div className="fixed bottom-8 left-1/2 -translate-x-1/2 bg-white px-6 py-3 rounded-full shadow-2xl border-none animate-in slide-in-from-bottom-4 duration-300">
       <Space size="middle">
         <span className="font-bold text-gray-700">Đã chọn {selectedCount} nhân viên</span>
         <Button size="small" icon={<EditOutlined />}>Sửa hàng loạt</Button>

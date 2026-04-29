@@ -35,6 +35,7 @@ import Link from 'next/link';
 // Import Shared Components & Utils
 import Button from '../../../../components/shared/Button/Button';
 import Toast from '../../../../components/shared/Toast/Toast';
+import ConfirmDialog from '../../../../components/shared/ConfirmDialog/ConfirmDialog';
 import { CommonRules } from '../../../../utils/validators';
 
 const { Option } = Select;
@@ -95,6 +96,23 @@ const EmployeeForm: React.FC<EmployeeFormProps> = ({
   const normFile = (e: any) => {
     if (Array.isArray(e)) return e;
     return e?.fileList;
+  };
+
+  const handleCancelAction = () => {
+    if (form.isFieldsTouched()) {
+      ConfirmDialog.show({
+        title: 'Hủy bỏ thay đổi?',
+        content: 'Bạn đã có thay đổi trên biểu mẫu. Nếu hủy bỏ, các thông tin này sẽ không được lưu. Bạn có chắc chắn?',
+        type: 'warning',
+        okText: 'Đồng ý hủy',
+        cancelText: 'Tiếp tục nhập',
+        onConfirm: () => {
+          if (onCancel) onCancel();
+        }
+      });
+    } else {
+      if (onCancel) onCancel();
+    }
   };
 
   return (
@@ -327,11 +345,11 @@ const EmployeeForm: React.FC<EmployeeFormProps> = ({
 
         <div className="flex justify-between items-center mt-6">
           {onCancel ? (
-            <Button icon={<ArrowLeftOutlined />} variant="text" size="middle" onClick={onCancel}>
+            <Button icon={<ArrowLeftOutlined />} variant="text" size="middle" onClick={handleCancelAction}>
               Hủy bỏ
             </Button>
           ) : (
-            <Link href="/admin/employee">
+            <Link href="/admin/nhan-vien">
               <Button icon={<ArrowLeftOutlined />} variant="text" size="middle">
                 Quay lại danh sách
               </Button>

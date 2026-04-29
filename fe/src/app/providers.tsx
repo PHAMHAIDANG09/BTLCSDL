@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { ConfigProvider } from 'antd';
+import { ConfigProvider, App } from 'antd';
 import viVN from 'antd/locale/vi_VN';
 
 export function AntdProvider({ children }: { children: React.ReactNode }) {
@@ -10,12 +10,18 @@ export function AntdProvider({ children }: { children: React.ReactNode }) {
       locale={viVN}
       theme={{
         token: {
-          colorPrimary: 'rgb(20, 64, 209)',
+          colorPrimary: 'rgb(201, 12, 12)',
+          colorSuccess: '#13940c',
+          colorWarning: '#dba211',
+          colorError: '#e00c10',
+          colorInfo: '#1572c9',
           borderRadius: 8,
         },
       }}
     >
-      {children}
+      <App>
+        {children}
+      </App>
     </ConfigProvider>
   );
 }
