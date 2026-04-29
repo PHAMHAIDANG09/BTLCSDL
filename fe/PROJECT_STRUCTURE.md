@@ -136,57 +136,74 @@ BTLCSDL/
 
 ## 🔌 API Endpoints (Backend)
 
-### Authentication Module
+### Module Xác thực (Authentication)
 ```
-POST   /auth/login              # Đăng nhập
-POST   /auth/logout             # Đăng xuất
-GET    /auth/profile            # Lấy thông tin user hiện tại (JWT)
-```
-
-### Employee Module
-```
-GET    /employee                # Danh sách nhân viên
-GET    /employee/:id            # Chi tiết nhân viên
-POST   /employee                # Thêm nhân viên
-PUT    /employee/:id            # Cập nhật nhân viên
-DELETE /employee/:id            # Xóa nhân viên
-POST   /employee/:id/transfer   # Điều chuyển
+POST   /xac-thuc/dang-nhap        # Đăng nhập
+POST   /xac-thuc/dang-xuat        # Đăng xuất
+GET    /xac-thuc/ho-so           # Lấy thông tin user hiện tại (JWT)
+POST   /xac-thuc/lam-moi         # Refresh token
 ```
 
-### Attendance Module
+### Module Nhân viên (Employee)
 ```
-GET    /attendance              # Danh sách chấm công
-POST   /attendance              # Thêm chấm công
-GET    /attendance/:id/ot       # Lấy đơn làm thêm giờ
-POST   /attendance/:id/ot       # Tạo đơn làm thêm giờ
-```
-
-### Leave Module
-```
-GET    /leave/types             # Danh sách loại phép
-POST   /leave/request           # Gửi đơn xin phép
-GET    /leave/requests          # Danh sách đơn phép
-PUT    /leave/requests/:id      # Cập nhật đơn phép
-GET    /leave/balance           # Số dư phép
+GET    /nhan-vien                 # Danh sách nhân viên
+GET    /nhan-vien/:id             # Chi tiết nhân viên
+POST   /nhan-vien                 # Thêm nhân viên
+PUT    /nhan-vien/:id             # Cập nhật nhân viên
+DELETE /nhan-vien/:id             # Xóa nhân viên
+POST   /nhan-vien/:id/dieu-chuyen # Điều chuyển công tác
 ```
 
-### Dashboard Module
+### Module Chấm công (Attendance)
 ```
-GET    /dashboard/stats         # Thống kê chung
-GET    /dashboard/analytics     # Phân tích dữ liệu
-```
-
-### Payroll Module
-```
-GET    /payroll                 # Danh sách bảng lương
-POST   /payroll/calculate       # Tính lương
+GET    /cham-cong                 # Danh sách chấm công
+POST   /cham-cong                 # Thêm chấm công (Check-in/out)
+GET    /cham-cong/:id/tang-ca     # Lấy đơn làm thêm giờ
+POST   /cham-cong/:id/tang-ca     # Tạo đơn làm thêm giờ
 ```
 
-### Report Module
+### Module Nghỉ phép (Leave)
 ```
-GET    /report/employees        # Báo cáo nhân viên
-GET    /report/attendance       # Báo cáo chấm công
-GET    /report/payroll          # Báo cáo lương
+GET    /nghi-phep/loai            # Danh sách loại phép
+POST   /nghi-phep/yeu-cau         # Gửi đơn xin phép
+GET    /nghi-phep/danh-sach-yeu-cau # Danh sách đơn phép
+PUT    /nghi-phep/yeu-cau/:id     # Cập nhật đơn phép
+GET    /nghi-phep/so-du           # Số dư phép cá nhân
+```
+
+### Module Bảng điều khiển (Dashboard)
+```
+GET    /bang-dieu-khien/thong-ke  # Thống kê chung (cards)
+GET    /bang-dieu-khien/bieu-do   # Dữ liệu biểu đồ (charts)
+GET    /bang-dieu-khien/phan-tich # Phân tích dữ liệu chuyên sâu
+```
+
+### Module Lương (Payroll)
+```
+GET    /luong                     # Danh sách bảng lương
+GET    /luong/:id                 # Chi tiết phiếu lương
+POST   /luong/tinh-luong          # Tính lương (trigger proc)
+```
+
+### Module Phê duyệt (Approval)
+```
+GET    /phe-duyet/cho-duyet       # Danh sách đơn chờ duyệt
+PUT    /phe-duyet/:id/dong-y      # Đồng ý đơn
+PUT    /phe-duyet/:id/tu-choi     # Từ chối đơn
+```
+
+### Module Báo cáo (Report)
+```
+GET    /bao-cao/nhan-vien         # Báo cáo nhân sự
+GET    /bao-cao/cham-cong         # Báo cáo chấm công
+GET    /bao-cao/luong             # Báo cáo lương
+```
+
+### Module Tổ chức & Thông báo
+```
+GET    /co-cau-to-chuc/so-do      # Sơ đồ tổ chức (tree)
+GET    /thong-bao                 # Danh sách thông báo
+PUT    /thong-bao/:id/da-doc      # Đánh dấu đã đọc
 ```
 
 ---
@@ -261,14 +278,12 @@ FE/
 │   │   │   │   └── QuickStats.tsx
 │   │   │   └── page.module.css
 │   │   │
-│   │   ├── employee/                        # Quản lý nhân viên
+│   │   ├── employee/                        # Quản lý nhân viên (/admin/nhan-vien)
 │   │   │   ├── page.tsx                     # Danh sách nhân viên (Table)
 │   │   │   ├── [id]/
 │   │   │   │   ├── page.tsx                 # Chi tiết nhân viên
 │   │   │   │   └── edit/
 │   │   │   │       └── page.tsx             # Sửa nhân viên (Form)
-│   │   │   ├── add/
-│   │   │   │   └── page.tsx                 # Thêm nhân viên (Form)
 │   │   │   └── _components/
 │   │   │       ├── EmployeeTable.tsx        # Table với Search, Filter
 │   │   │       ├── EmployeeForm.tsx         # Form (thêm/sửa)
@@ -277,45 +292,55 @@ FE/
 │   │   │       ├── DeleteConfirm.tsx        # Xác nhận xóa
 │   │   │       └── BulkActions.tsx          # Action hàng loạt
 │   │   │
-│   │   ├── organization/                    # Sơ đồ tổ chức
-│   │   │   ├── page.tsx                     # Org Chart Visualization
+│   │   ├── structure/                       # Cơ cấu tổ chức (/admin/co-cau-to-chuc)
+│   │   │   ├── page.tsx                     # Sơ đồ tổ chức Visualization
 │   │   │   └── _components/
 │   │   │       ├── OrgChart.tsx             # Tree View phân cấp
 │   │   │       ├── OrgNode.tsx
 │   │   │       └── OrgSearch.tsx
 │   │   │
-│   │   ├── attendance/                      # Chấm công (Admin view)
-│   │   │   ├── page.tsx                     # Danh sách chấm công toàn công ty
+│   │   ├── contract/                        # Quản lý hợp đồng (/admin/hop-dong)
+│   │   │   └── page.tsx
+│   │   │
+│   │   ├── attendance/                      # Chấm công (/admin/cham-cong)
+│   │   │   ├── page.tsx                     # Theo dõi chấm công toàn công ty
 │   │   │   ├── [id]/
 │   │   │   │   └── page.tsx                 # Chi tiết chấm công nhân viên
 │   │   │   └── _components/
 │   │   │       ├── AttendanceTable.tsx      # Table chấm công
 │   │   │       ├── LateAlert.tsx            # Cảnh báo đi muộn/về sớm
-│   │   │       ├── AttendanceFilter.tsx     # Bộ lọc (ngày, phòng ban, trạng thái )
+│   │   │       ├── AttendanceFilter.tsx     # Bộ lọc (ngày, phòng ban)
 │   │   │       └── AttendanceStats.tsx      # Thống kê chấm công
 │   │   │
-│   │   ├── payroll/                         # Quản lý lương
+│   │   ├── leave/                           # Quản lý nghỉ phép (/admin/nghi-phep)
+│   │   │   ├── page.tsx                     # Danh sách đơn phép cần duyệt
+│   │   │   └── _components/
+│   │   │       ├── LeaveApprovalTable.tsx
+│   │   │       └── LeaveActionButtons.tsx
+│   │   │
+│   │   ├── overtime/                        # Làm thêm giờ (/admin/lam-them-gio)
+│   │   │   └── page.tsx
+│   │   │
+│   │   ├── payroll/                         # Quản lý lương (/admin/luong)
 │   │   │   ├── page.tsx                     # Danh sách bảng lương
 │   │   │   ├── [id]/
 │   │   │   │   └── page.tsx                 # Chi tiết bảng lương
 │   │   │   └── _components/
 │   │   │       ├── PayrollTable.tsx         # Table kết quả tính lương
 │   │   │       ├── PayrollRunBtn.tsx        # Nút "Tính lương tháng"
-│   │   │       ├── PayrollForm.tsx          # Form tính lương (tháng, năm)
-│   │   │       ├── PayrollDetail.tsx        # Chi tiết bảng lương
-│   │   │       └── PayrollExport.tsx        # Export Excel/PDF
+│   │   │       ├── PayrollForm.tsx          # Form tính lương
+│   │   │       └── PayrollDetail.tsx        # Chi tiết bảng lương
 │   │   │
-│   │   ├── approval/                        # Duyệt đơn
+│   │   ├── approval/                        # Duyệt đơn tổng hợp
 │   │   │   ├── page.tsx                     # Danh sách đơn chờ duyệt
-│   │   │   ├── _components/
-│   │   │   │   ├── ApprovalTable.tsx        # Table các đơn chờ
-│   │   │   │   ├── ApprovalButtons.tsx      # Nút Approve/Reject
-│   │   │   │   ├── ApprovalDetail.tsx       # Modal chi tiết đơn
-│   │   │   │   ├── ApprovalNotes.tsx        # Ghi chú phê duyệt
-│   │   │   │   └── ApprovalHistory.tsx      # Lịch sử phê duyệt
-│   │   │   └── page.module.css
+│   │   │   └── _components/
+│   │   │       ├── ApprovalTable.tsx
+│   │   │       └── ApprovalDetail.tsx
 │   │   │
-│   │   ├── report/                          # Báo cáo
+│   │   ├── salary-history/                  # Lịch sử lương (/admin/lich-su-luong)
+│   │   │   └── page.tsx
+│   │   │
+│   │   ├── report/                          # Báo cáo (/admin/bao-cao)
 │   │   │   ├── employees/
 │   │   │   │   └── page.tsx                 # Báo cáo nhân sự
 │   │   │   ├── attendance/
@@ -324,15 +349,23 @@ FE/
 │   │   │   │   └── page.tsx                 # Báo cáo lương
 │   │   │   └── _components/
 │   │   │       ├── ReportTable.tsx
-│   │   │       ├── ReportFilter.tsx
-│   │   │       └── ReportExport.tsx
+│   │   │       └── ReportFilter.tsx
 │   │   │
-│   │   └── settings/
-│   │       ├── page.tsx                     # Cài đặt hệ thống
-│   │       └── _components/
-│   │           ├── GeneralSettings.tsx
-│   │           ├── UserManagement.tsx
-│   │           └── SystemLogs.tsx
+│   │   ├── holiday/                         # Ngày lễ (/admin/ngay-le)
+│   │   │   └── page.tsx
+│   │   │
+│   │   ├── log/                             # Nhật ký hệ thống (/admin/nhat-ky)
+│   │   │   └── page.tsx
+│   │   │
+│   │   ├── settings/                        # Cài đặt (/admin/cai-dat)
+│   │   │   ├── page.tsx
+│   │   │   └── _components/
+│   │   │       ├── GeneralSettings.tsx
+│   │   │       ├── UserManagement.tsx
+│   │   │       └── SystemLogs.tsx
+│   │   │
+│   │   └── profile/                         # Hồ sơ cá nhân (/admin/ho-so)
+│   │       └── page.tsx
 │   │
 │   ├── staff/                             # Staff Portal
 │   │   ├── layout.tsx                       # Staff Layout
@@ -396,128 +429,128 @@ FE/
 │   │           ├── RequestTable.tsx
 │   │           └── RequestStatus.tsx
 │   │
-│   ├── components/                          # Shared Components (Centralized)
-│   │   ├── shared/                          # Reusable UI Components
+│   ├── components/                          # Thành phần UI dùng chung
+│   │   ├── shared/                          # Các UI Component cơ bản (Atom/Molecule)
 │   │   │   ├── Button/
-│   │   │   │   ├── Button.tsx
-│   │   │   │   ├── Button.module.css
-│   │   │   │   └── Button.stories.tsx       # Storybook
+│   │   │   │   ├── Button.tsx               # Nút bấm tùy chỉnh (Primary, Danger, Ghost,...)
+│   │   │   │   ├── Button.module.css        # Style riêng cho Button
+│   │   │   │   └── Button.stories.tsx       # Storybook demo component
 │   │   │   ├── Modal/
-│   │   │   │   ├── Modal.tsx
+│   │   │   │   ├── Modal.tsx                # Hộp thoại Modal (Popup)
 │   │   │   │   └── Modal.module.css
 │   │   │   ├── Table/
-│   │   │   │   ├── Table.tsx
-│   │   │   │   ├── TablePagination.tsx
-│   │   │   │   └── TableActions.tsx
+│   │   │   │   ├── Table.tsx                # Bảng dữ liệu chuẩn (Antd based)
+│   │   │   │   ├── TablePagination.tsx      # Phân trang cho bảng
+│   │   │   │   └── TableActions.tsx         # Các nút hành động trên dòng (Sửa, Xóa)
 │   │   │   ├── Form/
-│   │   │   │   ├── FormInput.tsx
-│   │   │   │   ├── FormSelect.tsx
-│   │   │   │   ├── FormDatePicker.tsx
-│   │   │   │   ├── FormCheckbox.tsx
-│   │   │   │   ├── FormRadio.tsx
-│   │   │   │   └── FormFile.tsx
+│   │   │   │   ├── FormInput.tsx            # Ô nhập liệu Text
+│   │   │   │   ├── FormSelect.tsx           # Ô chọn Dropdown
+│   │   │   │   ├── FormDatePicker.tsx       # Ô chọn ngày tháng
+│   │   │   │   ├── FormCheckbox.tsx         # Ô tích chọn
+│   │   │   │   ├── FormRadio.tsx            # Ô chọn một
+│   │   │   │   └── FormFile.tsx             # Ô tải lên file
 │   │   │   ├── Toast/
-│   │   │   │   ├── Toast.tsx
-│   │   │   │   └── useToast.ts
+│   │   │   │   ├── Toast.tsx                # Thông báo nổi (Snackbar)
+│   │   │   │   └── useToast.ts              # Hook điều khiển thông báo
 │   │   │   ├── Loading/
-│   │   │   │   ├── Spinner.tsx
-│   │   │   │   └── Skeleton.tsx
+│   │   │   │   ├── Spinner.tsx              # Biểu tượng đang tải (Loading)
+│   │   │   │   └── Skeleton.tsx             # Khung xương chờ tải dữ liệu
 │   │   │   ├── Breadcrumb/
-│   │   │   │   └── Breadcrumb.tsx
+│   │   │   │   └── Breadcrumb.tsx           # Thanh điều hướng đường dẫn
 │   │   │   ├── Avatar/
-│   │   │   │   └── Avatar.tsx
+│   │   │   │   └── Avatar.tsx               # Ảnh đại diện người dùng
 │   │   │   ├── Badge/
-│   │   │   │   └── Badge.tsx
+│   │   │   │   └── Badge.tsx                # Nhãn trạng thái (Status badge)
 │   │   │   ├── Tag/
-│   │   │   │   └── Tag.tsx
+│   │   │   │   └── Tag.tsx                  # Thẻ phân loại
 │   │   │   ├── Card/
-│   │   │   │   └── Card.tsx
+│   │   │   │   └── Card.tsx                 # Khung nội dung (Card container)
 │   │   │   └── Empty/
-│   │   │       └── Empty.tsx
+│   │   │       └── Empty.tsx                # Hiển thị khi không có dữ liệu
 │   │   │
 │   │   ├── layout/
-│   │   │   ├── AdminLayout.tsx              # Admin Layout wrapper
-│   │   │   ├── StaffLayout.tsx              # Staff Layout wrapper
-│   │   │   ├── Header.tsx                   # Header (User Profile, Notifications)
-│   │   │   ├── Sidebar.tsx                  # Sidebar Menu
-│   │   │   ├── Footer.tsx
-│   │   │   └── Navigation.tsx
+│   │   │   ├── AdminLayout.tsx              # Khung giao diện Admin (Sidebar trái)
+│   │   │   ├── StaffLayout.tsx              # Khung giao diện Nhân viên
+│   │   │   ├── Header.tsx                   # Thanh đầu trang (Avatar, Profile, Notify)
+│   │   │   ├── Sidebar.tsx                  # Thanh menu điều hướng chính
+│   │   │   ├── Footer.tsx                   # Thanh chân trang
+│   │   │   └── Navigation.tsx               # Logic điều hướng phụ
 │   │   │
 │   │   └── auth/
-│   │       ├── ProtectedRoute.tsx           # Route protection
-│   │       ├── PrivateRoute.tsx
-│   │       └── RoleGuard.tsx
+│   │       ├── ProtectedRoute.tsx           # Kiểm tra đăng nhập mới cho vào
+│   │       ├── PrivateRoute.tsx             # Route bảo mật cao
+│   │       └── RoleGuard.tsx                # Chặn quyền truy cập theo vai trò (Role)
 │   │
-│   ├── services/
-│   │   ├── api.ts                           # Axios instance + Interceptors
-│   │   ├── auth.service.ts                  # Authentication API
-│   │   ├── employee.service.ts              # Employee API
-│   │   ├── attendance.service.ts            # Attendance API
-│   │   ├── leave.service.ts                 # Leave API
-│   │   ├── payroll.service.ts               # Payroll API
-│   │   ├── approval.service.ts              # Approval API
-│   │   ├── report.service.ts                # Report API
-│   │   ├── dashboard.service.ts             # Dashboard API
-│   │   ├── notification.service.ts          # Notification API
-│   │   └── upload.service.ts                # File upload API
+│   ├── services/                            # Tầng gọi API (Backend Integration)
+│   │   ├── api.ts                           # Cấu hình Axios, Header JWT, Interceptors
+│   │   ├── auth.service.ts                  # Xử lý Đăng nhập, Đăng xuất, Profile
+│   │   ├── employee.service.ts              # Gọi API Quản lý nhân viên
+│   │   ├── attendance.service.ts            # Gọi API Chấm công
+│   │   ├── leave.service.ts                 # Gọi API Nghỉ phép
+│   │   ├── payroll.service.ts               # Gọi API Lương
+│   │   ├── approval.service.ts              # Gọi API Phê duyệt đơn từ
+│   │   ├── report.service.ts                # Gọi API Xuất báo cáo
+│   │   ├── dashboard.service.ts             # Gọi API Thống kê Dashboard
+│   │   ├── notification.service.ts          # Gọi API Thông báo hệ thống
+│   │   └── upload.service.ts                # Xử lý tải ảnh/file lên Server
 │   │
-│   ├── store/
-│   │   ├── authStore.ts                     # Zustand - Auth (user, token, roles)
-│   │   ├── appStore.ts                      # Zustand - App (theme, sidebar state)
-│   │   ├── notificationStore.ts             # Zustand - Notifications
-│   │   └── userStore.ts                     # Zustand - User preferences
+│   ├── store/                               # Quản lý trạng thái (Zustand)
+│   │   ├── authStore.ts                     # Lưu thông tin đăng nhập, token, role
+│   │   ├── appStore.ts                      # Lưu trạng thái giao diện (Đóng/mở sidebar)
+│   │   ├── notificationStore.ts             # Quản lý danh sách thông báo realtime
+│   │   └── userStore.ts                     # Lưu cài đặt cá nhân của người dùng
 │   │
-│   ├── hooks/
-│   │   ├── useAuth.ts                       # Auth hook
-│   │   ├── useUser.ts                       # User hook
-│   │   ├── useApi.ts                        # API hook
-│   │   ├── useForm.ts                       # Form hook
-│   │   ├── useLocalStorage.ts               # LocalStorage hook
-│   │   ├── usePagination.ts                 # Pagination hook
-│   │   ├── useNotification.ts               # Toast notification hook
-│   │   └── useDebounce.ts                   # Debounce hook
+│   ├── hooks/                               # Các hàm React Hook tùy chỉnh
+│   │   ├── useAuth.ts                       # Hook lấy thông tin user hiện tại nhanh
+│   │   ├── useUser.ts                       # Hook xử lý logic user
+│   │   ├── useApi.ts                        # Hook bọc gọi API có trạng thái loading/error
+│   │   ├── useForm.ts                       # Hook xử lý Form phức tạp
+│   │   ├── useLocalStorage.ts               # Hook làm việc với LocalStorage
+│   │   ├── usePagination.ts                 # Hook tính toán phân trang
+│   │   ├── useNotification.ts               # Hook hiển thị thông báo Toast
+│   │   └── useDebounce.ts                   # Hook trì hoãn xử lý (Search input)
 │   │
-│   ├── utils/
-│   │   ├── validators.ts                    # Validation functions (Zod schemas)
-│   │   ├── constants.ts                     # App constants
-│   │   ├── helpers.ts                       # Helper functions
-│   │   ├── date-utils.ts                    # Date formatting
-│   │   ├── currency-utils.ts                # Currency formatting
-│   │   ├── permission.ts                    # Permission checking
-│   │   └── error-handler.ts                 # Error handling
+│   ├── utils/                               # Các hàm tiện ích bổ trợ
+│   │   ├── validators.ts                    # Các quy tắc kiểm tra dữ liệu (Zod)
+│   │   ├── constants.ts                     # Các hằng số dùng chung toàn app
+│   │   ├── helpers.ts                       # Các hàm xử lý logic vặt
+│   │   ├── date-utils.ts                    # Định dạng ngày tháng (dd/mm/yyyy)
+│   │   ├── currency-utils.ts                # Định dạng tiền tệ (VND)
+│   │   ├── permission.ts                    # Hàm kiểm tra quyền (isAdmin, isStaff)
+│   │   └── error-handler.ts                 # Xử lý lỗi API tập trung
 │   │
-│   ├── types/
-│   │   ├── index.ts                         # Exported types
-│   │   ├── auth.ts                          # Auth types
-│   │   ├── employee.ts                      # Employee types
-│   │   ├── attendance.ts                    # Attendance types
-│   │   ├── leave.ts                         # Leave types
-│   │   ├── payroll.ts                       # Payroll types
-│   │   ├── approval.ts                      # Approval types
-│   │   ├── api.ts                           # API response types
-│   │   └── common.ts                        # Common types
+│   ├── types/                               # Định nghĩa kiểu dữ liệu (TypeScript)
+│   │   ├── index.ts                         # File export tổng hợp các types
+│   │   ├── auth.ts                          # Kiểu dữ liệu Đăng nhập/User
+│   │   ├── employee.ts                      # Kiểu dữ liệu Nhân viên
+│   │   ├── attendance.ts                    # Kiểu dữ liệu Chấm công
+│   │   ├── leave.ts                         # Kiểu dữ liệu Đơn nghỉ phép
+│   │   ├── payroll.ts                       # Kiểu dữ liệu Bảng lương
+│   │   ├── approval.ts                      # Kiểu dữ liệu Phê duyệt
+│   │   ├── api.ts                           # Kiểu dữ liệu Response từ Backend
+│   │   └── common.ts                        # Các kiểu dữ liệu dùng chung (Pagination, Modal)
 │   │
-│   ├── config/
-│   │   ├── api.config.ts                    # API configuration
-│   │   ├── menu.config.ts                   # Menu configuration
-│   │   ├── theme.config.ts                  # Ant Design theme config
-│   │   └── permissions.config.ts            # Role-based permissions
+│   ├── config/                              # Cấu hình hệ thống
+│   │   ├── api.config.ts                    # Base URL, Timeout
+│   │   ├── menu.config.ts                   # Cấu hình danh mục Menu Sidebar
+│   │   ├── theme.config.ts                  # Cấu hình màu sắc, font Ant Design
+│   │   └── permissions.config.ts            # Định nghĩa bảng phân quyền
 │   │
-│   ├── middleware/
-│   │   ├── auth.ts                          # Auth middleware
-│   │   ├── logger.ts                        # Logging middleware
-│   │   └── errorHandler.ts                  # Error handler middleware
+│   ├── middleware/                          # Next.js Middleware (Chặn Route)
+│   │   ├── auth.ts                          # Middleware kiểm tra Login
+│   │   ├── logger.ts                        # Middleware ghi nhật ký truy cập
+│   │   └── errorHandler.ts                  # Middleware xử lý lỗi
 │   │
-│   ├── styles/
-│   │   ├── globals.css                      # Global styles
-│   │   ├── variables.css                    # CSS variables
-│   │   ├── antd-override.css                # Ant Design overrides
-│   │   └── tailwind.css                     # Tailwind imports
+│   ├── styles/                              # Giao diện và CSS
+│   │   ├── globals.css                      # CSS toàn cục
+│   │   ├── variables.css                    # Khai báo biến màu sắc, spacing
+│   │   ├── antd-override.css                # Ghi đè style mặc định của Ant Design
+│   │   └── tailwind.css                     # Cấu hình Tailwind CSS
 │   │
-│   └── constants/
-│       ├── http-status.ts
-│       ├── role.ts
-│       └── api-endpoints.ts
+│   └── constants/                           # Hằng số cố định
+│       ├── http-status.ts                   # Mã lỗi 200, 400, 401, 500,...
+│       ├── role.ts                          # Định nghĩa ADMIN, MANAGER, STAFF
+│       └── api-endpoints.ts                 # Toàn bộ đường dẫn API Backend (/nhan-vien,...)
 │
 ├── public/
 │   ├── favicon.ico
@@ -576,178 +609,75 @@ FE/
 
 ## 🎯 Công Việc Frontend Chi Tiết (2 Thành Viên)
 
-### **THÀNH VIÊN 4: FRONTEND DEVELOPER A**
-**Trọng tâm**: Setup Core, Module Quản lý Nhân sự & Hệ thống Chấm công (Cả Admin & Staff)
+### **THÀNH VIÊN 4: FRONTEND DEVELOPER A (ADMIN UI & AUTH CORE)**
+**Trọng tâm**: Setup Core, Authentication, Phân quyền & Module Quản trị Nhân sự/Chấm công/Lương.
 
 1. **Frontend Foundation & Admin Layout (Core)**
-   - Khởi tạo Next.js 15 project
-   - Cài Ant Design + Tailwind CSS
-   - Setup Axios Instance với Interceptors (JWT, error handling, BaseURL)
-   - Cấu hình theme Ant Design
-   - Thiết kế khung giao diện Admin (Sidebar, Header, Breadcrumbs, Responsive)
+   - Setup Axios Instance với Interceptors (Xử lý token, URL nội địa hóa).
+   - Thiết kế khung giao diện Admin (Sidebar, Header, Breadcrumbs).
 
-2. **Shared Components & Form Validation (Core)**
-   - Viết các Component dùng chung: Button, Modal, Table, Toast, Form Input, Select, DatePicker, Upload, Spinner, Badge, Tag, Card, Empty
-   - Triển khai logic Validate form chuẩn hóa (Required, Email, Phone, Date Range)
-   - Sử dụng Zod + React Hook Form
-   - Tạo các wrapper components có thể tái sử dụng cho cả Admin & Staff
+2. **Authentication & Role Guard (Core)**
+   - Trang **Login**: Form đăng nhập, lưu JWT vào LocalStorage.
+   - **authStore**: Quản lý trạng thái đăng nhập, User Info và Vai trò (Admin/Staff).
+   - **Middleware & RoleGuard**: Chặn quyền truy cập giữa Staff Portal & Admin Portal dựa trên Role.
 
-3. **Complex Employee Form (Admin/Staff)**
-   - Làm Form thêm/sửa nhân viên (nhiều tab/nhiều bước)
-   - Tab 1: Thông tin cơ bản (Tên, Email, SĐT, Địa chỉ)
-   - Tab 2: Thông tin công tác (Phòng ban, Chức vụ, Ngày bắt đầu)
-   - Tab 3: Hợp đồng (Loại HĐ, Mức lương, Ngày ký)
-   - Tab 4: Upload ảnh đại diện (preview + crop)
-   - Validation tất cả trước khi submit
-   - Dùng chung cho Admin thêm người & Staff cập nhật hồ sơ
+3. **Shared Components & State Management**
+   - Viết các Component dùng chung (Button, Modal, Table, Toast, v.v.).
+   - Quản lý Global State bằng Zustand.
 
 4. **Employee Management (Admin)**
-   - Làm màn hình danh sách nhân viên dạng Table
-   - Tính năng Search (tên, email, phòng ban)
-   - Filter theo trạng thái, chức vụ
-   - Pagination, Sorting
-   - Nút Edit, Delete, View Detail
-   - Modal xác nhận xóa
+   - Danh sách nhân viên (Table) với Search, Filter, Pagination.
+   - Xử lý Thêm, Sửa, Xóa nhân viên.
 
-5. **Profile & Org Chart (Staff/Admin)**
-   - Profile giao diện xem thông tin cá nhân chi tiết cho nhân viên (Staff):
-     - Hồ sơ (Tên, Email, SĐT, Địa chỉ, Avatar)
-     - Hợp đồng (Ngày ký, Loại HĐ, Mức lương)
-     - Lịch sử lương (Table các tháng)
-     - Nút Edit Profile
-   - Org Chart (Tree View) cho cấp quản lý (Admin):
-     - Hiển thị sơ đồ tổ chức dạng cây phân cấp
-     - Hover hiển thị thông tin nhân viên
-     - Click để xem chi tiết
-     - Search tìm nhân viên
+5. **Attendance Monitor (Admin)**
+   - Trang theo dõi chấm công toàn công ty.
+   - Hiển thị danh sách đi muộn/về sớm, cảnh báo vắng mặt.
 
-6. **Attendance Action UI (Staff)**
-   - Widget Check-in/Check-out tại trang chủ nhân viên
-   - Nút "Check In" (sau hôm nay)
-   - Nút "Check Out" (khi đã Check In)
-   - Đồng hồ thời gian thực (HH:MM:SS)
-   - Hiển thị giờ Check In/Out gần nhất
-   - Status: "Chưa check in", "Đã check in lúc XX:XX"
-   - Nơi tạo dữ liệu chấm công
+6. **Payroll UI (Admin)**
+   - Quản lý lương: Nút "Tính lương tháng" gọi Backend.
+   - Table kết quả tính lương và chi tiết phiếu lương (breakdown khấu trừ).
 
-7. **Staff Attendance Calendar (Staff)**
-   - Calendar component hiển thị lịch làm việc cá nhân
-   - Mỗi ngày hiển thị:
-     - Xanh: Đi làm đầy đủ
-     - Vàng: Muộn/Sớm
-     - Đỏ: Vắng/Phép
-   - Click ngày → Xem chi tiết giờ check in/out
-   - Chọn tháng/năm để xem lịch sử
+7. **Approval Workflow (Admin)**
+   - Trang phê duyệt đơn nghỉ phép và đơn làm thêm giờ (Approve/Reject).
 
-8. **Attendance Monitor UI (Admin)**
-   - Trang theo dõi chấm công toàn công ty
-   - Table danh sách với cột: Nhân viên, Giờ Vào, Giờ Ra, Trạng thái (Đúng giờ/Muộn/Sớm)
-   - Filter theo ngày, phòng ban
-   - Badge cảnh báo (muộn, sớm, vắng)
-   - Nơi Admin kiểm tra dữ liệu từ Widget Check-in
-
-9. **State Management (Core)**
-   - Thiết lập Zustand/Context API để quản lý UI State chung:
-     - `authStore`: User info, token, roles
-     - `appStore`: Theme (light/dark), sidebar state
-     - `uiStore`: Modal state, Toast messages
-
-10. **Responsive (Part 1)**
-    - Tối ưu hóa hiển thị trên Mobile (375px, 768px)
-    - Sidebar collapse trên mobile
-    - Table scroll horizontal trên mobile
-    - Form stacking trên mobile
+8. **Admin Profile**
+   - Xem và cập nhật thông tin cá nhân của Admin.
 
 ---
 
-### **THÀNH VIÊN 5: FRONTEND DEVELOPER B**
-**Trọng tâm**: Module Xác thực, Quy trình duyệt Đơn từ, Quản lý Lương & Đóng gói dự án (Cả Admin & Staff)
+### **THÀNH VIÊN 5: FRONTEND DEVELOPER B (STAFF PORTAL & VISUALIZATION)**
+**Trọng tâm**: Module Nhân viên, Biểu đồ thống kê, Sơ đồ tổ chức & Trải nghiệm người dùng Staff.
 
-1. **Auth Pages & User State (Core)**
-   - Làm trang Login (email + password)
-   - Form validation (email format, required)
-   - Lưu JWT token vào Cookies + LocalStorage
-   - Redirect tới dashboard sau login thành công
-   - Error message từ backend
-   - Dùng Zustand/Context API để lưu Global State (User Info, Roles)
-   - Điều hướng quyền Admin/Staff
+1. **Admin Dashboard Analytics (Visual)**
+   - Tích hợp **Chart.js** hiển thị biểu đồ cột (Nhân sự phòng ban) và biểu đồ đường (Chi phí lương).
 
-2. **Leave Request UI (Staff)**
-   - Làm Form xin nghỉ phép/OT gồm:
-     - Select loại phép (Phép năm, Phép không lương, v.v.)
-     - DateRangePicker (từ ngày - đến ngày)
-     - Hiển thị số ngày chọn tự động
-     - TextArea nhập lý do
-     - Validation: Kiểm tra số phép còn lại
-   - Nút Submit + Cancel
-   - Success message sau khi gửi
-   - Nơi tạo dữ liệu đơn từ
+2. **Organization Chart (Visual)**
+   - Hiển thị sơ đồ tổ chức dạng cây phân cấp (Org Chart) từ API.
 
-3. **Approval Workflow UI (Admin)**
-   - Làm trang danh sách các đơn nghỉ phép/OT đang chờ duyệt
-   - Table với cột: Nhân viên, Loại phép, Từ ngày, Đến ngày, Lý do, Trạng thái
-   - 2 nút: Approve + Reject
-   - Modal thêm ghi chú khi phê duyệt
-   - Status badge (Pending, Approved, Rejected)
-   - Lịch sử phê duyệt
-   - Nơi Admin duyệt đơn từ từ Staff
+3. **Attendance Action UI (Staff)**
+   - Widget Check-in/Check-out với đồng hồ thời gian thực tại trang chủ nhân viên.
 
-4. **Notification System (Staff)**
-   - UI danh sách thông báo (Bell Icon ở Header)
-   - Hiển thị số notification chưa đọc
-   - Click bell → Dropdown danh sách thông báo
-   - Loại thông báo:
-     - Đơn phép được phê duyệt/từ chối
-     - Thông báo từ admin
-     - Nhắc nhở hết phép, hết hợp đồng
-   - Toast notification (push) khi có thông báo mới
-   - Mark as read / Delete notification
+4. **Staff Attendance Calendar**
+   - Calendar component hiển thị lịch làm việc cá nhân (Xanh/Vàng/Đỏ theo trạng thái công).
 
-5. **Payroll Run UI (Admin)**
-   - Làm trang quản lý lương cho Admin
-   - Nút "Tính lương tháng" gọi Backend/Stored Proc
-   - Table kết quả tính lương (Cơ bản, Phụ cấp, Khấu trừ, Net)
-   - Loading indicator khi tính
-   - Export Excel bảng lương
-   - Xem chi tiết bảng lương từng nhân viên
-   - Nơi tạo dữ liệu lương
+5. **Leave Request UI (Staff)**
+   - Form xin nghỉ phép (DateRangePicker, Select loại phép, validate số ngày còn lại).
 
-6. **Personal Payslip UI (Staff)**
-   - Làm trang danh sách phiếu lương theo tháng cho nhân viên
-   - Table: Tháng, Năm, Trạng thái
-   - Pagination (12 tháng gần nhất)
-   - Click vào hàng → Hiển thị chi tiết phiếu lương
-   - Modal/Page chi tiết:
-     - Hiển thị: Mức lương cơ bản, Phụ cấp, Khấu trừ, Lương ròng
-     - Nút "Tải PDF" để download phiếu lương
-   - Nơi Staff xem dữ liệu lương từ Admin
+6. **Employee Profile (Staff)**
+   - Xem chi tiết hồ sơ cá nhân, Hợp đồng lao động và Lịch sử lương.
+   - Form sửa thông tin cá nhân (Complex Form nhiều tab).
 
-7. **Admin Dashboard (Admin)**
-   - Viết trang chủ quản trị
-   - Stats Cards (Tổng nhân viên, Hôm nay vắng, Tháng này lương)
-   - Chart.js - Biểu đồ cột: Nhân sự theo phòng ban
-   - Chart.js - Biểu đồ đường: Chi phí lương theo tháng
-   - Gắn liền với module lương
+7. **Personal Payslip (Staff)**
+   - Xem danh sách và chi tiết phiếu lương hàng tháng, tích hợp nút tải PDF.
 
-8. **Role-based Routing (Core)**
-   - Thiết lập Private Routes
-   - Chặn quyền truy cập giữa Staff Portal & Admin Portal dựa trên Role từ Token
-   - ProtectedRoute, RoleGuard components
-   - Redirect nếu không có quyền
+8. **Notification System (Staff)**
+   - UI danh sách thông báo và thông báo đẩy khi đơn từ được phê duyệt.
 
-9. **Responsive (Part 2)**
-   - Tối ưu hóa hiển thị trên Mobile (375px, 768px)
-   - Các màn hình Đơn từ, Lương & Dashboard
-   - Sidebar collapse trên mobile
-   - Form stacking trên mobile
+9. **Responsive & Mobile Optimization**
+   - Tối ưu hiển thị trên Mobile cho tất cả các trang Staff.
 
-10. **Final Integration & Docs**
-    - Đóng gói thư mục dự án
-    - Test chéo giao diện 2 người ghép lại
-    - Kiểm tra tất cả routes, auth flow, API integration
-    - Viết file README.md hướng dẫn chạy frontend
-    - Setup environment variables (.env.local)
-    - Testing trên Chrome, Firefox, Safari
+10. **Final Integration & Documentation**
+    - Kiểm tra tổng thể dự án, viết file README hướng dẫn chạy.
 
 ---
 
@@ -829,51 +759,51 @@ npm run dev
 
 ## 🔌 API Integration Checklist
 
-### Authentication
-- [ ] POST /auth/login → lưu token, redirect dashboard
-- [ ] GET /auth/profile → lấy user info
-- [ ] POST /auth/logout → clear token, redirect login
+### Authentication (Module Xác thực)
+- [ ] POST /xac-thuc/dang-nhap → lưu token, redirect dashboard
+- [ ] GET /xac-thuc/ho-so → lấy user info
+- [ ] POST /xac-thuc/dang-xuat → clear token, redirect login
 
-### Employee Management
-- [ ] GET /employee → Danh sách (pagination, filter, search)
-- [ ] GET /employee/:id → Chi tiết
-- [ ] POST /employee → Thêm
-- [ ] PUT /employee/:id → Sửa
-- [ ] DELETE /employee/:id → Xóa
+### Employee Management (Nhân viên)
+- [ ] GET /nhan-vien → Danh sách (pagination, filter, search)
+- [ ] GET /nhan-vien/:id → Chi tiết
+- [ ] POST /nhan-vien → Thêm
+- [ ] PUT /nhan-vien/:id → Sửa
+- [ ] DELETE /nhan-vien/:id → Xóa
 
-### Attendance
-- [ ] POST /attendance → Check-in/Check-out
-- [ ] GET /attendance → Danh sách
-- [ ] GET /attendance/:id → Chi tiết
+### Attendance (Chấm công)
+- [ ] POST /cham-cong → Check-in/Check-out
+- [ ] GET /cham-cong → Danh sách
+- [ ] GET /cham-cong/:id → Chi tiết
 
-### Leave
-- [ ] GET /leave/types → Loại phép
-- [ ] POST /leave/request → Gửi đơn
-- [ ] GET /leave/balance → Số dư phép
-- [ ] GET /leave/requests → Danh sách đơn
-- [ ] PUT /leave/requests/:id → Update (approve/reject)
+### Leave (Nghỉ phép)
+- [ ] GET /nghi-phep/loai → Loại phép
+- [ ] POST /nghi-phep/yeu-cau → Gửi đơn
+- [ ] GET /nghi-phep/so-du → Số dư phép
+- [ ] GET /nghi-phep/danh-sach-yeu-cau → Danh sách đơn
+- [ ] PUT /nghi-phep/yeu-cau/:id → Update (approve/reject)
 
-### Payroll
-- [ ] POST /payroll/calculate → Tính lương tháng
-- [ ] GET /payroll → Danh sách
-- [ ] GET /payroll/:id → Chi tiết
+### Payroll (Lương)
+- [ ] POST /luong/tinh-luong → Tính lương tháng
+- [ ] GET /luong → Danh sách
+- [ ] GET /luong/:id → Chi tiết
 
-### Approval
-- [ ] GET /approval/pending → Danh sách đơn chờ
-- [ ] PUT /approval/:id/approve → Phê duyệt
-- [ ] PUT /approval/:id/reject → Từ chối
+### Approval (Phê duyệt)
+- [ ] GET /phe-duyet/cho-duyet → Danh sách đơn chờ
+- [ ] PUT /phe-duyet/:id/dong-y → Phê duyệt
+- [ ] PUT /phe-duyet/:id/tu-choi → Từ chối
 
-### Dashboard
-- [ ] GET /dashboard/stats → Thống kê chung
-- [ ] GET /dashboard/charts → Dữ liệu biểu đồ
+### Dashboard (Bảng điều khiển)
+- [ ] GET /bang-dieu-khien/thong-ke → Thống kê chung
+- [ ] GET /bang-dieu-khien/bieu-do → Dữ liệu biểu đồ
 
-### Organization
-- [ ] GET /organization/tree → Sơ đồ tổ chức
+### Organization (Tổ chức)
+- [ ] GET /co-cau-to-chuc/so-do → Sơ đồ tổ chức
 
-### Notification
-- [ ] GET /notification → Danh sách thông báo
-- [ ] PUT /notification/:id/read → Mark as read
-- [ ] DELETE /notification/:id → Delete
+### Notification (Thông báo)
+- [ ] GET /thong-bao → Danh sách thông báo
+- [ ] PUT /thong-bao/:id/da-doc → Đã đọc
+- [ ] DELETE /thong-bao/:id → Xóa đơn lẻ
 
 ---
 
@@ -903,12 +833,99 @@ npm run dev
 
 ---
 
-## 📚 Tiếp Theo
+---
 
-Khi bạn sẵn sàng:
-1. Frontend Developer A: Bắt đầu với `next create-app FE` và cấu hình Ant Design
-2. Frontend Developer B: Chờ Admin Layout xong rồi tạo Staff Layout
-3. Định kỳ sync giữa 2 dev để tránh conflict components
-4. Code review & merge PR trước khi deploy
+## 📅 KẾ HOẠCH PHÂN CÔNG ĐIỀU CHỈNH (DETAILED)
 
-**Bạn muốn bắt đầu tạo Frontend project bây giờ?**
+### 👤 THÀNH VIÊN 4 – BẠN (Ưu tiên làm trước)
+
+**✅ Đã xong (không cần làm lại):**
+- **Frontend Foundation:** Next.js setup, Ant Design, Tailwind, CSS variables.
+- **Layouts:** Admin Layout (Sidebar, Header, Breadcrumbs), Staff Layout.
+- **Shared Components:** `Button`, `Table`, `Modal`, `Toast`, `ConfirmDialog`, `StatsCard`.
+- **Admin Dashboard:** Các thẻ thống kê (Stats cards) tổng quan.
+- **Admin Employee Management:** Toàn bộ Module (Danh sách, Thêm/Sửa nhiều tab, Chi tiết, Xóa).
+- **Admin Attendance Monitor:** Theo dõi chấm công toàn công ty, lọc, thống kê, cảnh báo.
+- **Core Pages:** Admin Profile, Staff Home (cơ bản), Staff Attendance (bảng danh sách).
+- **Infrastructure:** Axios Instance (`api.ts`), App Store (Zustand), API Endpoints.
+- **Localization:** Cấu hình Rewrites tiếng Việt cho toàn bộ đường dẫn.
+
+**🔜 PHẢI LÀM (Theo thứ tự ưu tiên):**
+
+1. **🔐 Login Page + Auth Flow (Làm đầu tiên – unblock tất cả)**
+   - *Cơ sở:* Bảng `NhanVien.MatKhauHash` + `VaiTro.TenVaiTro` (Admin | Manager | Staff).
+   - *Trang `/login`:* Form Email + Password, validate chuẩn (Required, Email format).
+   - *Logic:* Gọi API `POST /xac-thuc/dang-nhap`.
+   - *State:* Tạo `authStore.ts` (Zustand) lưu `{ user, token, role }`.
+   - *Redirect:* Sau login điều hướng theo role:
+     - `Admin / Manager` → `/admin/bang-dieu-khien`
+     - `Staff` → `/staff/trang-chu`
+
+2. **🛡️ Auth Middleware + RoleGuard**
+   - *Middleware:* File `src/middleware.ts` kiểm tra token, nếu không có → redirect về `/login`.
+   - *Component RoleGuard:* Chặn quyền truy cập (ví dụ: Staff không được vào `/admin/**`).
+   - *Tích hợp:* Áp dụng vào `AdminLayout.tsx` và `StaffLayout.tsx`.
+
+3. **💰 Admin – Payroll UI**
+   - *Cơ sở:* Bảng `PhieuLuong` trong CSDL.
+   - *Trang `/admin/luong`:* Table danh sách (Nhân viên, Tháng/Năm, Lương cơ bản, Thực lĩnh, Trạng thái).
+   - *Tính năng:* Nút **"Tính lương tháng"** → gọi `POST /luong/tinh-luong` kèm loading spinner.
+   - *Detail:* Modal chi tiết 1 phiếu lương (breakdown: BHXH, BHYT, BHTN, Thuế TNCN).
+   - *Export:* Nút Xuất Excel bảng lương.
+
+4. **✅ Admin – Approval Workflow UI**
+   - *Cơ sở:* Bảng `DonNghiPhep` + `DonLamThem` trong CSDL.
+   - *Trang `/admin/duyet-don`:* Table danh sách đơn đang ở trạng thái `Pending`.
+   - *Hiển thị:* Nhân viên, Loại phép, Từ-Đến ngày, Số ngày, Lý do, Badge trạng thái.
+   - *Action:* 2 nút **Duyệt** / **Từ chối** (modal nhập lý do từ chối).
+   - *Phân loại:* 2 tab (Đơn nghỉ phép | Đơn làm thêm giờ).
+
+5. **🔌 Tích hợp API thật (Employee + Attendance)**
+   - Thay thế toàn bộ `MOCK_DATA` bằng gọi API Axios thật.
+   - Xử lý các trạng thái Loading, Empty và Error handling chuyên nghiệp.
+
+---
+
+### 👤 THÀNH VIÊN 5 – BẠN CỦA BẠN
+
+**Kế thừa từ Member 4:**
+- Toàn bộ khung giao diện, layout, components dùng chung và các trang cơ bản đã được setup sẵn.
+
+**🔜 PHẢI LÀM:**
+
+1. **📊 Admin Dashboard – Biểu đồ Chart.js**
+   - *Dữ liệu:* Bảng `NhanVien` (nhóm theo `MaPhongId`) + `PhieuLuong` (nhóm theo `Thang/Nam`).
+   - *Biểu đồ cột:* Số lượng nhân viên theo từng phòng ban.
+   - *Biểu đồ đường:* Biến động chi phí lương trong 6 tháng gần nhất.
+   - *Tích hợp:* Nhúng vào trang `/admin/bang-dieu-khien` đã có.
+
+2. **🌳 Admin – Org Chart**
+   - *Dữ liệu:* Bảng `PhongBan.MaPhongCha` (đệ quy) + `NhanVien`.
+   - *UI:* Hiển thị sơ đồ tổ chức dạng cây phân cấp trực quan.
+   - *Interaction:* Hover hiện popup thông tin nhân viên, Search tìm nhanh vị trí nhân viên trong cây.
+
+3. **✅ Staff – Widget Check-in/Check-out**
+   - *Cơ sở:* Bảng `ChamCong` (GioVao, GioRa, TrangThai).
+   - *UI:* Đồng hồ thời gian thực (HH:MM:SS) sống động.
+   - *Action:* Nút **Check In** / **Check Out** linh hoạt.
+   - *Status:* Hiển thị trạng thái hiện tại (VD: "Đã check in lúc 08:15").
+
+4. **📅 Staff – Calendar Chấm công**
+   - *Cơ sở:* Bảng `ChamCong.TrangThai` (CoMat | DiMuon | Vang | NghiPhep).
+   - *UI:* Dùng Ant Design Calendar, tô màu các ngày theo trạng thái đi làm.
+   - *Detail:* Click vào ngày xem chi tiết giờ vào, giờ ra và tổng giờ làm.
+
+5. **📝 Staff – Leave Request Form**
+   - *Cơ sở:* Bảng `DonNghiPhep` + `SoDuPhep` + `LoaiNghiPhep`.
+   - *Features:* Chọn loại phép, hiển thị số ngày phép còn lại theo thời gian thực.
+   - *Logic:* Dùng DateRangePicker, tự động tính số ngày nghỉ, validate không chọn ngày quá khứ.
+
+6. **💵 Staff – Payslip chi tiết + PDF**
+   - *Cơ sở:* Bảng `PhieuLuong`.
+   - *Trang:* Danh sách phiếu lương theo từng tháng.
+   - *Detail:* Hiển thị chi tiết tất cả các khoản thu nhập và khấu trừ.
+   - *Export:* Tích hợp nút **Tải file PDF** phiếu lương.
+
+7. **📋 Staff – Leave List + My Requests**
+   - *UI:* Bảng theo dõi các đơn từ đã gửi (`DonNghiPhep`, `DonLamThem`).
+   - *Status:* Hiển thị Badge màu sắc sinh động (Chờ duyệt, Đã duyệt, Bị từ chối).

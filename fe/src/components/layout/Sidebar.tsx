@@ -79,12 +79,12 @@ const adminMenuItems = [
       {
         key: "structure",
         icon: <DeploymentUnitOutlined />,
-        label: <Link href="/admin/structure">Cơ cấu tổ chức</Link>,
+        label: <Link href="/admin/co-cau-to-chuc">Cơ cấu tổ chức</Link>,
       },
       {
         key: "contract",
         icon: <FileProtectOutlined />,
-        label: <Link href="/admin/contract">Hợp đồng</Link>,
+        label: <Link href="/admin/hop-dong">Hợp đồng</Link>,
       },
     ],
   },
@@ -106,7 +106,7 @@ const adminMenuItems = [
       {
         key: "overtime",
         icon: <HistoryOutlined />,
-        label: <Link href="/admin/overtime">Làm thêm giờ</Link>,
+        label: <Link href="/admin/lam-them-gio">Làm thêm giờ</Link>,
       },
     ],
   },
@@ -123,7 +123,7 @@ const adminMenuItems = [
       {
         key: "salary-history",
         icon: <HistoryOutlined />,
-        label: <Link href="/admin/salary-history">Lịch sử lương</Link>,
+        label: <Link href="/admin/lich-su-luong">Lịch sử lương</Link>,
       },
     ],
   },
@@ -135,17 +135,17 @@ const adminMenuItems = [
       {
         key: "report",
         icon: <LineChartOutlined />,
-        label: <Link href="/admin/report">Báo cáo</Link>,
+        label: <Link href="/admin/bao-cao">Báo cáo</Link>,
       },
       {
         key: "holiday",
         icon: <FlagOutlined />,
-        label: <Link href="/admin/holiday">Ngày lễ</Link>,
+        label: <Link href="/admin/ngay-le">Ngày lễ</Link>,
       },
       {
         key: "log",
         icon: <AuditOutlined />,
-        label: <Link href="/admin/log">Nhật ký</Link>,
+        label: <Link href="/admin/nhat-ky">Nhật ký</Link>,
       },
     ],
   },
