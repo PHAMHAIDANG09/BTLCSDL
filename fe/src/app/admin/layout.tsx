@@ -1,20 +1,16 @@
 /**
  * Admin Portal Layout
  * Sử dụng AdminLayout wrapper cho tất cả admin routes
+ * Kiểm tra quyền admin qua authStore
  */
 
-"use client";
+'use client';
 
-import React, { useEffect, useState } from "react";
-import AdminLayout from "../../components/layout/AdminLayout";
-import { useRouter } from "next/navigation";
-
-interface User {
-  name: string;
-  email: string;
-  avatar?: string;
-  role?: string;
-}
+import React, { useEffect } from 'react';
+import MainLayout from "../../components/layout/MainLayout";
+import { useRouter } from 'next/navigation';
+import { useAuthStore } from '@/store/authStore';
+import { ADMIN_ROLES } from '@/constants/role';
 
 export default function AdminRootLayout({
   children,
@@ -22,44 +18,53 @@ export default function AdminRootLayout({
   children: React.ReactNode;
 }) {
   const router = useRouter();
-  const [user, setUser] = useState<User | undefined>(undefined);
-  const [isLoading, setIsLoading] = useState(true);
+  const { user, isAuthenticated, logout, loadFromStorage } = useAuthStore();
 
-  // Lấy user info từ localStorage (hoặc từ Zustand store sau này)
+  // Đồng bộ từ localStorage khi hydrate (xử lý SSR)
   useEffect(() => {
-    try {
-      const userJson = localStorage.getItem("user");
-      if (userJson) {
-        const userData = JSON.parse(userJson);
-        setUser(userData);
-      }
-      setIsLoading(false);
-    } catch (error) {
-      console.error("Failed to load user:", error);
-      setIsLoading(false);
+    loadFromStorage();
+  }, [loadFromStorage]);
+
+  // Guard: redirect về login nếu chưa xác thực
+  useEffect(() => {
+    if (!isAuthenticated || !user) {
+      router.replace('/login');
+      return;
     }
-  }, []);
+    // Guard: nếu không phải Admin/Manager → redirect về staff
+    if (!ADMIN_ROLES.includes(user.role)) {
+      router.replace('/staff/home');
+    }
+  }, [isAuthenticated, user]); // Stabilize dependency array
 
   const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
-    router.push("/login");
+    logout();
+    router.push('/login');
   };
 
-  if (isLoading) {
+  // Hiển thị loading trong khi kiểm tra auth
+  if (!isAuthenticated || !user) {
     return (
       <div className="flex items-center justify-center h-screen">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p>Đang tải...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600 mx-auto mb-4"></div>
+          <p className="text-gray-500">Đang xác thực...</p>
         </div>
       </div>
     );
   }
 
+  // Map user từ authStore sang format AdminLayout cần
+  const adminUser = {
+    name: user.hoTen,
+    email: user.email,
+    role: user.role,
+  };
+
   return (
-    <AdminLayout user={user} onLogout={handleLogout}>
+    <MainLayout user={adminUser} onLogout={handleLogout} role="admin">
       {children}
-    </AdminLayout>
+    </MainLayout>
   );
 }
+

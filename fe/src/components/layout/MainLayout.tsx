@@ -1,6 +1,7 @@
 /**
- * Admin Layout Component
- * Wrapper bọc Sidebar + Header và render children
+ * Main Layout Component
+ * Hợp nhất AdminLayout và StaffLayout thành một component duy nhất.
+ * Tự động cấu hình Sidebar và Header dựa trên `role`.
  */
 
 "use client";
@@ -19,26 +20,31 @@ interface User {
   role?: string;
 }
 
-interface AdminLayoutProps {
+interface MainLayoutProps {
   children: React.ReactNode;
   user?: User;
   onLogout?: () => void;
+  role: "admin" | "staff";
 }
 
-export const AdminLayout: React.FC<AdminLayoutProps> = ({
+export const MainLayout: React.FC<MainLayoutProps> = ({
   children,
   user,
   onLogout,
+  role,
 }) => {
   const [collapsed, setCollapsed] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const HEADER_HEIGHT = 64;
 
-  // Detect mobile screen
+  // Tự động phát hiện kích thước màn hình
   useEffect(() => {
     const handleResize = () => {
-      setIsMobile(window.innerWidth < 768);
-      if (window.innerWidth >= 768) {
+      const mobile = window.innerWidth < 768;
+      setIsMobile(mobile);
+      if (!mobile && window.innerWidth < 1200) {
+        setCollapsed(true);
+      } else if (window.innerWidth >= 1200) {
         setCollapsed(false);
       }
     };
@@ -52,25 +58,26 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
   const sidebarWidth = collapsed ? 80 : 260;
 
   return (
-    <Layout className="min-h-screen" hasSider>
+    <Layout className="min-h-screen" hasSider style={{ background: "#fff" }}>
+      {/* Sidebar - Tái sử dụng logic phân quyền bên trong Sidebar.tsx */}
       <Sidebar
+        role={role}
         collapsed={collapsed}
         onCollapse={setCollapsed}
         isMobile={isMobile}
         headerHeight={HEADER_HEIGHT}
       />
 
-      {/* Main Content */}
+      {/* Main Container */}
       <Layout
-        className="admin-main-layout"
         style={{
           marginLeft: isMobile ? 0 : sidebarWidth,
-          width: isMobile ? '100%' : `calc(100% - ${sidebarWidth}px)`,
+          width: isMobile ? "100%" : `calc(100% - ${sidebarWidth}px)`,
           transition: "margin-left 0.2s, width 0.2s",
-          backgroundColor: "#fff",
+          background: "#fff",
         }}
       >
-        {/* Header */}
+        {/* Header - Tái sử dụng cho cả 2 Portal */}
         <Header
           user={user}
           onLogout={onLogout}
@@ -81,20 +88,20 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
 
         {/* Content Area */}
         <Content
-          className="p-6 sm:p-10 overflow-y-auto bg-white"
           style={{
             marginTop: HEADER_HEIGHT,
+            padding: isMobile ? "16px" : "24px 40px",
             minHeight: `calc(100vh - ${HEADER_HEIGHT}px)`,
+            background: "#fff",
           }}
         >
-          <div style={{ minHeight: `calc(100vh - ${HEADER_HEIGHT}px - 64px)` }}>
+          <div style={{ maxWidth: 1600, margin: "0 auto" }}>
             {children}
           </div>
         </Content>
-
       </Layout>
     </Layout>
   );
 };
 
-export default AdminLayout;
+export default MainLayout;

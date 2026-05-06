@@ -122,13 +122,19 @@ export const Header: React.FC<HeaderProps> = ({
       key: "profile",
       icon: <UserOutlined />,
       label: "Hồ sơ cá nhân",
-      onClick: () => router.push("/admin/profile"),
+      onClick: () => {
+        const isStaff = pathname.startsWith("/staff");
+        router.push(isStaff ? "/staff/profile" : "/admin/profile");
+      },
     },
     {
       key: "settings",
       icon: <SettingOutlined />,
       label: "Cài đặt",
-      onClick: () => router.push("/admin/settings"),
+      onClick: () => {
+        const isStaff = pathname.startsWith("/staff");
+        router.push(isStaff ? "/staff/profile" : "/admin/settings");
+      },
     },
     {
       type: "divider",

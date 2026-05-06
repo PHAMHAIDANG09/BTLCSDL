@@ -6,8 +6,9 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import StaffLayout from "@/components/layout/StaffLayout";
+import MainLayout from "@/components/layout/MainLayout";
 import { useRouter } from "next/navigation";
+import { useAuthStore } from "@/store/authStore";
 
 interface User {
   name: string;
@@ -22,43 +23,39 @@ export default function StaffRootLayout({
   children: React.ReactNode;
 }) {
   const router = useRouter();
-  const [user, setUser] = useState<User | undefined>(undefined);
+  const { user, isAuthenticated, logout, loadFromStorage } = useAuthStore();
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    try {
-      const userJson = localStorage.getItem("user");
-      if (userJson) {
-        const userData = JSON.parse(userJson);
-        setUser(userData);
-      }
-      setIsLoading(false);
-    } catch (error) {
-      console.error("Failed to load user:", error);
-      setIsLoading(false);
-    }
-  }, []);
+    loadFromStorage();
+    setIsLoading(false);
+  }, [loadFromStorage]);
 
   const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
+    logout();
     router.push("/login");
   };
 
-  if (isLoading) {
+  if (!isAuthenticated || !user) {
     return (
       <div className="flex items-center justify-center h-screen">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p>Đang tải...</p>
+          <p>Đang xác thực...</p>
         </div>
       </div>
     );
   }
 
+  const staffUser = {
+    name: user.hoTen,
+    email: user.email,
+    role: user.role,
+  };
+
   return (
-    <StaffLayout user={user} onLogout={handleLogout}>
+    <MainLayout user={staffUser} onLogout={handleLogout} role="staff">
       {children}
-    </StaffLayout>
+    </MainLayout>
   );
 }
