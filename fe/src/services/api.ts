@@ -67,45 +67,42 @@ const createApiInstance = (): AxiosInstance => {
    * Xử lý lỗi response từ server
    */
   instance.interceptors.response.use(
-    (response) => {
-      // Return dữ liệu trực tiếp nếu thành công
-      return response.data;
-    },
-    (error: AxiosError<ApiError>) => {
+    (response) => response.data,
+    async (error: AxiosError<ApiError>) => {
       const status = error.response?.status;
-      const errorData = error.response?.data;
+      const originalRequest = error.config;
 
-      // Xử lý lỗi 401 (Unauthorized)
-      if (status === 401) {
-        // Xoá token khỏi localStorage
-        if (typeof window !== "undefined") {
-          localStorage.removeItem("token");
-          localStorage.removeItem("user");
-        }
-
-        // Redirect về login page
-        if (typeof window !== "undefined") {
-          window.location.href = "/login";
+      if (status === 401 && originalRequest && !(originalRequest as any)._retry) {
+        (originalRequest as any)._retry = true;
+        try {
+          const response: any = await axios.post(`${instance.defaults.baseURL}/auth/refresh`, {}, {
+            headers: { Authorization: `Bearer ${getToken()}` }
+          });
+          const { access_token } = response.data;
+          if (typeof window !== "undefined") {
+            localStorage.setItem("token", access_token);
+            document.cookie = `auth_token=${access_token}; path=/; max-age=86400; SameSite=Lax`;
+          }
+          originalRequest.headers.Authorization = `Bearer ${access_token}`;
+          return instance(originalRequest);
+        } catch (refreshError) {
+          if (typeof window !== "undefined") {
+            localStorage.removeItem("token");
+            localStorage.removeItem("user");
+            document.cookie = "auth_token=; path=/; max-age=0";
+            window.location.href = "/login";
+          }
+          return Promise.reject(refreshError);
         }
       }
 
-      // Xử lý lỗi 403 (Forbidden)
-      if (status === 403) {
-        if (typeof window !== "undefined") {
-          window.location.href = "/forbidden";
-        }
+      if (status === 403 && typeof window !== "undefined") {
+        window.location.href = "/forbidden";
       }
 
-      // Xử lý lỗi 500 (Internal Server Error)
-      if (status === 500) {
-        console.error("Server Error:", error.response?.data);
-      }
-
-      // Return error object để component xử lý
       const apiError: ApiError = {
-        message: errorData?.message || error.message || "Có lỗi xảy ra",
+        message: error.response?.data?.message || error.message || "Có lỗi xảy ra",
         statusCode: status,
-        errors: errorData?.errors,
       };
 
       return Promise.reject(apiError);

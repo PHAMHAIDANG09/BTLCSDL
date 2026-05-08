@@ -1,6 +1,6 @@
 "use client";
 
-import { Typography, Descriptions, Avatar, Tag, Row, Col, Card, Modal, message, Space } from "antd";
+import { Typography, Descriptions, Avatar, Tag, Row, Col, Card, Modal, message, Space, Form, Input, App } from "antd";
 import { 
   UserOutlined, 
   EditOutlined, 
@@ -8,37 +8,85 @@ import {
   MailOutlined, 
   BankOutlined, 
   FileTextOutlined, 
-  InfoCircleOutlined 
+  InfoCircleOutlined,
+  LockOutlined
 } from "@ant-design/icons";
 import { useState } from "react";
 import dayjs from "dayjs";
 import Button from "@/components/shared/Button/Button";
 import ProfileForm, { ProfileFormValues } from "./ProfileForm";
 import ProfileDetailModal from "./ProfileDetailModal";
+import { updateProfileApi, changePasswordApi } from "@/services/auth.service";
 
 const { Title, Text } = Typography;
 
 interface ProfileViewProps {
   data: any;
   isAdmin?: boolean;
+  onRefresh?: () => void;
 }
 
 const formatSalary = (amount: number) =>
-  amount.toLocaleString("vi-VN") + " đ";
+  amount ? amount.toLocaleString("vi-VN") + " đ" : "0 đ";
 
-export default function ProfileView({ data, isAdmin = false }: ProfileViewProps) {
+export default function ProfileView({ data, isAdmin = false, onRefresh }: ProfileViewProps) {
+  const { message } = App.useApp();
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+  const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [passForm] = Form.useForm();
 
-  const handleUpdateProfile = (values: ProfileFormValues) => {
+  // Xử lý cập nhật hồ sơ cá nhân
+  const handleUpdateProfile = async (values: ProfileFormValues) => {
     setLoading(true);
-    setTimeout(() => {
-      console.log("Updated profile:", values);
+    try {
+      // Mapping dữ liệu FE ngược về BE
+      const updateData = {
+        HoTen: values.fullName,
+        SoDienThoai: values.phone,
+        GioiTinh: values.gender === 'male' ? 'Nam' : values.gender === 'female' ? 'Nữ' : 'Khác',
+        NgaySinh: values.dob ? values.dob.format('YYYY-MM-DD') : null,
+        SoCCCD: values.identityCard,
+        DiaChi: values.address,
+        MaSoThue: values.taxCode,
+        SoNguoiPhuThuoc: values.dependents,
+        SoTaiKhoan: values.bankAccount,
+        TenNganHang: values.bankName,
+        ChiNhanhNganHang: values.bankBranch,
+      };
+
+      await updateProfileApi(updateData);
       message.success("Cập nhật hồ sơ thành công!");
-      setLoading(false);
       setIsEditModalOpen(false);
-    }, 1000);
+      onRefresh?.(); // Tải lại dữ liệu mới
+    } catch (error: any) {
+      message.error("Lỗi cập nhật: " + (error.message || "Không thể lưu thay đổi"));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Xử lý đổi mật khẩu
+  const handleChangePassword = async (values: any) => {
+    if (values.newPassword !== values.confirmPassword) {
+      return message.error("Mật khẩu xác nhận không khớp!");
+    }
+    
+    setLoading(true);
+    try {
+      await changePasswordApi({
+        oldPassword: values.oldPassword,
+        newPassword: values.newPassword
+      });
+      message.success("Đổi mật khẩu thành công!");
+      setIsPasswordModalOpen(false);
+      passForm.resetFields();
+    } catch (error: any) {
+      message.error("Lỗi: " + (error.message || "Mật khẩu cũ không đúng"));
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -51,10 +99,16 @@ export default function ProfileView({ data, isAdmin = false }: ProfileViewProps)
         </div>
         <Space>
           <Button 
+            icon={<LockOutlined />} 
+            onClick={() => setIsPasswordModalOpen(true)}
+          >
+            Đổi mật khẩu
+          </Button>
+          <Button 
             icon={<InfoCircleOutlined />} 
             onClick={() => setIsDetailModalOpen(true)}
           >
-            Xem chi tiết hồ sơ
+            Xem chi tiết
           </Button>
           <Button 
             type="primary" 
@@ -66,18 +120,18 @@ export default function ProfileView({ data, isAdmin = false }: ProfileViewProps)
         </Space>
       </div>
 
-      {/* Avatar + Tên Overview */}
+      {/* Overview Card */}
       <Card style={{ marginBottom: 24 }}>
         <div style={{ display: "flex", gap: 20, alignItems: "center" }}>
           <Avatar
             size={88}
             icon={<UserOutlined />}
-            style={{ backgroundColor: data.avatarColor || "var(--primary-color)", flexShrink: 0, fontSize: 36 }}
+            style={{ backgroundColor: data.avatarColor || "#ab3e40", flexShrink: 0, fontSize: 36 }}
           />
           <div>
             <Title level={3} style={{ margin: 0 }}>{data.fullName}</Title>
             <Text type="secondary">
-              {data.position === 'SDEV' ? 'Senior Developer' : data.position} · {data.department === 'IT' ? 'Phòng Công nghệ' : data.department}
+              {data.position} · {data.department}
             </Text>
             <div style={{ marginTop: 8 }}>
               {isAdmin && <Tag color="red">Quản trị viên</Tag>}
@@ -97,33 +151,15 @@ export default function ProfileView({ data, isAdmin = false }: ProfileViewProps)
             extra={<Button type="text" size="small" icon={<EditOutlined />} onClick={() => setIsEditModalOpen(true)}>Sửa</Button>}
           >
             <Descriptions column={1} size="small" labelStyle={{ fontWeight: 600, width: 140 }}>
-              <Descriptions.Item label={<span><MailOutlined /> Email</span>}>
-                {data.email}
-              </Descriptions.Item>
-              <Descriptions.Item label={<span><PhoneOutlined /> Số điện thoại</span>}>
-                {data.phone}
-              </Descriptions.Item>
-              <Descriptions.Item label="Ngày sinh">
-                {dayjs(data.dob).format("DD/MM/YYYY")}
-              </Descriptions.Item>
-              <Descriptions.Item label="Giới tính">
-                {data.gender === 'male' ? 'Nam' : data.gender === 'female' ? 'Nữ' : 'Khác'}
-              </Descriptions.Item>
-              <Descriptions.Item label="CCCD/Hộ chiếu">
-                {data.identityCard}
-              </Descriptions.Item>
-              <Descriptions.Item label="Mã số thuế">
-                {data.taxCode}
-              </Descriptions.Item>
-              <Descriptions.Item label="Số người phụ thuộc">
-                {data.dependents}
-              </Descriptions.Item>
-              <Descriptions.Item label="Tài khoản ngân hàng">
-                {data.bankAccount} ({data.bankName} - {data.bankBranch})
-              </Descriptions.Item>
-              <Descriptions.Item label="Địa chỉ" span={1}>
-                {data.address}
-              </Descriptions.Item>
+              <Descriptions.Item label={<span><MailOutlined /> Email</span>}>{data.email}</Descriptions.Item>
+              <Descriptions.Item label={<span><PhoneOutlined /> Số điện thoại</span>}>{data.phone}</Descriptions.Item>
+              <Descriptions.Item label="Ngày sinh">{dayjs(data.dob).format("DD/MM/YYYY")}</Descriptions.Item>
+              <Descriptions.Item label="Giới tính">{data.gender === 'male' ? 'Nam' : data.gender === 'female' ? 'Nữ' : 'Khác'}</Descriptions.Item>
+              <Descriptions.Item label="CCCD/Hộ chiếu">{data.identityCard}</Descriptions.Item>
+              <Descriptions.Item label="Mã số thuế">{data.taxCode}</Descriptions.Item>
+              <Descriptions.Item label="Số người phụ thuộc">{data.dependents}</Descriptions.Item>
+              <Descriptions.Item label="Tài khoản">{data.bankAccount} ({data.bankName})</Descriptions.Item>
+              <Descriptions.Item label="Địa chỉ">{data.address}</Descriptions.Item>
             </Descriptions>
           </Card>
         </Col>
@@ -133,24 +169,13 @@ export default function ProfileView({ data, isAdmin = false }: ProfileViewProps)
           <Card
             title={<span><BankOutlined style={{ marginRight: 8 }} />Thông tin công tác</span>}
             size="small"
-            extra={<Button type="text" size="small" icon={<InfoCircleOutlined />} onClick={() => setIsDetailModalOpen(true)}>Chi tiết</Button>}
           >
             <Descriptions column={1} size="small" labelStyle={{ fontWeight: 600, width: 140 }}>
-              <Descriptions.Item label="Mã nhân viên">
-                <Tag color={isAdmin ? "red" : "blue"}>{data.employeeCode}</Tag>
-              </Descriptions.Item>
-              <Descriptions.Item label="Phòng ban">
-                {data.department === 'IT' ? 'Phòng Công nghệ' : data.department}
-              </Descriptions.Item>
-              <Descriptions.Item label="Chức vụ">
-                {data.position === 'SDEV' ? 'Senior Developer' : data.position}
-              </Descriptions.Item>
-              <Descriptions.Item label="Ngày bắt đầu">
-                {dayjs(data.startDate).format("DD/MM/YYYY")}
-              </Descriptions.Item>
-              <Descriptions.Item label="Trạng thái">
-                <Tag color="green">{data.status}</Tag>
-              </Descriptions.Item>
+              <Descriptions.Item label="Mã nhân viên"><Tag color={isAdmin ? "red" : "blue"}>{data.employeeCode}</Tag></Descriptions.Item>
+              <Descriptions.Item label="Phòng ban">{data.department}</Descriptions.Item>
+              <Descriptions.Item label="Chức vụ">{data.position}</Descriptions.Item>
+              <Descriptions.Item label="Ngày bắt đầu">{dayjs(data.startDate).format("DD/MM/YYYY")}</Descriptions.Item>
+              <Descriptions.Item label="Trạng thái"><Tag color="green">{data.status}</Tag></Descriptions.Item>
             </Descriptions>
           </Card>
         </Col>
@@ -158,36 +183,22 @@ export default function ProfileView({ data, isAdmin = false }: ProfileViewProps)
         {/* Hợp đồng & Lương */}
         <Col xs={24}>
           <Card
-            title={<span><FileTextOutlined style={{ marginRight: 8 }} />Hợp đồng & Lương</span>}
+            title={<span><FileTextOutlined style={{ marginRight: 8 }} />Hợp đồng & Lương (Tham khảo)</span>}
             size="small"
-            extra={<Button type="text" size="small" icon={<InfoCircleOutlined />} onClick={() => setIsDetailModalOpen(true)}>Chi tiết</Button>}
           >
             <Descriptions column={{ xs: 1, sm: 2, md: 4 }} size="small" labelStyle={{ fontWeight: 600 }}>
-              <Descriptions.Item label="Loại hợp đồng">
-                {data.contractType === '1year' ? 'Hợp đồng 1 năm' : data.contractType === 'indefinite' ? 'Không thời hạn' : data.contractType}
-              </Descriptions.Item>
-              <Descriptions.Item label="Số hợp đồng">
-                <Tag color="orange">{data.contractNumber}</Tag>
-              </Descriptions.Item>
-              <Descriptions.Item label="Lương cơ bản">
-                <span style={{ fontWeight: 700, color: "var(--primary-color)" }}>
-                  {formatSalary(data.baseSalary)}
-                </span>
-              </Descriptions.Item>
-              <Descriptions.Item label="Ngày ký hợp đồng">
-                {dayjs(data.contractSignDate).format("DD/MM/YYYY")}
-              </Descriptions.Item>
-              <Descriptions.Item label="Ngày hết hạn">
-                {data.contractExpiredDate ? dayjs(data.contractExpiredDate).format("DD/MM/YYYY") : "-"}
-              </Descriptions.Item>
+              <Descriptions.Item label="Loại hợp đồng">{data.contractType}</Descriptions.Item>
+              <Descriptions.Item label="Số hợp đồng"><Tag color="orange">{data.contractNumber}</Tag></Descriptions.Item>
+              <Descriptions.Item label="Lương dự kiến"><span style={{ fontWeight: 700, color: "#ab3e40" }}>{formatSalary(data.baseSalary)}</span></Descriptions.Item>
+              <Descriptions.Item label="Ngày vào">{dayjs(data.contractSignDate).format("DD/MM/YYYY")}</Descriptions.Item>
             </Descriptions>
           </Card>
         </Col>
       </Row>
 
-      {/* Modals */}
+      {/* Modal Chỉnh sửa hồ sơ */}
       <Modal
-        title={`Chỉnh sửa hồ sơ cá nhân ${isAdmin ? "(Admin)" : ""}`}
+        title="Chỉnh sửa hồ sơ cá nhân"
         open={isEditModalOpen}
         onCancel={() => setIsEditModalOpen(false)}
         footer={null}
@@ -199,14 +210,35 @@ export default function ProfileView({ data, isAdmin = false }: ProfileViewProps)
           initialValues={{
             ...data,
             dob: dayjs(data.dob),
-            startDate: dayjs(data.startDate),
-            contractSignDate: dayjs(data.contractSignDate),
-            contractExpiredDate: data.contractExpiredDate ? dayjs(data.contractExpiredDate) : undefined,
           } as any} 
           onFinish={handleUpdateProfile}
           loading={loading}
           onCancel={() => setIsEditModalOpen(false)}
         />
+      </Modal>
+
+      {/* Modal Đổi mật khẩu */}
+      <Modal
+        title={<span><LockOutlined /> Đổi mật khẩu</span>}
+        open={isPasswordModalOpen}
+        onCancel={() => setIsPasswordModalOpen(false)}
+        onOk={() => passForm.submit()}
+        confirmLoading={loading}
+        okText="Cập nhật mật khẩu"
+        cancelText="Hủy"
+        width={400}
+      >
+        <Form form={passForm} layout="vertical" onFinish={handleChangePassword} style={{ marginTop: 16 }}>
+          <Form.Item name="oldPassword" label="Mật khẩu hiện tại" rules={[{ required: true, message: 'Nhập mật khẩu cũ' }]}>
+            <Input.Password prefix={<LockOutlined />} />
+          </Form.Item>
+          <Form.Item name="newPassword" label="Mật khẩu mới" rules={[{ required: true, min: 6, message: 'Tối thiểu 6 ký tự' }]}>
+            <Input.Password prefix={<LockOutlined />} />
+          </Form.Item>
+          <Form.Item name="confirmPassword" label="Xác nhận mật khẩu mới" rules={[{ required: true }]}>
+            <Input.Password prefix={<LockOutlined />} />
+          </Form.Item>
+        </Form>
       </Modal>
 
       <ProfileDetailModal 
