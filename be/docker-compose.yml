@@ -50,6 +50,19 @@ services:
       timeout: 10s
       retries: 5
 
+  backup-cleanup:
+    image: alpine
+    container_name: nexthr-backup-cleanup
+    volumes:
+      - "U:/Hoàng Quốc Việt năm 3/Năm 3 kỳ 2/Hệ quản trị CSDL/Backup:/backup"
+    restart: always
+    entrypoint: >
+      sh -c "
+      echo '0 0 * * * find /backup/Full -name \"*.bak\" -mtime +14 -delete' > /etc/crontabs/root &&
+      echo '0 * * * * find /backup/Differential -name \"*.bak\" -mtime +2 -delete' >> /etc/crontabs/root &&
+      echo '*/15 * * * * find /backup/TransactionLog -name \"*.trn\" -mtime +3 -delete' >> /etc/crontabs/root &&
+      crond -f"
+
 networks:
   app-network:
     driver: bridge

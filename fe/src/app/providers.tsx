@@ -10,12 +10,13 @@ export function AntdProvider({ children }: { children: React.ReactNode }) {
       locale={viVN}
       theme={{
         token: {
-          colorPrimary: 'rgb(201, 12, 12)',
-          colorSuccess: '#13940c',
-          colorWarning: '#dba211',
-          colorError: '#e00c10',
-          colorInfo: '#1572c9',
+          colorPrimary: '#c41d1d',
+          colorSuccess: '#52c41a',
+          colorWarning: '#faad14',
+          colorError: '#c41d1d',
+          colorInfo: '#1890ff',
           borderRadius: 8,
+          wireframe: false,
         },
       }}
     >

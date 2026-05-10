@@ -402,23 +402,23 @@ INSERT INTO dbo.NhanVien (
     MaPhongId, MaChucVuId, MaVaiTroId, NgayVaoLam, NgayNghiViec, TrangThai, NgayCapNhat
 )
 VALUES
-('EMP-2025-001', N'Nguyễn Văn Hùng', 'admin@nexthr.com', '$2b$10$IU/vOOAuMxFRe9EdhNJE2evKDp/EllM7byKpOjrKIygHzgcw0tQMu', '0901000001', N'Nam', '1988-03-15', '012345678901',
+('EMP-2025-001', N'Nguyễn Văn Hùng', 'admin@nexthr.com', '$2b$10$HW6PlpVsuh4BuxmEhh/pCuNLzu0ul5sooFxbGzSI.MS3WIcGRSdHq', '0901000001', N'Nam', '1988-03-15', '012345678901',
  N'Hà Nội', 'MST001', 2, '100000001', N'Vietcombank', N'Hà Nội',
  1, 4, 1, '2025-01-02', NULL, N'Active', GETDATE()),
 
-('EMP-2025-002', N'Trần Thị Lan', 'lan.tran@nexthr.vn', 'HASH_MANAGER_HR', '0901000002', N'Nữ', '1990-07-20', '012345678902',
+('EMP-2025-002', N'Trần Thị Lan', 'lan.tran@nexthr.vn', '$2b$10$HW6PlpVsuh4BuxmEhh/pCuNLzu0ul5sooFxbGzSI.MS3WIcGRSdHq', '0901000002', N'Nữ', '1990-07-20', '012345678902',
  N'Hà Nội', 'MST002', 1, '100000002', N'ACB', N'Cầu Giấy',
  2, 3, 2, '2025-01-05', NULL, N'Active', GETDATE()),
 
-('EMP-2025-003', N'Lê Minh Khoa', 'khoa.le@nexthr.vn', 'HASH_MANAGER_DEV', '0901000003', N'Nam', '1992-11-10', '012345678903',
+('EMP-2025-003', N'Lê Minh Khoa', 'khoa.le@nexthr.vn', '$2b$10$HW6PlpVsuh4BuxmEhh/pCuNLzu0ul5sooFxbGzSI.MS3WIcGRSdHq', '0901000003', N'Nam', '1992-11-10', '012345678903',
  N'Hồ Chí Minh', 'MST003', 0, '100000003', N'Techcombank', N'Quận 1',
  3, 3, 2, '2025-01-10', NULL, N'Active', GETDATE()),
 
-('EMP-2025-004', N'Phạm Thu Hà', 'ha.pham@nexthr.vn', 'HASH_STAFF_001', '0901000004', N'Nữ', '1998-05-08', '012345678904',
+('EMP-2025-004', N'Phạm Thu Hà', 'ha.pham@nexthr.vn', '$2b$10$HW6PlpVsuh4BuxmEhh/pCuNLzu0ul5sooFxbGzSI.MS3WIcGRSdHq', '0901000004', N'Nữ', '1998-05-08', '012345678904',
  N'Hồ Chí Minh', 'MST004', 0, '100000004', N'MB Bank', N'Quận 3',
  5, 1, 3, '2025-02-01', NULL, N'Active', GETDATE()),
 
-('EMP-2025-005', N'Đỗ Quốc Bảo', 'bao.do@nexthr.vn', 'HASH_ACC_001', '0901000005', N'Nam', '1995-12-01', '012345678905',
+('EMP-2025-005', N'Đỗ Quốc Bảo', 'bao.do@nexthr.vn', '$2b$10$HW6PlpVsuh4BuxmEhh/pCuNLzu0ul5sooFxbGzSI.MS3WIcGRSdHq', '0901000005', N'Nam', '1995-12-01', '012345678905',
  N'Đà Nẵng', 'MST005', 1, '100000005', N'BIDV', N'Hải Châu',
  4, 1, 3, '2025-02-15', NULL, N'Active', GETDATE());
 GO

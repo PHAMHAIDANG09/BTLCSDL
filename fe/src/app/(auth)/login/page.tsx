@@ -20,10 +20,12 @@ import { loginApi } from '@/services/auth.service';
 import { useAuthStore } from '@/store/authStore';
 import { ROLE_HOME_MAP } from '@/constants/role';
 import type { LoginRequest } from '@/types/auth';
+import { theme } from 'antd';
 
 export default function LoginPage() {
   const router = useRouter();
   const { message } = App.useApp();
+  const { token } = theme.useToken();
   const { setAuth, isAuthenticated, user } = useAuthStore();
   const [loading, setLoading] = useState(false);
   const [form] = Form.useForm();
@@ -52,6 +54,117 @@ export default function LoginPage() {
       message.error(errorMsg);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const styles: Record<string, React.CSSProperties> = {
+    container: {
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      minHeight: '100vh',
+      backgroundColor: '#ffffff',
+      fontFamily: "'Inter', system-ui, sans-serif",
+      padding: '20px',
+    },
+    loginCard: {
+      width: '100%',
+      maxWidth: '400px',
+      padding: '36px 32px',
+      backgroundColor: '#fff',
+      borderRadius: '16px',
+      boxShadow: '0 10px 40px rgba(0,0,0,0.06)',
+      border: '1px solid #f0f0f0',
+    },
+    header: {
+      textAlign: 'center',
+      marginBottom: '28px',
+    },
+    logoCircle: {
+      width: '52px',
+      height: '52px',
+      backgroundColor: token.colorPrimary,
+      borderRadius: '50%',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      margin: '0 auto 12px',
+      boxShadow: `0 4px 12px rgba(${token.colorPrimary.slice(1)}, 0.2)`,
+    },
+    title: {
+      fontSize: '24px',
+      fontWeight: 800,
+      color: '#1a1a1a',
+      margin: '0 0 4px',
+      letterSpacing: '-0.5px',
+    },
+    subtitle: {
+      fontSize: '14px',
+      color: '#8c8c8c',
+      margin: 0,
+    },
+    label: {
+      fontSize: '13px',
+      fontWeight: 600,
+      color: '#434343',
+    },
+    input: {
+      borderRadius: '8px',
+      height: '46px',
+    },
+    extraRow: {
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginBottom: '20px',
+    },
+    forgotPass: {
+      fontSize: '13px',
+      color: token.colorPrimary,
+      fontWeight: 500,
+    },
+    submitBtn: {
+      height: '46px',
+      borderRadius: '8px',
+      fontSize: '15px',
+      fontWeight: 700,
+      backgroundColor: token.colorPrimary,
+      borderColor: token.colorPrimary,
+      boxShadow: `0 4px 12px rgba(${token.colorPrimary.slice(1)}, 0.15)`,
+    },
+    demoSection: {
+      marginTop: '4px',
+      paddingTop: '20px',
+      borderTop: '1px dashed #e8e8e8',
+    },
+    demoLabel: {
+      fontSize: '11px',
+      fontWeight: 700,
+      color: '#bfbfbf',
+      letterSpacing: '1px',
+      textAlign: 'center',
+      marginBottom: '12px',
+    },
+    demoButtons: {
+      display: 'flex',
+      gap: '10px',
+    },
+    demoBtn: {
+      flex: 1,
+      padding: '8px',
+      borderRadius: '6px',
+      border: '1px solid',
+      backgroundColor: 'transparent',
+      fontSize: '12px',
+      fontWeight: 600,
+      cursor: 'pointer',
+      transition: 'all 0.2s',
+    },
+    footer: {
+      marginTop: '32px',
+      fontSize: '12px',
+      color: '#bfbfbf',
     }
   };
 
@@ -132,7 +245,7 @@ export default function LoginPage() {
           <p style={styles.demoLabel}>TRẢI NGHIỆM NHANH</p>
           <div style={styles.demoButtons}>
             {[
-              { label: 'Admin', email: 'admin@nexthr.com', color: '#ab3e40' },
+              { label: 'Admin', email: 'admin@nexthr.com', color: token.colorPrimary },
               { label: 'Staff', email: 'ha.pham@nexthr.vn', color: '#059669' },
             ].map((acc) => (
               <button
@@ -154,114 +267,3 @@ export default function LoginPage() {
     </div>
   );
 }
-
-const styles: Record<string, React.CSSProperties> = {
-  container: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    minHeight: '100vh',
-    backgroundColor: '#ffffff',
-    fontFamily: "'Inter', system-ui, sans-serif",
-    padding: '20px',
-  },
-  loginCard: {
-    width: '100%',
-    maxWidth: '400px',
-    padding: '36px 32px',
-    backgroundColor: '#fff',
-    borderRadius: '16px',
-    boxShadow: '0 10px 40px rgba(0,0,0,0.06)',
-    border: '1px solid #f0f0f0',
-  },
-  header: {
-    textAlign: 'center',
-    marginBottom: '28px',
-  },
-  logoCircle: {
-    width: '52px',
-    height: '52px',
-    backgroundColor: '#ab3e40',
-    borderRadius: '50%',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    margin: '0 auto 12px',
-    boxShadow: '0 4px 12px rgba(171, 62, 64, 0.2)',
-  },
-  title: {
-    fontSize: '24px',
-    fontWeight: 800,
-    color: '#1a1a1a',
-    margin: '0 0 4px',
-    letterSpacing: '-0.5px',
-  },
-  subtitle: {
-    fontSize: '14px',
-    color: '#8c8c8c',
-    margin: 0,
-  },
-  label: {
-    fontSize: '13px',
-    fontWeight: 600,
-    color: '#434343',
-  },
-  input: {
-    borderRadius: '8px',
-    height: '46px',
-  },
-  extraRow: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: '20px',
-  },
-  forgotPass: {
-    fontSize: '13px',
-    color: '#ab3e40',
-    fontWeight: 500,
-  },
-  submitBtn: {
-    height: '46px',
-    borderRadius: '8px',
-    fontSize: '15px',
-    fontWeight: 700,
-    backgroundColor: '#ab3e40',
-    borderColor: '#ab3e40',
-    boxShadow: '0 4px 12px rgba(171, 62, 64, 0.15)',
-  },
-  demoSection: {
-    marginTop: '4px',
-    paddingTop: '20px',
-    borderTop: '1px dashed #e8e8e8',
-  },
-  demoLabel: {
-    fontSize: '11px',
-    fontWeight: 700,
-    color: '#bfbfbf',
-    letterSpacing: '1px',
-    textAlign: 'center',
-    marginBottom: '12px',
-  },
-  demoButtons: {
-    display: 'flex',
-    gap: '10px',
-  },
-  demoBtn: {
-    flex: 1,
-    padding: '8px',
-    borderRadius: '6px',
-    border: '1px solid',
-    backgroundColor: 'transparent',
-    fontSize: '12px',
-    fontWeight: 600,
-    cursor: 'pointer',
-    transition: 'all 0.2s',
-  },
-  footer: {
-    marginTop: '32px',
-    fontSize: '12px',
-    color: '#bfbfbf',
-  }
-};
