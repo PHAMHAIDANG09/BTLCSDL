@@ -1,76 +1,43 @@
 'use client';
 
-/**
- * Complex Employee Form Component
- * Dùng chung cho Admin (thêm/sửa) và Staff (cập nhật hồ sơ)
- */
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Form,
   Input,
   DatePicker,
-  Upload,
   Select,
   InputNumber,
   Tabs,
   Space,
-  Card,
   Row,
   Col,
   Divider,
 } from 'antd';
 import { 
-  UploadOutlined, 
   SaveOutlined, 
   ArrowLeftOutlined,
   UserOutlined,
   SolutionOutlined,
   FileTextOutlined,
-  CameraOutlined
+  LockOutlined as PasswordIcon
 } from '@ant-design/icons';
-import type { UploadFile } from 'antd/es/upload/interface';
-import Link from 'next/link';
+import { getDepartmentsApi, getPositionsApi, Department, Position } from '@/services/organization.service';
+import dayjs from 'dayjs';
 
-// Import Shared Components & Utils
-import Button from '../../../../components/shared/Button/Button';
-import Toast from '../../../../components/shared/Toast/Toast';
-import ConfirmDialog from '../../../../components/shared/ConfirmDialog/ConfirmDialog';
-import { CommonRules } from '../../../../utils/validators';
+// Import Shared Components
+import Button from '@/components/shared/Button/Button';
+import Toast from '@/components/shared/Toast/Toast';
+import ConfirmDialog from '@/components/shared/ConfirmDialog/ConfirmDialog';
+import { CommonRules } from '@/utils/validators';
 
 const { Option } = Select;
 const { TextArea } = Input;
 
-export interface EmployeeFormValues {
-  // Tab 1: Basic Info
-  fullName: string;
-  email: string;
-  phone: string;
-  dob: any;
-  address?: string;
-  gender: 'male' | 'female' | 'other';
-
-  // Tab 2: Work Info
-  departmentId: string;
-  positionId: string;
-  employeeCode: string;
-  startDate: any;
-
-  // Tab 3: Contract Info
-  contractType: string;
-  baseSalary: number;
-  contractSignDate: any;
-  contractExpiredDate?: any;
-
-  // Tab 4: Media
-  avatar?: any;
-}
-
 interface EmployeeFormProps {
-  initialValues?: Partial<EmployeeFormValues>;
-  onFinish?: (values: EmployeeFormValues) => void;
+  initialValues?: any;
+  onFinish?: (values: any) => void;
   loading?: boolean;
-  isAdmin?: boolean; // Phân quyền: Admin được sửa tất cả, Staff chỉ sửa thông tin cá nhân
+  isAdmin?: boolean;
   onCancel?: () => void;
 }
 
@@ -83,111 +50,125 @@ const EmployeeForm: React.FC<EmployeeFormProps> = ({
 }) => {
   const [form] = Form.useForm();
   const [activeTab, setActiveTab] = useState('1');
+  const [departments, setDepartments] = useState<Department[]>([]);
+  const [positions, setPositions] = useState<Position[]>([]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [deptData, posData] = await Promise.all([
+          getDepartmentsApi().catch(() => []),
+          getPositionsApi().catch(() => [])
+        ]);
+        setDepartments(deptData || []);
+        setPositions(posData || []);
+      } catch (error) {
+        console.error("Org data error:", error);
+      }
+    };
+    fetchData();
+  }, []);
+
+  useEffect(() => {
+    if (initialValues && typeof initialValues === 'object' && Object.keys(initialValues).length > 0) {
+      try {
+        const mapped = {
+          ...initialValues,
+          NgaySinh: initialValues.NgaySinh ? dayjs(initialValues.NgaySinh) : null,
+          NgayVaoLam: initialValues.NgayVaoLam ? dayjs(initialValues.NgayVaoLam) : null,
+        };
+        form.setFieldsValue(mapped);
+      } catch (e) {
+        console.error("Mapping error:", e);
+      }
+    } else {
+      form.resetFields();
+    }
+  }, [initialValues, form]);
 
   const handleSubmit = (values: any) => {
-    if (onFinish) {
-      onFinish(values);
-    } else {
-      console.log('Final Form Values:', values);
-      Toast.success('Đã ghi nhận thông tin nhân viên (Demo)');
-    }
-  };
+    // Chuyển đổi ngày tháng sang chuỗi YYYY-MM-DD một cách chắc chắn nhất
+    const NgaySinh = values.NgaySinh ? dayjs(values.NgaySinh).format('YYYY-MM-DD') : null;
+    const NgayVaoLam = values.NgayVaoLam ? dayjs(values.NgayVaoLam).format('YYYY-MM-DD') : null;
 
-  const normFile = (e: any) => {
-    if (Array.isArray(e)) return e;
-    return e?.fileList;
+    const finalValues = {
+      ...values,
+      NgaySinh,
+      NgayVaoLam,
+    };
+    
+    onFinish?.(finalValues);
   };
 
   const handleCancelAction = () => {
     if (form.isFieldsTouched()) {
       ConfirmDialog.show({
-        title: 'Hủy bỏ thay đổi?',
-        content: 'Bạn đã có thay đổi trên biểu mẫu. Nếu hủy bỏ, các thông tin này sẽ không được lưu. Bạn có chắc chắn?',
-        type: 'warning',
-        okText: 'Đồng ý hủy',
-        cancelText: 'Tiếp tục nhập',
-        onConfirm: () => {
-          if (onCancel) onCancel();
-        }
+        title: 'Hủy bỏ?',
+        content: 'Các thay đổi sẽ không được lưu lại.',
+        onConfirm: () => onCancel?.()
       });
     } else {
-      if (onCancel) onCancel();
+      onCancel?.();
     }
   };
 
   return (
-    <div className="employee-form-container">
+    <div className="employee-form">
       <Form
         form={form}
         layout="vertical"
-        initialValues={initialValues || ({ gender: 'male', baseSalary: 0 } as any)}
         onFinish={handleSubmit}
-        requiredMark="optional"
+        autoComplete="off"
       >
         <Tabs
           activeKey={activeTab}
           onChange={setActiveTab}
-          type="line"
-          className="admin-complex-tabs"
           items={[
             {
               key: '1',
-              label: (
-                <span>
-                  <UserOutlined /> Thông tin cá nhân
-                </span>
-              ),
+              label: (<span><UserOutlined /> Cá nhân</span>),
               children: (
-                <div className="py-4 animate-in fade-in duration-500">
-                  <Row gutter={24}>
-                    <Col xs={24} md={12}>
-                      <Form.Item
-                        name="fullName"
-                        label="Họ và Tên"
-                        rules={[CommonRules.required('Họ tên')]}
-                      >
-                        <Input placeholder="Ví dụ: Nguyễn Văn A" />
+                <div className="py-4">
+                  <Row gutter={16}>
+                    <Col span={12}>
+                      <Form.Item name="HoTen" label="Họ tên" rules={[CommonRules.required('Họ tên')]}>
+                        <Input placeholder="Nguyễn Văn A" />
                       </Form.Item>
                     </Col>
-                    <Col xs={24} md={12}>
-                      <Form.Item
-                        name="email"
-                        label="Email công việc"
-                        rules={[CommonRules.required('Email'), CommonRules.email()]}
-                      >
-                        <Input placeholder="nva@nexthr.com" disabled={!isAdmin} />
+                    <Col span={12}>
+                      <Form.Item name="Email" label="Email" rules={[CommonRules.required('Email'), CommonRules.email()]}>
+                        <Input placeholder="a@nexthr.vn" disabled={!!initialValues} />
                       </Form.Item>
                     </Col>
-                    <Col xs={24} md={12}>
-                      <Form.Item
-                        name="phone"
-                        label="Số điện thoại"
-                        rules={[CommonRules.required('Số điện thoại'), CommonRules.phone()]}
-                      >
-                        <Input placeholder="09xxxxxxxx" />
+                    <Col span={12}>
+                      <Form.Item name="SoDienThoai" label="Số điện thoại" rules={[CommonRules.required('SĐT')]}>
+                        <Input placeholder="09xxx" />
                       </Form.Item>
                     </Col>
-                    <Col xs={24} md={12}>
-                      <Form.Item
-                        name="dob"
-                        label="Ngày sinh"
-                        rules={[CommonRules.required('Ngày sinh')]}
-                      >
-                        <DatePicker className="w-full" format="DD/MM/YYYY" />
+                    <Col span={12}>
+                      <Form.Item name="NgaySinh" label="Ngày sinh" rules={[CommonRules.required('Ngày sinh')]}>
+                        <DatePicker className="w-full" format="DD/MM/YYYY" placeholder="Chọn ngày" />
                       </Form.Item>
                     </Col>
-                    <Col xs={24} md={12}>
-                      <Form.Item name="gender" label="Giới tính">
+                    <Col span={12}>
+                      <Form.Item name="GioiTinh" label="Giới tính" initialValue="Nam">
                         <Select>
-                          <Option value="male">Nam</Option>
-                          <Option value="female">Nữ</Option>
-                          <Option value="other">Khác</Option>
+                          <Option value="Nam">Nam</Option>
+                          <Option value="Nữ">Nữ</Option>
+                          <Option value="Khác">Khác</Option>
                         </Select>
                       </Form.Item>
                     </Col>
-                    <Col xs={24}>
-                      <Form.Item name="address" label="Địa chỉ thường trú">
-                        <TextArea rows={3} placeholder="Số nhà, đường, phường/xã..." />
+                    {!initialValues && (
+                      <Col span={12}>
+                        <Form.Item name="MatKhau" label="Mật khẩu ban đầu" rules={[CommonRules.required('Mật khẩu')]}>
+                          <Input.Password prefix={<PasswordIcon />} />
+                        </Form.Item>
+                      </Col>
+                    )}
+                    <Col span={24}>
+                      <Form.Item name="DiaChi" label="Địa chỉ liên hệ">
+                        <TextArea rows={2} placeholder="Địa chỉ thường trú..." />
                       </Form.Item>
                     </Col>
                   </Row>
@@ -196,56 +177,48 @@ const EmployeeForm: React.FC<EmployeeFormProps> = ({
             },
             {
               key: '2',
-              label: (
-                <span>
-                  <SolutionOutlined /> Công tác
-                </span>
-              ),
-              disabled: !isAdmin && activeTab !== '2', // Staff có thể xem nhưng không chắc được sửa
+              label: (<span><SolutionOutlined /> Công tác</span>),
               children: (
                 <div className="py-4">
-                  <Row gutter={24}>
-                    <Col xs={24} md={12}>
-                      <Form.Item
-                        name="employeeCode"
-                        label="Mã nhân viên"
-                        rules={[CommonRules.required('Mã nhân viên')]}
-                      >
-                        <Input placeholder="EMP001" disabled={!isAdmin} />
+                  <Row gutter={16}>
+                    <Col span={12}>
+                      <Form.Item name="MaNhanVien" label="Mã nhân viên" rules={[CommonRules.required('Mã NV')]}>
+                        <Input disabled={!!initialValues} placeholder="Hệ thống tự tạo nếu để trống" />
                       </Form.Item>
                     </Col>
-                    <Col xs={24} md={12}>
-                      <Form.Item
-                        name="startDate"
-                        label="Ngày thử việc/Bắt đầu"
-                        rules={[CommonRules.required('Ngày bắt đầu')]}
-                      >
-                        <DatePicker className="w-full" format="DD/MM/YYYY" disabled={!isAdmin} />
+                    <Col span={12}>
+                      <Form.Item name="NgayVaoLam" label="Ngày vào làm" rules={[CommonRules.required('Ngày vào')]}>
+                        <DatePicker className="w-full" format="DD/MM/YYYY" disabled={!!initialValues} />
                       </Form.Item>
                     </Col>
-                    <Col xs={24} md={12}>
-                      <Form.Item
-                        name="departmentId"
-                        label="Phòng ban"
-                        rules={[CommonRules.required('Phòng ban')]}
-                      >
-                        <Select placeholder="Chọn phòng ban" disabled={!isAdmin}>
-                          <Option value="IT">Phòng Công nghệ</Option>
-                          <Option value="HR">Phòng Nhân sự</Option>
-                          <Option value="FIN">Phòng Tài chính</Option>
+                    <Col span={12}>
+                      <Form.Item name="MaPhongId" label="Phòng ban" rules={[CommonRules.required('Phòng ban')]}>
+                        <Select placeholder="Chọn phòng">
+                          {departments.map(d => <Option key={d.Id} value={d.Id}>{d.TenPhong}</Option>)}
                         </Select>
                       </Form.Item>
                     </Col>
-                    <Col xs={24} md={12}>
-                      <Form.Item
-                        name="positionId"
-                        label="Chức vụ"
-                        rules={[CommonRules.required('Chức vụ')]}
-                      >
-                        <Select placeholder="Chọn chức vụ" disabled={!isAdmin}>
-                          <Option value="DEV">Developer</Option>
-                          <Option value="MGR">Manager</Option>
-                          <Option value="DIR">Director</Option>
+                    <Col span={12}>
+                      <Form.Item name="MaChucVuId" label="Chức vụ" rules={[CommonRules.required('Chức vụ')]}>
+                        <Select placeholder="Chọn chức vụ">
+                          {positions.map(p => <Option key={p.Id} value={p.Id}>{p.TenChucVu}</Option>)}
+                        </Select>
+                      </Form.Item>
+                    </Col>
+                    <Col span={12}>
+                      <Form.Item name="MaVaiTroId" label="Vai trò hệ thống" initialValue={3}>
+                        <Select disabled={!isAdmin}>
+                          <Option value={1}>Admin</Option>
+                          <Option value={2}>Manager</Option>
+                          <Option value={3}>Staff</Option>
+                        </Select>
+                      </Form.Item>
+                    </Col>
+                    <Col span={12}>
+                      <Form.Item name="TrangThai" label="Trạng thái" initialValue="Active">
+                        <Select disabled={!isAdmin}>
+                          <Option value="Active">Đang làm</Option>
+                          <Option value="Inactive">Nghỉ việc</Option>
                         </Select>
                       </Form.Item>
                     </Col>
@@ -255,119 +228,51 @@ const EmployeeForm: React.FC<EmployeeFormProps> = ({
             },
             {
               key: '3',
-              label: (
-                <span>
-                  <FileTextOutlined /> Hợp đồng & Lương
-                </span>
-              ),
-              disabled: !isAdmin, // Chỉ Admin mới được can thiệp vào lương/hợp đồng
+              label: (<span><FileTextOutlined /> Hợp đồng & Lương</span>),
               children: (
                 <div className="py-4">
-                  <Row gutter={24}>
-                    <Col xs={24} md={12}>
-                      <Form.Item
-                        name="contractType"
-                        label="Loại hợp đồng"
-                        rules={[CommonRules.required('Loại hợp đồng')]}
-                      >
-                        <Select>
-                          <Option value="probation">Thử việc</Option>
-                          <Option value="1year">Hợp đồng 1 năm</Option>
-                          <Option value="indefinite">Không thời hạn</Option>
+                  <Row gutter={16}>
+                    <Col span={24}>
+                      <p className="text-gray-500 mb-4 italic text-sm">
+                        * Quản lý thông tin hợp đồng và lương cơ bản hiện tại của nhân viên.
+                      </p>
+                    </Col>
+                    <Col span={12}>
+                      <Form.Item name="contractType" label="Loại hợp đồng">
+                        <Select placeholder="Chọn loại hợp đồng">
+                          <Option value="Thử việc">Thử việc</Option>
+                          <Option value="Chính thức">Chính thức</Option>
+                          <Option value="Cộng tác viên">Cộng tác viên</Option>
                         </Select>
                       </Form.Item>
                     </Col>
-                    <Col xs={24} md={12}>
-                      <Form.Item
-                        name="baseSalary"
-                        label="Lương cơ bản (VND)"
-                        rules={[CommonRules.required('Lương cơ bản')]}
-                      >
-                        <InputNumber
-                          className="w-full"
-                          formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-                          parser={(value) => value!.replace(/\$\s?|(,*)/g, '') as any}
-                          min={0}
+                    <Col span={12}>
+                      <Form.Item name="baseSalary" label="Lương cơ bản">
+                        <InputNumber 
+                          className="w-full" 
+                          formatter={v => `${v}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                          placeholder="Nhập số tiền"
                         />
-                      </Form.Item>
-                    </Col>
-                    <Col xs={24} md={12}>
-                      <Form.Item name="contractSignDate" label="Ngày ký kết">
-                        <DatePicker className="w-full" format="DD/MM/YYYY" />
-                      </Form.Item>
-                    </Col>
-                    <Col xs={24} md={12}>
-                      <Form.Item name="contractExpiredDate" label="Ngày hết hạn">
-                        <DatePicker className="w-full" format="DD/MM/YYYY" />
                       </Form.Item>
                     </Col>
                   </Row>
                 </div>
               ),
-            },
-            {
-              key: '4',
-              label: (
-                <span>
-                  <CameraOutlined /> Ảnh đại diện
-                </span>
-              ),
-              children: (
-                <div className="py-8 flex flex-col items-center justify-center">
-                  <Form.Item
-                    name="avatar"
-                    valuePropName="fileList"
-                    getValueFromEvent={normFile}
-                    noStyle
-                  >
-                    <Upload
-                      listType="picture-card"
-                      maxCount={1}
-                      beforeUpload={() => false}
-                      className="avatar-uploader"
-                    >
-                      <div>
-                        <UploadOutlined />
-                        <div style={{ marginTop: 8 }}>Tải ảnh</div>
-                      </div>
-                    </Upload>
-                  </Form.Item>
-                  <p className="text-gray-400 mt-4 text-sm">
-                    Định dạng: JPG, PNG. Dung lượng tối đa: 2MB
-                  </p>
-                </div>
-              ),
-            },
+            }
           ]}
         />
-
         <Divider />
-
-        <div className="flex justify-between items-center mt-6">
-          {onCancel ? (
-            <Button icon={<ArrowLeftOutlined />} variant="text" size="middle" onClick={handleCancelAction}>
-              Hủy bỏ
-            </Button>
-          ) : (
-            <Link href="/admin/nhan-vien">
-              <Button icon={<ArrowLeftOutlined />} variant="text" size="middle">
-                Quay lại danh sách
-              </Button>
-            </Link>
-          )}
-          
-          <Space size="middle">
-            <Button
-              type="primary"
-              htmlType="submit"
-              icon={<SaveOutlined />}
-              size="middle"
-              loading={loading}
-              className="px-6"
-            >
-              {initialValues ? 'Cập nhật thông tin' : 'Thêm mới nhân viên'}
-            </Button>
-          </Space>
+        <div className="flex justify-between items-center">
+          <Button icon={<ArrowLeftOutlined />} variant="text" onClick={handleCancelAction}>Quay lại</Button>
+          <Button 
+            type="primary" 
+            htmlType="submit" 
+            icon={<SaveOutlined />} 
+            loading={loading}
+            className="px-8"
+          >
+            {initialValues ? 'Lưu thay đổi' : 'Thêm nhân viên'}
+          </Button>
         </div>
       </Form>
     </div>

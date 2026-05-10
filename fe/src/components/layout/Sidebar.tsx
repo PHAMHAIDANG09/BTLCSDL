@@ -48,7 +48,7 @@ const adminMenuItems = [
     type: "group" as const,
     children: [
       {
-        key: "dashboard",
+        key: "bang-dieu-khien",
         icon: <DashboardOutlined />,
         label: <Link href="/admin/bang-dieu-khien">Dashboard</Link>,
       },
@@ -60,7 +60,7 @@ const adminMenuItems = [
     type: "group" as const,
     children: [
       {
-        key: "profile",
+        key: "ho-so",
         icon: <UserOutlined />,
         label: <Link href="/admin/ho-so">Hồ sơ cá nhân</Link>,
       },
@@ -72,17 +72,17 @@ const adminMenuItems = [
     type: "group" as const,
     children: [
       {
-        key: "employee",
+        key: "nhan-vien",
         icon: <UserOutlined />,
         label: <Link href="/admin/nhan-vien">Nhân viên</Link>,
       },
       {
-        key: "structure",
+        key: "co-cau-to-chuc",
         icon: <DeploymentUnitOutlined />,
         label: <Link href="/admin/co-cau-to-chuc">Cơ cấu tổ chức</Link>,
       },
       {
-        key: "contract",
+        key: "hop-dong",
         icon: <FileProtectOutlined />,
         label: <Link href="/admin/hop-dong">Hợp đồng</Link>,
       },
@@ -94,17 +94,17 @@ const adminMenuItems = [
     type: "group" as const,
     children: [
       {
-        key: "attendance",
+        key: "cham-cong",
         icon: <ClockCircleOutlined />,
         label: <Link href="/admin/cham-cong">Chấm công</Link>,
       },
       {
-        key: "leave",
+        key: "nghi-phep",
         icon: <CalendarOutlined />,
         label: <Link href="/admin/nghi-phep">Nghỉ phép</Link>,
       },
       {
-        key: "overtime",
+        key: "lam-them-gio",
         icon: <HistoryOutlined />,
         label: <Link href="/admin/lam-them-gio">Làm thêm giờ</Link>,
       },
@@ -116,12 +116,12 @@ const adminMenuItems = [
     type: "group" as const,
     children: [
       {
-        key: "payroll",
+        key: "luong",
         icon: <DollarOutlined />,
         label: <Link href="/admin/luong">Bảng lương</Link>,
       },
       {
-        key: "salary-history",
+        key: "lich-su-luong",
         icon: <HistoryOutlined />,
         label: <Link href="/admin/lich-su-luong">Lịch sử lương</Link>,
       },
@@ -133,17 +133,17 @@ const adminMenuItems = [
     type: "group" as const,
     children: [
       {
-        key: "report",
+        key: "bao-cao",
         icon: <LineChartOutlined />,
         label: <Link href="/admin/bao-cao">Báo cáo</Link>,
       },
       {
-        key: "holiday",
+        key: "ngay-le",
         icon: <FlagOutlined />,
         label: <Link href="/admin/ngay-le">Ngày lễ</Link>,
       },
       {
-        key: "log",
+        key: "nhat-ky",
         icon: <AuditOutlined />,
         label: <Link href="/admin/nhat-ky">Nhật ký</Link>,
       },
@@ -241,9 +241,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const menuItems = isAdmin ? adminMenuItems : staffMenuItems;
 
   const getActiveKey = (): string => {
-    // Bỏ qua segment "admin" hoặc "staff" rồi lấy segment tiếp theo
     const segments = pathname.split("/").filter((s) => s && s !== "admin" && s !== "staff");
-    return segments[0] || (isAdmin ? "dashboard" : "home");
+    return segments[0] || (isAdmin ? "bang-dieu-khien" : "trang-chu");
   };
 
   const siderContent = (

@@ -103,8 +103,8 @@ export const Table = <T extends object = Record<string, unknown>>({
           rowKey={rowKey}
           pagination={paginationConfig}
           loading={loading}
-          scroll={{ x: "max-content" }}
-          className="bg-white rounded-lg overflow-hidden"
+          scroll={restProps.scroll || { x: 1300 }}
+          className="bg-white rounded-lg overflow-hidden shadow-sm"
           {...restProps}
         />
       </Spin>

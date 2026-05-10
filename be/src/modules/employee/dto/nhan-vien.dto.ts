@@ -39,6 +39,56 @@ export class CreateNhanVienDto {
   @ApiProperty({ example: '2025-01-01' })
   @IsDateString()
   NgayVaoLam: string;
+
+  @ApiProperty({ required: false })
+  @IsString()
+  @IsOptional()
+  SoDienThoai?: string;
+
+  @ApiProperty({ required: false })
+  @IsString()
+  @IsOptional()
+  DiaChi?: string;
+
+  @ApiProperty({ required: false })
+  @IsDateString()
+  @IsOptional()
+  NgaySinh?: string;
+
+  @ApiProperty({ required: false, example: 'Nam' })
+  @IsString()
+  @IsOptional()
+  GioiTinh?: string;
+
+  @ApiProperty({ required: false })
+  @IsString()
+  @IsOptional()
+  SoCCCD?: string;
+
+  @ApiProperty({ required: false })
+  @IsString()
+  @IsOptional()
+  MaSoThue?: string;
+
+  @ApiProperty({ required: false })
+  @IsNumber()
+  @IsOptional()
+  SoNguoiPhuThuoc?: number;
+
+  @ApiProperty({ required: false })
+  @IsString()
+  @IsOptional()
+  SoTaiKhoan?: string;
+
+  @ApiProperty({ required: false })
+  @IsString()
+  @IsOptional()
+  TenNganHang?: string;
+
+  @ApiProperty({ required: false })
+  @IsString()
+  @IsOptional()
+  ChiNhanhNganHang?: string;
 }
 
 export class UpdateNhanVienDto {
@@ -76,4 +126,49 @@ export class UpdateNhanVienDto {
   @IsString()
   @IsOptional()
   DiaChi?: string;
+
+  @ApiProperty({ required: false, example: 'Active' })
+  @IsString()
+  @IsOptional()
+  TrangThai?: string;
+
+  @ApiProperty({ required: false })
+  @IsDateString()
+  @IsOptional()
+  NgaySinh?: string;
+
+  @ApiProperty({ required: false, example: 'Nam' })
+  @IsString()
+  @IsOptional()
+  GioiTinh?: string;
+
+  @ApiProperty({ required: false })
+  @IsString()
+  @IsOptional()
+  SoCCCD?: string;
+
+  @ApiProperty({ required: false })
+  @IsString()
+  @IsOptional()
+  MaSoThue?: string;
+
+  @ApiProperty({ required: false })
+  @IsNumber()
+  @IsOptional()
+  SoNguoiPhuThuoc?: number;
+
+  @ApiProperty({ required: false })
+  @IsString()
+  @IsOptional()
+  SoTaiKhoan?: string;
+
+  @ApiProperty({ required: false })
+  @IsString()
+  @IsOptional()
+  TenNganHang?: string;
+
+  @ApiProperty({ required: false })
+  @IsString()
+  @IsOptional()
+  ChiNhanhNganHang?: string;
 }

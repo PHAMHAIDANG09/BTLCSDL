@@ -62,7 +62,7 @@ Table NhanVien {
 Table HopDong {
   Id int [pk, increment]
   MaNhanVienId int [not null]
-  SoHopDong varchar(50) [unique, not null]
+  MaHopDong varchar(50) [unique, not null]
   LoaiHopDong nvarchar(50) [not null, note: 'Thử việc | Xác định thời hạn | Không xác định thời hạn']
   NgayBatDau date [not null]
   NgayKetThuc date [null]

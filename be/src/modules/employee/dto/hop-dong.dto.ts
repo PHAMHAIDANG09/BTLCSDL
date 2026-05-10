@@ -10,7 +10,7 @@ export class CreateHopDongDto {
   @ApiProperty({ example: 'HĐLĐ-2025-001' })
   @IsString()
   @IsNotEmpty()
-  SoHopDong: string;
+  MaHopDong: string;
 
   @ApiProperty({ example: 'Chính thức' })
   @IsString()
@@ -19,6 +19,12 @@ export class CreateHopDongDto {
 
   @ApiProperty({ example: '2025-01-01' })
   @IsDateString()
+  @IsNotEmpty()
+  NgayKy: string;
+
+  @ApiProperty({ example: '2025-01-01' })
+  @IsDateString()
+  @IsNotEmpty()
   NgayBatDau: string;
 
   @ApiProperty({ example: '2026-01-01', required: false })
@@ -26,19 +32,29 @@ export class CreateHopDongDto {
   @IsOptional()
   NgayKetThuc?: string;
 
-  @ApiProperty({ example: '2025-01-01' })
-  @IsDateString()
-  NgayKy: string;
+  @ApiProperty({ example: 15000000 })
+  @IsNumber()
+  @IsOptional()
+  LuongCoBan?: number;
+
+  @ApiProperty({ example: 'Active' })
+  @IsString()
+  @IsOptional()
+  TrangThai?: string;
 }
 
 export class UpdateHopDongDto {
   @IsString()
   @IsOptional()
-  SoHopDong?: string;
+  MaHopDong?: string;
 
   @IsString()
   @IsOptional()
   LoaiHopDong?: string;
+
+  @IsDateString()
+  @IsOptional()
+  NgayKy?: string;
 
   @IsDateString()
   @IsOptional()
@@ -47,6 +63,10 @@ export class UpdateHopDongDto {
   @IsDateString()
   @IsOptional()
   NgayKetThuc?: string;
+
+  @IsNumber()
+  @IsOptional()
+  LuongCoBan?: number;
 
   @IsString()
   @IsOptional()

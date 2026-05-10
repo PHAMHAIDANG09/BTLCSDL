@@ -21,7 +21,7 @@ import { Roles } from '../auth/decorators/roles.decorator';
 @ApiTags('Employees')
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard, RolesGuard)
-@Controller('employees')
+@Controller('nhan-vien')
 export class EmployeeController {
   constructor(private readonly employeeService: EmployeeService) { }
 
@@ -75,43 +75,50 @@ export class EmployeeController {
     });
   }
 
-  @Get('contracts/expiring')
+  @Get('hop-dong/het-han')
   @Roles('Admin', 'Manager')
   @ApiOperation({ summary: 'Lấy các hợp đồng sắp hết hạn (trong 30 ngày)' })
   getExpiring() {
     return this.employeeService.getExpiringContracts();
   }
 
+  @Get('hop-dong/tat-ca')
+  @Roles('Admin', 'Manager')
+  @ApiOperation({ summary: 'Lấy danh sách tất cả hợp đồng' })
+  findAllContracts() {
+    return this.employeeService.findAllContracts();
+  }
+
   // --- Contract Endpoints ---
-  @Get(':employeeId/contracts')
+  @Get(':employeeId/hop-dong')
   @Roles('Admin', 'Manager')
   @ApiOperation({ summary: 'Lấy danh sách hợp đồng của nhân viên' })
   findContractsByEmployee(@Param('employeeId') employeeId: string) {
     return this.employeeService.findContractsByEmployee(+employeeId);
   }
 
-  @Get('contracts/:id')
+  @Get('hop-dong/:id')
   @Roles('Admin', 'Manager')
   @ApiOperation({ summary: 'Lấy chi tiết hợp đồng' })
   findOneContract(@Param('id') id: string) {
     return this.employeeService.findOneContract(+id);
   }
 
-  @Post('contracts')
+  @Post('hop-dong')
   @Roles('Admin')
   @ApiOperation({ summary: 'Tạo mới hợp đồng lao động' })
   createContract(@Body() dto: CreateHopDongDto) {
     return this.employeeService.createContract(dto);
   }
 
-  @Put('contracts/:id')
+  @Put('hop-dong/:id')
   @Roles('Admin')
   @ApiOperation({ summary: 'Cập nhật hợp đồng' })
   updateContract(@Param('id') id: string, @Body() dto: UpdateHopDongDto) {
     return this.employeeService.updateContract(+id, dto);
   }
 
-  @Delete('contracts/:id')
+  @Delete('hop-dong/:id')
   @Roles('Admin')
   @ApiOperation({ summary: 'Xóa hợp đồng' })
   deleteContract(@Param('id') id: string) {

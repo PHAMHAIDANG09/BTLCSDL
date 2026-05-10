@@ -13,7 +13,7 @@ import { ExclamationCircleOutlined } from "@ant-design/icons";
  * Custom Modal Props
  */
 export interface ModalProps extends Omit<AntModalProps, "onOk" | "onCancel"> {
-  title?: string;
+  title?: React.ReactNode;
   children?: React.ReactNode;
   open: boolean;
   loading?: boolean;

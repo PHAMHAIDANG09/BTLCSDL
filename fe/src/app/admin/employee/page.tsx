@@ -8,48 +8,51 @@ import {
 } from "@ant-design/icons";
 
 // Shared Components
-import Button from "../../../components/shared/Button/Button";
-import Toast from "../../../components/shared/Toast/Toast";
-import Modal from "../../../components/shared/Modal/Modal";
+import Button from "@/components/shared/Button/Button";
+import Toast from "@/components/shared/Toast/Toast";
+import Modal from "@/components/shared/Modal/Modal";
+import { useEffect } from "react";
+import { 
+  getEmployeesApi, 
+  createEmployeeApi, 
+  updateEmployeeApi, 
+  deleteEmployeeApi,
+  Employee 
+} from "@/services/employee.service";
 
 // Module Components
-import EmployeeTable from "./_components/EmployeeTable";
-import SearchFilter from "./_components/SearchFilter";
-import BulkActions from "./_components/BulkActions";
-import DeleteConfirm from "./_components/DeleteConfirm";
-import EmployeeForm from "./_components/EmployeeForm";
-import EmployeeDetail from "./_components/EmployeeDetail";
-
-interface Employee {
-  id: number;
-  fullName: string;
-  email: string;
-  code: string;
-  department: string;
-  position: string;
-  role: "Admin" | "Manager" | "Staff";
-  joiningDate: string;
-  status: "Đang làm" | "Nghỉ việc";
-  avatarColor?: string;
-}
-
-const MOCK_EMPLOYEES: Employee[] = [
-  { id: 1, fullName: "Nguyễn Văn Hùng", email: "admin@nexthr.com", code: "EMP-2025-001", department: "Ban Giám đốc", position: "Giám đốc", role: "Admin", joiningDate: "2/1/2025", status: "Đang làm", avatarColor: "#9c27b0" },
-  { id: 2, fullName: "Trần Thị Lan", email: "lan.tran@nexthr.vn", code: "EMP-2025-002", department: "Phòng Nhân sự", position: "Trưởng phòng", role: "Manager", joiningDate: "5/1/2025", status: "Đang làm", avatarColor: "#f44336" },
-  { id: 3, fullName: "Lê Minh Khoa", email: "khoa.le@nexthr.vn", code: "EMP-2025-003", department: "Phòng Công nghệ", position: "Trưởng phòng", role: "Manager", joiningDate: "10/1/2025", status: "Đang làm", avatarColor: "#2196f3" },
-  { id: 4, fullName: "Phạm Thu Hà", email: "ha.pham@nexthr.vn", code: "EMP-2025-004", department: "Nhóm Backend", position: "Nhân viên", role: "Staff", joiningDate: "1/2/2025", status: "Đang làm", avatarColor: "#e91e63" },
-  { id: 5, fullName: "Đỗ Quốc Bảo", email: "bao.do@nexthr.vn", code: "EMP-2025-005", department: "Phòng Kế toán", position: "Nhân viên", role: "Staff", joiningDate: "15/2/2025", status: "Đang làm", avatarColor: "#ff9800" },
-];
+import EmployeeTable from "@/app/admin/employee/_components/EmployeeTable";
+import SearchFilter from "@/app/admin/employee/_components/SearchFilter";
+import BulkActions from "@/app/admin/employee/_components/BulkActions";
+import DeleteConfirm from "@/app/admin/employee/_components/DeleteConfirm";
+import EmployeeForm from "@/app/admin/employee/_components/EmployeeForm";
+import EmployeeDetail from "@/app/admin/employee/_components/EmployeeDetail";
 
 export default function EmployeePage() {
-  const [employees, setEmployees] = useState<Employee[]>(MOCK_EMPLOYEES);
-  const [loading, setLoading] = useState(false);
+  const [employees, setEmployees] = useState<Employee[]>([]);
+  const [loading, setLoading] = useState(true);
   const [selectedRowKeys, setSelectedRowKeys] = useState<any[]>([]);
   
   // Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalMode, setModalMode] = useState<"add" | "edit" | "view">("add");
   const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
+
+  const fetchEmployees = async () => {
+    setLoading(true);
+    try {
+      const data = await getEmployeesApi();
+      setEmployees(data);
+    } catch (error) {
+      Toast.error("Lỗi khi tải danh sách nhân viên");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchEmployees();
+  }, []);
 
   const handleAdd = () => {
     setModalMode("add");
@@ -74,42 +77,75 @@ export default function EmployeePage() {
     setSelectedEmployee(null);
   };
 
-  const handleFormFinish = (values: any) => {
-    console.log("Form Values:", values);
-    if (modalMode === "add") {
-      const newEmp = {
-        ...values,
-        id: employees.length + 1,
-        joiningDate: values.startDate?.format("DD/MM/YYYY") || "N/A",
-        status: "Đang làm",
-        avatarColor: "#" + Math.floor(Math.random()*16777215).toString(16)
-      };
-      setEmployees([newEmp, ...employees]);
-      Toast.success("Thêm nhân viên mới thành công");
-    } else {
-      setEmployees(employees.map(emp => emp.id === selectedEmployee?.id ? { ...emp, ...values } : emp));
-      Toast.success("Cập nhật thông tin thành công");
+  const handleFormFinish = async (values: any) => {
+    setLoading(true);
+    try {
+      if (modalMode === "add") {
+        // Gửi toàn bộ values vì form đã format ngày tháng rồi
+        await createEmployeeApi(values);
+        Toast.success("Thêm nhân viên mới thành công");
+      } else if (selectedEmployee) {
+        // CHỈ LẤY đúng những trường được phép cập nhật để gửi lên Backend
+        const updateData = {
+          HoTen: values.HoTen,
+          MaPhongId: values.MaPhongId,
+          MaChucVuId: values.MaChucVuId,
+          MaVaiTroId: values.MaVaiTroId,
+          SoDienThoai: values.SoDienThoai,
+          DiaChi: values.DiaChi,
+          TrangThai: values.TrangThai,
+          NgaySinh: values.NgaySinh,
+          GioiTinh: values.GioiTinh,
+          SoCCCD: values.SoCCCD,
+          MaSoThue: values.MaSoThue,
+          SoNguoiPhuThuoc: values.SoNguoiPhuThuoc,
+          SoTaiKhoan: values.SoTaiKhoan,
+          TenNganHang: values.TenNganHang,
+          ChiNhanhNganHang: values.ChiNhanhNganHang,
+        };
+        
+        await updateEmployeeApi(selectedEmployee.Id, updateData);
+        Toast.success("Cập nhật thông tin thành công");
+      }
+      fetchEmployees();
+      closeModal();
+    } catch (error: any) {
+      Toast.error(error.message || "Thao tác thất bại");
+    } finally {
+      setLoading(false);
     }
-    closeModal();
   };
 
   const handleDelete = (id: number) => {
     DeleteConfirm.show({
-      onConfirm: () => {
-        setEmployees(employees.filter(emp => emp.id !== id));
-        Toast.success("Đã xoá nhân viên thành công");
+      onConfirm: async () => {
+        try {
+          await deleteEmployeeApi(id);
+          Toast.success("Đã xoá nhân viên thành công");
+          fetchEmployees();
+        } catch (error) {
+          Toast.error("Lỗi khi xóa nhân viên");
+        }
       }
     });
   };
 
   const handleBulkDelete = () => {
+    if (selectedRowKeys.length === 0) return;
+    
     DeleteConfirm.show({
       title: "Xoá hàng loạt",
-      content: `Bạn có chắc chắn muốn xoá ${selectedRowKeys.length} nhân viên đã chọn?`,
-      onConfirm: () => {
-        setEmployees(employees.filter(emp => !selectedRowKeys.includes(emp.id)));
-        setSelectedRowKeys([]);
-        Toast.success(`Đã xoá ${selectedRowKeys.length} nhân viên`);
+      content: `Bạn có chắc chắn muốn xoá ${selectedRowKeys.length} nhân viên đã chọn? Hành động này sẽ chuyển trạng thái của họ thành 'Nghỉ việc'.`,
+      onConfirm: async () => {
+        try {
+          // Xóa từng nhân viên một (vì backend chưa có api xóa hàng loạt)
+          await Promise.all(selectedRowKeys.map(id => deleteEmployeeApi(id)));
+          Toast.success(`Đã xoá ${selectedRowKeys.length} nhân viên thành công`);
+          setSelectedRowKeys([]);
+          fetchEmployees();
+        } catch (error) {
+          Toast.error("Lỗi khi xóa một số nhân viên");
+        }
       }
     });
   };
@@ -141,17 +177,14 @@ export default function EmployeePage() {
         </div>
       </div>
 
-      {/* Search & Filter Bar */}
       <SearchFilter 
         onSearch={(v) => console.log('Search:', v)}
         onFilterChange={(n, v) => console.log('Filter:', n, v)}
       />
 
-      {/* Extreme Physical spacer to ensure separation */}
-      <div className="h-20" />
+      <div className="h-4" />
 
       <div style={{ marginTop: '20px' }}>
-        {/* Employee Table */}
         <EmployeeTable 
           data={employees}
           loading={loading}
@@ -162,7 +195,6 @@ export default function EmployeePage() {
         />
       </div>
 
-      {/* Bulk Actions Menu */}
       <div className="mt-4">
         <BulkActions 
           selectedCount={selectedRowKeys.length}
@@ -171,7 +203,6 @@ export default function EmployeePage() {
         />
       </div>
 
-      {/* Reusable Modal */}
       <Modal
         title={getModalTitle()}
         open={isModalOpen}

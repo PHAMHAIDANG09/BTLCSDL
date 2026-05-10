@@ -7,18 +7,9 @@ import type { TableColumnsType } from "antd";
 import Button from "@/components/shared/Button/Button";
 import Table from "@/components/shared/Table/Table";
 
-interface Employee {
-  id: number;
-  fullName: string;
-  email: string;
-  code: string;
-  department: string;
-  position: string;
-  role: "Admin" | "Manager" | "Staff";
-  joiningDate: string;
-  status: "Đang làm" | "Nghỉ việc";
-  avatarColor?: string;
-}
+import { 
+  Employee 
+} from "@/services/employee.service";
 
 interface EmployeeTableProps {
   data: Employee[];
@@ -65,68 +56,71 @@ export default function EmployeeTable({
       title: "Nhân viên",
       key: "employee",
       width: 220,
-      sorter: (a, b) => a.fullName.localeCompare(b.fullName),
+      sorter: (a, b) => a.HoTen.localeCompare(b.HoTen),
       render: (_, record) => (
         <Space size="middle">
-          <Avatar style={{ backgroundColor: record.avatarColor || "#ccc" }} size={32}>
-            {record.fullName.charAt(0).toUpperCase()}
+          <Avatar style={{ backgroundColor: "#cc1212ff" }} size={32}>
+            {record.HoTen.charAt(0).toUpperCase()}
           </Avatar>
           <div>
-            <div style={{ fontWeight: 600, lineHeight: 1.3 }}>{record.fullName}</div>
-            <div style={{ color: "#999", fontSize: 11 }}>{record.email}</div>
+            <div style={{ fontWeight: 600, lineHeight: 1.3 }}>{record.HoTen}</div>
+            <div style={{ color: "#999", fontSize: 11 }}>{record.Email}</div>
           </div>
         </Space>
       ),
     },
     {
       title: "Mã NV",
-      dataIndex: "code",
-      key: "code",
+      dataIndex: "MaNhanVien",
+      key: "MaNhanVien",
       width: 100,
-      sorter: (a, b) => a.code.localeCompare(b.code),
+      sorter: (a, b) => a.MaNhanVien.localeCompare(b.MaNhanVien),
       render: (code: string) => (
         <Tag style={{ borderRadius: 12, fontSize: 11, fontWeight: 500 }}>{code}</Tag>
       ),
     },
     {
       title: "Phòng ban",
-      dataIndex: "department",
       key: "department",
       width: 120,
-      sorter: (a, b) => a.department.localeCompare(b.department),
+      render: (_, record) => record.phongBan?.TenPhong || "N/A",
     },
     {
       title: "Chức vụ",
-      dataIndex: "position",
       key: "position",
       width: 140,
-      sorter: (a, b) => a.position.localeCompare(b.position),
+      render: (_, record) => record.chucVu?.TenChucVu || "N/A",
     },
     {
       title: "Vai trò",
-      dataIndex: "role",
       key: "role",
       width: 100,
-      render: (role: string) => (
-        <Tag color={getRoleColor(role)}>{role}</Tag>
+      render: (_, record) => (
+        <Tag color={getRoleColor(record.vaiTro?.TenVaiTro || "Staff")}>
+          {record.vaiTro?.TenVaiTro || "Nhân viên"}
+        </Tag>
       ),
     },
     {
       title: "Ngày vào",
-      dataIndex: "joiningDate",
-      key: "joiningDate",
+      dataIndex: "NgayVaoLam",
+      key: "NgayVaoLam",
       width: 110,
-      sorter: (a, b) =>
-        new Date(a.joiningDate).getTime() - new Date(b.joiningDate).getTime(),
+      render: (date: string) => date ? new Date(date).toLocaleDateString("vi-VN") : "N/A",
     },
     {
       title: "Trạng thái",
-      dataIndex: "status",
-      key: "status",
+      dataIndex: "TrangThai",
+      key: "TrangThai",
       width: 110,
-      render: (status: string) => (
-        <Tag color={status === "Đang làm" ? "green" : "default"}>{status}</Tag>
-      ),
+      render: (status: string) => {
+        const isActive = status === "Active" || status === "Đang làm";
+        return (
+          <Tag color={isActive ? "success" : "error"} className="font-medium">
+            {isActive ? "Đang làm" : "Nghỉ việc"}
+          </Tag>
+        );
+      },
     },
     {
       title: "Thao tác",
@@ -160,7 +154,7 @@ export default function EmployeeTable({
                 type="text"
                 size="small"
                 icon={<DeleteOutlined />}
-                onClick={() => onDelete(record.id)}
+                onClick={() => onDelete(record.Id)}
               />
             </Tooltip>
           )}
@@ -174,7 +168,7 @@ export default function EmployeeTable({
       columns={columns}
       dataSource={data}
       loading={loading}
-      rowKey="id"
+      rowKey="Id"
       searchable={false}
       rowSelection={rowSelection}
       pagination={undefined}
