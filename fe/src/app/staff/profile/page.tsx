@@ -20,7 +20,7 @@ export default function StaffProfilePage() {
         dob: data.NgaySinh || "1990-01-01",
         gender: data.GioiTinh === "Nam" ? "male" : data.GioiTinh === "Nữ" ? "female" : "other",
         address: data.DiaChi || "Chưa cập nhật",
-        avatarColor: "#1890ff",
+        avatarColor: null,
         identityCard: data.SoCCCD || "Chưa cập nhật",
         taxCode: data.MaSoThue || "Chưa cập nhật",
         dependents: data.SoNguoiPhuThuoc || 0,

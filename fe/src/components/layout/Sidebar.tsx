@@ -292,6 +292,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         mode="inline"
         selectedKeys={[getActiveKey()]}
         items={menuItems}
+        className="admin-sider-menu"
         style={{ borderRight: 0, paddingBottom: 24 }}
       />
     </>
@@ -305,6 +306,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         onCollapse={onCollapse}
         width={260}
         theme="light"
+        className="admin-sider"
         style={{
           display: isMobile ? "none" : "block",
           position: "fixed",

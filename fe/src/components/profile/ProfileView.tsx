@@ -1,6 +1,6 @@
 "use client";
 
-import { Typography, Descriptions, Avatar, Tag, Row, Col, Card, Modal, message, Space, Form, Input, App } from "antd";
+import { Typography, Descriptions, Avatar, Tag, Row, Col, Card, Modal, message, Space, Form, Input, App, theme } from "antd";
 import { 
   UserOutlined, 
   EditOutlined, 
@@ -31,6 +31,7 @@ const formatSalary = (amount: number) =>
 
 export default function ProfileView({ data, isAdmin = false, onRefresh }: ProfileViewProps) {
   const { message } = App.useApp();
+  const { token } = theme.useToken();
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
@@ -126,7 +127,12 @@ export default function ProfileView({ data, isAdmin = false, onRefresh }: Profil
           <Avatar
             size={88}
             icon={<UserOutlined />}
-            style={{ backgroundColor: data.avatarColor || "#ab3e40", flexShrink: 0, fontSize: 36 }}
+            style={{ 
+              backgroundColor: data.avatarColor || token.colorPrimary, 
+              flexShrink: 0, 
+              fontSize: 36,
+              boxShadow: "0 4px 10px rgba(0,0,0,0.1)"
+            }}
           />
           <div>
             <Title level={3} style={{ margin: 0 }}>{data.fullName}</Title>
@@ -134,9 +140,9 @@ export default function ProfileView({ data, isAdmin = false, onRefresh }: Profil
               {data.position} · {data.department}
             </Text>
             <div style={{ marginTop: 8 }}>
-              {isAdmin && <Tag color="red">Quản trị viên</Tag>}
-              <Tag color="green">{data.status}</Tag>
-              <Tag color="blue">{data.employeeCode}</Tag>
+              {isAdmin && <Tag color="error">Quản trị viên</Tag>}
+              <Tag color="success">{data.status}</Tag>
+              <Tag color="processing">{data.employeeCode}</Tag>
             </div>
           </div>
         </div>
@@ -188,8 +194,8 @@ export default function ProfileView({ data, isAdmin = false, onRefresh }: Profil
           >
             <Descriptions column={{ xs: 1, sm: 2, md: 4 }} size="small" labelStyle={{ fontWeight: 600 }}>
               <Descriptions.Item label="Loại hợp đồng">{data.contractType}</Descriptions.Item>
-              <Descriptions.Item label="Số hợp đồng"><Tag color="orange">{data.contractNumber}</Tag></Descriptions.Item>
-              <Descriptions.Item label="Lương dự kiến"><span style={{ fontWeight: 700, color: "#ab3e40" }}>{formatSalary(data.baseSalary)}</span></Descriptions.Item>
+              <Descriptions.Item label="Số hợp đồng"><Tag color="warning">{data.contractNumber}</Tag></Descriptions.Item>
+              <Descriptions.Item label="Lương dự kiến"><span style={{ fontWeight: 700, color: token.colorError }}>{formatSalary(data.baseSalary)}</span></Descriptions.Item>
               <Descriptions.Item label="Ngày vào">{dayjs(data.contractSignDate).format("DD/MM/YYYY")}</Descriptions.Item>
             </Descriptions>
           </Card>

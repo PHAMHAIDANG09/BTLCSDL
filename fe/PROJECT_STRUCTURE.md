@@ -607,79 +607,7 @@ FE/
 
 ---
 
-## 🎯 Công Việc Frontend Chi Tiết (2 Thành Viên)
 
-### **THÀNH VIÊN 4: FRONTEND DEVELOPER A (ADMIN UI & AUTH CORE)**
-**Trọng tâm**: Setup Core, Authentication, Phân quyền & Module Quản trị Nhân sự/Chấm công/Lương.
-
-1. **Frontend Foundation & Admin Layout (Core)**
-   - Setup Axios Instance với Interceptors (Xử lý token, URL nội địa hóa).
-   - Thiết kế khung giao diện Admin (Sidebar, Header, Breadcrumbs).
-
-2. **Authentication & Role Guard (Core)**
-   - Trang **Login**: Form đăng nhập, lưu JWT vào LocalStorage.
-   - **authStore**: Quản lý trạng thái đăng nhập, User Info và Vai trò (Admin/Staff).
-   - **Middleware & RoleGuard**: Chặn quyền truy cập giữa Staff Portal & Admin Portal dựa trên Role.
-
-3. **Shared Components & State Management**
-   - Viết các Component dùng chung (Button, Modal, Table, Toast, v.v.).
-   - Quản lý Global State bằng Zustand.
-
-4. **Employee Management (Admin)**
-   - Danh sách nhân viên (Table) với Search, Filter, Pagination.
-   - Xử lý Thêm, Sửa, Xóa nhân viên.
-
-5. **Attendance Monitor (Admin)**
-   - Trang theo dõi chấm công toàn công ty.
-   - Hiển thị danh sách đi muộn/về sớm, cảnh báo vắng mặt.
-
-6. **Payroll UI (Admin)**
-   - Quản lý lương: Nút "Tính lương tháng" gọi Backend.
-   - Table kết quả tính lương và chi tiết phiếu lương (breakdown khấu trừ).
-
-7. **Approval Workflow (Admin)**
-   - Trang phê duyệt đơn nghỉ phép và đơn làm thêm giờ (Approve/Reject).
-
-8. **Admin Profile**
-   - Xem và cập nhật thông tin cá nhân của Admin.
-
----
-
-### **THÀNH VIÊN 5: FRONTEND DEVELOPER B (STAFF PORTAL & VISUALIZATION)**
-**Trọng tâm**: Module Nhân viên, Biểu đồ thống kê, Sơ đồ tổ chức & Trải nghiệm người dùng Staff.
-
-1. **Admin Dashboard Analytics (Visual)**
-   - Tích hợp **Chart.js** hiển thị biểu đồ cột (Nhân sự phòng ban) và biểu đồ đường (Chi phí lương).
-
-2. **Organization Chart (Visual)**
-   - Hiển thị sơ đồ tổ chức dạng cây phân cấp (Org Chart) từ API.
-
-3. **Attendance Action UI (Staff)**
-   - Widget Check-in/Check-out với đồng hồ thời gian thực tại trang chủ nhân viên.
-
-4. **Staff Attendance Calendar**
-   - Calendar component hiển thị lịch làm việc cá nhân (Xanh/Vàng/Đỏ theo trạng thái công).
-
-5. **Leave Request UI (Staff)**
-   - Form xin nghỉ phép (DateRangePicker, Select loại phép, validate số ngày còn lại).
-
-6. **Employee Profile (Staff)**
-   - Xem chi tiết hồ sơ cá nhân, Hợp đồng lao động và Lịch sử lương.
-   - Form sửa thông tin cá nhân (Complex Form nhiều tab).
-
-7. **Personal Payslip (Staff)**
-   - Xem danh sách và chi tiết phiếu lương hàng tháng, tích hợp nút tải PDF.
-
-8. **Notification System (Staff)**
-   - UI danh sách thông báo và thông báo đẩy khi đơn từ được phê duyệt.
-
-9. **Responsive & Mobile Optimization**
-   - Tối ưu hiển thị trên Mobile cho tất cả các trang Staff.
-
-10. **Final Integration & Documentation**
-    - Kiểm tra tổng thể dự án, viết file README hướng dẫn chạy.
-
----
 
 ## 🚀 Hướng Dẫn Chạy Dự Án
 
@@ -884,6 +812,11 @@ npm run dev
    - Thay thế toàn bộ `MOCK_DATA` bằng gọi API Axios thật.
    - Xử lý các trạng thái Loading, Empty và Error handling chuyên nghiệp.
 
+6. **💵 Staff – Payslip chi tiết + PDF**
+   - *Cơ sở:* Bảng `PhieuLuong`.
+   - *Trang:* Danh sách phiếu lương theo từng tháng.
+   - *Detail:* Hiển thị chi tiết tất cả các khoản thu nhập và khấu trừ.
+   - *Export:* Tích hợp nút **Tải file PDF** phiếu lương.
 ---
 
 ### 👤 THÀNH VIÊN 5 – BẠN CỦA BẠN
@@ -920,11 +853,6 @@ npm run dev
    - *Features:* Chọn loại phép, hiển thị số ngày phép còn lại theo thời gian thực.
    - *Logic:* Dùng DateRangePicker, tự động tính số ngày nghỉ, validate không chọn ngày quá khứ.
 
-6. **💵 Staff – Payslip chi tiết + PDF**
-   - *Cơ sở:* Bảng `PhieuLuong`.
-   - *Trang:* Danh sách phiếu lương theo từng tháng.
-   - *Detail:* Hiển thị chi tiết tất cả các khoản thu nhập và khấu trừ.
-   - *Export:* Tích hợp nút **Tải file PDF** phiếu lương.
 
 7. **📋 Staff – Leave List + My Requests**
    - *UI:* Bảng theo dõi các đơn từ đã gửi (`DonNghiPhep`, `DonLamThem`).
