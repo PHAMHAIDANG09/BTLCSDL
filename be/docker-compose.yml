@@ -8,9 +8,11 @@ services:
       - ACCEPT_EULA=Y
       - MSSQL_SA_PASSWORD=Dang@12345
       - TZ=Asia/Ha_Noi
+      - MSSQL_AGENT_ENABLED=True  #lập lịch sao lưu
     volumes:
       - sqlserver_data:/var/opt/mssql
       - ./init-db:/init-db:ro
+      - "U:/Hoàng Quốc Việt năm 3/Năm 3 kỳ 2/Hệ quản trị CSDL/Backup:/backup" #thay đổi theo máy
     networks:
       - app-network
     healthcheck:
