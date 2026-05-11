@@ -73,6 +73,29 @@ export default function ProfileDetailModal({ open, onCancel, data }: ProfileDeta
     { title: "Trạng thái", dataIndex: "status", key: "status", render: (status: string) => <Tag color="green">{status}</Tag> },
   ];
 
+  const contractColumns = [
+    { 
+      title: "Số hiệu", 
+      dataIndex: "MaHopDong", 
+      key: "MaHopDong", 
+      fixed: "left" as const,
+      width: 120,
+      render: (val: string) => <Tag color="blue">{val}</Tag> 
+    },
+    { title: "Loại hợp đồng", dataIndex: "LoaiHopDong", key: "LoaiHopDong", width: 150 },
+    { title: "Ngày bắt đầu", dataIndex: "NgayBatDau", key: "NgayBatDau", width: 120, render: (val: string) => dayjs(val).format("DD/MM/YYYY") },
+    { title: "Ngày kết thúc", dataIndex: "NgayKetThuc", key: "NgayKetThuc", width: 120, render: (val: string | null) => val ? dayjs(val).format("DD/MM/YYYY") : "Vô thời hạn" },
+    { title: "Lương cơ bản", dataIndex: "LuongCoBan", key: "LuongCoBan", width: 150, render: (val: number) => val?.toLocaleString("vi-VN") + " đ" },
+    { 
+      title: "Trạng thái", 
+      dataIndex: "TrangThai", 
+      key: "TrangThai", 
+      fixed: "right" as const,
+      width: 120,
+      render: (status: string) => <Tag color={status === "Active" ? "green" : "default"}>{status === "Active" ? "Đang hiệu lực" : "Hết hạn"}</Tag> 
+    },
+  ];
+
   const items = [
     {
       key: "work",
@@ -81,8 +104,8 @@ export default function ProfileDetailModal({ open, onCancel, data }: ProfileDeta
         <div style={{ paddingTop: 16 }}>
           <Descriptions column={1} bordered size="small" labelStyle={{ background: '#fafafa', width: 160, fontWeight: 600 }}>
             <Descriptions.Item label="Mã nhân viên">{data.employeeCode}</Descriptions.Item>
-            <Descriptions.Item label="Phòng ban">{data.department === 'IT' ? 'Phòng Công nghệ' : data.department}</Descriptions.Item>
-            <Descriptions.Item label="Chức vụ">{data.position === 'SDEV' ? 'Senior Developer' : data.position}</Descriptions.Item>
+            <Descriptions.Item label="Phòng ban">{data.department}</Descriptions.Item>
+            <Descriptions.Item label="Chức vụ">{data.position}</Descriptions.Item>
             <Descriptions.Item label="Ngày bắt đầu">{dayjs(data.startDate).format("DD/MM/YYYY")}</Descriptions.Item>
             <Descriptions.Item label="Trạng thái"><Tag color="green">{data.status}</Tag></Descriptions.Item>
           </Descriptions>
@@ -95,8 +118,8 @@ export default function ProfileDetailModal({ open, onCancel, data }: ProfileDeta
       children: (
         <div style={{ paddingTop: 16 }}>
           <Descriptions column={1} bordered size="small" labelStyle={{ background: '#fafafa', width: 160, fontWeight: 600 }}>
-            <Descriptions.Item label="Số hợp đồng"><Tag color="orange">{data.contractNumber || "HĐ-2025-001"}</Tag></Descriptions.Item>
-            <Descriptions.Item label="Loại hợp đồng">{data.contractType === '1year' ? 'Hợp đồng 1 năm' : data.contractType}</Descriptions.Item>
+            <Descriptions.Item label="Tổng số hợp đồng"><Tag color="blue">{data.contracts?.length || 0} bản</Tag></Descriptions.Item>
+            <Descriptions.Item label="Loại hợp đồng">{data.contractType}</Descriptions.Item>
             <Descriptions.Item label="Lương cơ bản"><span style={{ fontWeight: 700, color: 'var(--primary-color)' }}>{data.baseSalary.toLocaleString("vi-VN")} đ</span></Descriptions.Item>
             <Descriptions.Item label="Ngày ký hợp đồng">{dayjs(data.contractSignDate).format("DD/MM/YYYY")}</Descriptions.Item>
             <Descriptions.Item label="Ngày hết hạn">{data.contractExpiredDate ? dayjs(data.contractExpiredDate).format("DD/MM/YYYY") : "Không thời hạn"}</Descriptions.Item>
@@ -128,7 +151,18 @@ export default function ProfileDetailModal({ open, onCancel, data }: ProfileDeta
       key: "contract",
       label: <span><SafetyCertificateOutlined style={{ marginRight: 8 }} />Thông tin hợp đồng</span>,
       children: (
-        <div style={{ paddingTop: 32, paddingBottom: 32 }}><Empty description="Hiện tại chưa có dữ liệu hợp đồng chi tiết" /></div>
+        <div style={{ paddingTop: 16 }}>
+          <div style={{ marginBottom: 12, fontWeight: 600, fontSize: 14 }}>Danh sách hợp đồng lao động đã ký</div>
+          <Table 
+            columns={contractColumns} 
+            dataSource={data.contracts || []} 
+            searchable={false} 
+            pagination={{ pageSize: 5 }} 
+            size="small" 
+            scroll={{ x: 800 }}
+            locale={{ emptyText: "Không có dữ liệu hợp đồng" }}
+          />
+        </div>
       ),
     },
   ];

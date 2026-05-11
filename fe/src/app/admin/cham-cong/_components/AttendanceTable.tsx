@@ -2,8 +2,8 @@
 
 import React from "react";
 
-import { Tag, Space, Tooltip } from "antd";
-import { EditOutlined, EyeOutlined } from "@ant-design/icons";
+import { Tag, Space, Tooltip, Popconfirm } from "antd";
+import { EditOutlined, EyeOutlined, DeleteOutlined } from "@ant-design/icons";
 import type { TableColumnsType } from "antd";
 import { useState } from "react";
 import Button from "@/components/shared/Button/Button";
@@ -12,6 +12,7 @@ import Table from "@/components/shared/Table/Table";
 interface AttendanceRecord {
   id: string;
   employeeName: string;
+  employeeCode: string; // Thêm
   date: string;
   checkIn: string;
   checkOut: string;
@@ -19,6 +20,7 @@ interface AttendanceRecord {
   lateMinutes: number;
   status: "on-time" | "late" | "absent" | "on-leave";
   source: "biometric" | "manual" | "mobile";
+  department: string; // Thêm
 }
 
 interface AttendanceTableProps {
@@ -26,6 +28,7 @@ interface AttendanceTableProps {
   loading?: boolean;
   onView?: (record: AttendanceRecord) => void;
   onEdit?: (record: AttendanceRecord) => void;
+  onDelete?: (id: string) => void;
   rowSelection?: any;
   onSelectionChange?: (selectedRowKeys: React.Key[]) => void;
 }
@@ -64,6 +67,7 @@ export default function AttendanceTable({
   loading,
   onView,
   onEdit,
+  onDelete,
   rowSelection: externalRowSelection,
   onSelectionChange,
 }: AttendanceTableProps) {
@@ -82,16 +86,31 @@ export default function AttendanceTable({
   const columns: TableColumnsType<AttendanceRecord> = [
     {
       title: "Nhân viên",
-      dataIndex: "employeeName",
       key: "employeeName",
-      width: 150,
+      width: 200,
+      fixed: "left" as const,
       sorter: (a, b) => a.employeeName.localeCompare(b.employeeName),
+      render: (_, record) => (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+          <span style={{ fontWeight: 600, fontSize: '14px' }}>{record.employeeName}</span>
+          <span style={{ fontSize: '12px', color: '#8c8c8c', fontStyle: 'italic' }}>
+            ID: {record.employeeCode || 'N/A'}
+          </span>
+        </div>
+      )
+    },
+    {
+      title: "Phòng ban",
+      dataIndex: "department",
+      key: "department",
+      width: 150,
+      sorter: (a, b) => a.department.localeCompare(b.department),
     },
     {
       title: "Ngày",
       dataIndex: "date",
       key: "date",
-      width: 100,
+      width: 110,
       sorter: (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
       render: (date) => new Date(date).toLocaleDateString("vi-VN"),
     },
@@ -99,21 +118,21 @@ export default function AttendanceTable({
       title: "Giờ vào",
       dataIndex: "checkIn",
       key: "checkIn",
-      width: 80,
+      width: 100,
       render: (time) => time || "-",
     },
     {
       title: "Giờ ra",
       dataIndex: "checkOut",
       key: "checkOut",
-      width: 80,
+      width: 100,
       render: (time) => time || "-",
     },
     {
       title: "Số giờ",
       dataIndex: "workHours",
       key: "workHours",
-      width: 70,
+      width: 90,
       render: (hours) => `${hours}h`,
       sorter: (a, b) => a.workHours - b.workHours,
     },
@@ -121,7 +140,7 @@ export default function AttendanceTable({
       title: "Muộn (phút)",
       dataIndex: "lateMinutes",
       key: "lateMinutes",
-      width: 100,
+      width: 110,
       render: (minutes) => {
         if (minutes === 0)
           return <span style={{ color: "#52c41a" }}>0 phút</span>;
@@ -133,7 +152,7 @@ export default function AttendanceTable({
       title: "Trạng thái",
       dataIndex: "status",
       key: "status",
-      width: 100,
+      width: 120,
       render: (status: string) => (
         <Tag color={getStatusColor(status)}>{getStatusLabel(status)}</Tag>
       ),
@@ -142,15 +161,17 @@ export default function AttendanceTable({
       title: "Nguồn",
       dataIndex: "source",
       key: "source",
-      width: 120,
+      width: 130,
       render: (source: string) => getSourceLabel(source),
     },
     {
       title: "Thao tác",
       key: "action",
-      width: 100,
+      width: 130,
+      fixed: "right" as const,
+      align: "center" as const,
       render: (_, record) => (
-        <Space size="small">
+        <Space size={0}>
           {onView && (
             <Tooltip title="Xem chi tiết">
               <Button
@@ -170,6 +191,25 @@ export default function AttendanceTable({
                 onClick={() => onEdit(record)}
               />
             </Tooltip>
+          )}
+          {onDelete && (
+            <Popconfirm
+              title="Xóa bản ghi"
+              description="Bạn có chắc chắn muốn xóa bản ghi chấm công này?"
+              onConfirm={() => onDelete(record.id)}
+              okText="Xóa"
+              cancelText="Hủy"
+              okButtonProps={{ danger: true }}
+            >
+              <Tooltip title="Xóa">
+                <Button
+                  type="text"
+                  size="small"
+                  icon={<DeleteOutlined />}
+                  danger
+                />
+              </Tooltip>
+            </Popconfirm>
           )}
         </Space>
       ),

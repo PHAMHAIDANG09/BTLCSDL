@@ -183,14 +183,14 @@ const staffMenuItems = [
     type: "group" as const,
     children: [
       {
-        key: "attendance",
+        key: "cham-cong",
         icon: <ClockCircleOutlined />,
         label: <Link href="/staff/cham-cong">Chấm công</Link>,
       },
       {
-        key: "leave",
+        key: "nghi-phep",
         icon: <CalendarOutlined />,
-        label: <Link href="/staff/leave">Nghỉ phép</Link>,
+        label: <Link href="/staff/nghi-phep">Nghỉ phép</Link>,
       },
     ],
   },
@@ -313,7 +313,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           top: 0,
           bottom: 0,
           height: "100vh",
-          zIndex: 1001,
+          zIndex: 999,
           overflowY: "auto",
           borderRight: `1px solid ${token.colorBorderSecondary}`,
         }}

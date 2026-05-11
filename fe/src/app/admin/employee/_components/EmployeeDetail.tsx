@@ -45,7 +45,7 @@ const EmployeeDetail: React.FC<EmployeeDetailProps> = ({ employee }) => {
         MaNhanVienId: employee?.Id,
         NgayKy: values.NgayKy?.format("YYYY-MM-DD"),
         NgayBatDau: values.NgayBatDau?.format("YYYY-MM-DD"),
-        NgayKetThuc: values.NgayKetThuc?.format("YYYY-MM-DD"),
+        NgayKetThuc: values.NgayKetThuc ? values.NgayKetThuc.format("YYYY-MM-DD") : null,
         TrangThai: "Active"
       };
       await createContractApi(data);
@@ -53,8 +53,10 @@ const EmployeeDetail: React.FC<EmployeeDetailProps> = ({ employee }) => {
       setIsContractModalOpen(false);
       contractForm.resetFields();
       fetchContracts();
-    } catch (error) {
-      Toast.error("Lỗi khi thêm hợp đồng");
+    } catch (error: any) {
+      console.error("Contract creation error:", error);
+      const errorMsg = Array.isArray(error.message) ? error.message.join(", ") : error.message;
+      Toast.error(errorMsg || "Lỗi khi thêm hợp đồng");
     }
   };
 
@@ -63,20 +65,28 @@ const EmployeeDetail: React.FC<EmployeeDetailProps> = ({ employee }) => {
       await deleteContractApi(id);
       Toast.success("Đã xóa hợp đồng");
       fetchContracts();
-    } catch (error) {
-      Toast.error("Lỗi khi xóa hợp đồng");
+    } catch (error: any) {
+      Toast.error(error.message || "Lỗi khi xóa hợp đồng");
     }
   };
 
   if (!employee) return null;
 
   const contractColumns = [
+    { 
+      title: "Mã hợp đồng", 
+      dataIndex: "MaHopDong", 
+      key: "MaHopDong",
+      fixed: "left" as const,
+      width: 120,
+      render: (code: string) => <Tag className="font-mono text-[10px]">{code}</Tag>
+    },
     { title: "Loại hợp đồng", dataIndex: "LoaiHopDong", key: "LoaiHopDong" },
     { 
       title: "Ngày bắt đầu", 
       dataIndex: "NgayBatDau", 
       key: "NgayBatDau",
-      render: (date: string) => new Date(date).toLocaleDateString("vi-VN")
+      render: (date: string) => date ? new Date(date).toLocaleDateString("vi-VN") : "N/A"
     },
     { 
       title: "Ngày kết thúc", 
@@ -103,6 +113,8 @@ const EmployeeDetail: React.FC<EmployeeDetailProps> = ({ employee }) => {
     {
       title: "Thao tác",
       key: "action",
+      fixed: "right" as const,
+      width: 60,
       render: (_: any, record: Contract) => (
         <Popconfirm title="Xóa hợp đồng này?" onConfirm={() => handleDeleteContract(record.Id)}>
           <Button type="text" danger icon={<DeleteOutlined />} size="small" />
@@ -185,6 +197,7 @@ const EmployeeDetail: React.FC<EmployeeDetailProps> = ({ employee }) => {
                   rowKey="Id"
                   pagination={false}
                   size="small"
+                  scroll={{ x: 800 }}
                   locale={{ emptyText: "Chưa có dữ liệu hợp đồng" }}
                 />
               </div>
@@ -204,14 +217,13 @@ const EmployeeDetail: React.FC<EmployeeDetailProps> = ({ employee }) => {
           form={contractForm} 
           layout="vertical" 
           onFinish={handleAddContract}
-          initialValues={{ LoaiHopDong: "Hợp đồng chính thức" }}
+          initialValues={{ LoaiHopDong: "Xác định thời hạn" }}
         >
           <Form.Item name="LoaiHopDong" label="Loại hợp đồng" rules={[{ required: true }]}>
             <Select>
               <Select.Option value="Thử việc">Thử việc</Select.Option>
-              <Select.Option value="Hợp đồng chính thức">Hợp đồng chính thức</Select.Option>
-              <Select.Option value="Hợp đồng 1 năm">Hợp đồng 1 năm</Select.Option>
-              <Select.Option value="Không thời hạn">Không thời hạn</Select.Option>
+              <Select.Option value="Xác định thời hạn">Xác định thời hạn</Select.Option>
+              <Select.Option value="Không xác định thời hạn">Không xác định thời hạn</Select.Option>
             </Select>
           </Form.Item>
           <div className="grid grid-cols-2 gap-4">
@@ -227,7 +239,12 @@ const EmployeeDetail: React.FC<EmployeeDetailProps> = ({ employee }) => {
               <DatePicker className="w-full" format="DD/MM/YYYY" />
             </Form.Item>
             <Form.Item name="LuongCoBan" label="Lương cơ bản" rules={[{ required: true }]}>
-              <InputNumber className="w-full" formatter={v => `${v}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')} />
+              <InputNumber 
+                className="w-full" 
+                min={0}
+                formatter={v => `${v}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')} 
+                parser={(value) => value!.replace(/\$\s?|(,*)/g, "") as any}
+              />
             </Form.Item>
           </div>
           <Form.Item name="GhiChu" label="Ghi chú">

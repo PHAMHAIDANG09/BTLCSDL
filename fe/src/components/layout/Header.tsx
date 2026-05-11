@@ -46,6 +46,7 @@ const SEGMENT_MAP: Record<string, string> = {
   dashboard: "Bảng điều khiển",
   staff: "Nhân viên",
   attendance: "Chấm công",
+  "cham-cong": "Chấm công",
   employee: "Nhân viên",
   profile: "Hồ sơ",
   notifications: "Thông báo",

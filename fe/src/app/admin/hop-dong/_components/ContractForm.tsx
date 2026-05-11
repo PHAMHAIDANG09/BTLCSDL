@@ -115,15 +115,7 @@ const ContractForm: React.FC<ContractFormProps> = ({
             </Select>
           </Form.Item>
         </Col>
-        <Col xs={24} md={12}>
-          <Form.Item
-            name="MaHopDong"
-            label="Số hiệu Hợp đồng"
-            rules={[CommonRules.required("Số hiệu hợp đồng")]}
-          >
-            <Input placeholder="Ví dụ: HDLD/2024/001" />
-          </Form.Item>
-        </Col>
+        {/* MaHopDong được tự động sinh tại Backend */}
 
         <Col xs={24} md={12}>
           <Form.Item

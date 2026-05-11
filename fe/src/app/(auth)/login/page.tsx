@@ -52,8 +52,7 @@ export default function LoginPage() {
     } catch (err: any) {
       const errorMsg = err?.message || 'Đăng nhập thất bại. Vui lòng kiểm tra lại.';
       message.error(errorMsg);
-    } finally {
-      setLoading(false);
+      setLoading(false); // Chỉ tắt loading khi có lỗi
     }
   };
 
