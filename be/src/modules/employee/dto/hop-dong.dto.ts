@@ -7,10 +7,10 @@ export class CreateHopDongDto {
   @IsNotEmpty()
   MaNhanVienId: number;
 
-  @ApiProperty({ example: 'HĐLĐ-2025-001' })
+  @ApiProperty({ example: 'HĐLĐ-2025-001', required: false })
   @IsString()
-  @IsNotEmpty()
-  MaHopDong: string;
+  @IsOptional()
+  MaHopDong?: string;
 
   @ApiProperty({ example: 'Chính thức' })
   @IsString()
@@ -41,6 +41,16 @@ export class CreateHopDongDto {
   @IsString()
   @IsOptional()
   TrangThai?: string;
+
+  @ApiProperty({ example: 'Ghi chú hợp đồng', required: false })
+  @IsString()
+  @IsOptional()
+  GhiChu?: string;
+
+  @ApiProperty({ example: '/uploads/contract.pdf', required: false })
+  @IsString()
+  @IsOptional()
+  DuongDanFile?: string;
 }
 
 export class UpdateHopDongDto {
@@ -71,4 +81,12 @@ export class UpdateHopDongDto {
   @IsString()
   @IsOptional()
   TrangThai?: string;
+
+  @IsString()
+  @IsOptional()
+  GhiChu?: string;
+
+  @IsString()
+  @IsOptional()
+  DuongDanFile?: string;
 }

@@ -158,6 +158,17 @@ export class EmployeeService {
   }
 
   async createContract(dto: CreateHopDongDto) {
+    // Tự động sinh mã hợp đồng nếu không có
+    if (!dto.MaHopDong) {
+      const year = new Date().getFullYear();
+      const lastHD = await this.hopDongRepository.find({
+        order: { Id: 'DESC' },
+        take: 1,
+      });
+      const nextId = lastHD.length > 0 ? lastHD[0].Id + 1 : 1;
+      dto.MaHopDong = `HDLD-${year}-${nextId.toString().padStart(3, '0')}`;
+    }
+    
     const hd = this.hopDongRepository.create(dto);
     return this.hopDongRepository.save(hd);
   }

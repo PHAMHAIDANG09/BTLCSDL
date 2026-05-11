@@ -124,7 +124,7 @@ export class AuthService {
   async getProfile(userId: number) {
     const user = await this.nhanVienRepository.findOne({
       where: { Id: userId },
-      relations: ['phongBan', 'chucVu', 'vaiTro'],
+      relations: ['phongBan', 'chucVu', 'vaiTro', 'hopDongs'],
     });
     if (!user) throw new NotFoundException('Không tìm thấy người dùng');
     // eslint-disable-next-line @typescript-eslint/no-unused-vars

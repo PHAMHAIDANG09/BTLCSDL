@@ -15,49 +15,73 @@ export class AttendanceService {
   ) { }
 
   async checkInOut(userId: number) {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    try {
+      const now = new Date();
+      const dateStr = now.toISOString().split('T')[0];
+      console.log(`[ATTENDANCE DEBUG] UserId: ${userId}, Date: ${dateStr}`);
+      
+      // Tìm bản ghi hôm nay
+      let attendance = await this.chamCongRepository.createQueryBuilder('cc')
+        .where('cc.MaNhanVienId = :userId', { userId })
+        .andWhere('cc.NgayLamViec = :date', { date: dateStr })
+        .getOne();
 
-    let attendance = await this.chamCongRepository.findOne({
-      where: { MaNhanVienId: userId, NgayLamViec: today },
-    });
+      console.log(`[ATTENDANCE DEBUG] Found Record:`, attendance ? 'Yes, ID: ' + attendance.Id : 'No');
 
-    if (!attendance) {
-      // Check-in logic
-      attendance = this.chamCongRepository.create({
-        MaNhanVienId: userId,
-        NgayLamViec: today,
-        GioVao: new Date(),
-        TrangThai: 'CoMat',
-      });
+      if (!attendance) {
+        console.log('[ATTENDANCE DEBUG] Action: Create New');
+        attendance = this.chamCongRepository.create({
+          MaNhanVienId: userId,
+          NgayLamViec: now, // SQL Server sẽ tự lấy phần ngày
+          GioVao: now,
+          TrangThai: 'CoMat',
+          NguonChamCong: 'Manual',
+          SoPhutDiMuon: 0
+        });
 
-      // Calculate late minutes (Assume 8:30 AM start)
-      const startTime = new Date(today);
-      startTime.setHours(8, 30, 0, 0);
-      if (attendance.GioVao > startTime) {
-        const diff = attendance.GioVao.getTime() - startTime.getTime();
-        attendance.SoPhutDiMuon = Math.floor(diff / 60000);
-        attendance.TrangThai = 'DiMuon';
+        // Tính phút đi muộn (Giả định 8:30 AM là mốc)
+        const startTime = new Date();
+        startTime.setHours(8, 30, 0, 0);
+        
+        if (now > startTime) {
+          const diff = now.getTime() - startTime.getTime();
+          attendance.SoPhutDiMuon = Math.floor(diff / 60000);
+          attendance.TrangThai = 'DiMuon';
+        }
+      } else {
+        console.log('[ATTENDANCE DEBUG] Action: Update Check-out');
+        if (attendance.GioRa) {
+          throw new BadRequestException('Bạn đã điểm danh ra cho ngày hôm nay rồi!');
+        }
+
+        attendance.GioRa = now;
+        const start = new Date(attendance.GioVao);
+        const diffHours = (now.getTime() - start.getTime()) / 3600000;
+        attendance.SoGioLam = parseFloat(diffHours.toFixed(2));
+
+        const endTime = new Date();
+        endTime.setHours(17, 30, 0, 0);
+        if (now < endTime && attendance.TrangThai !== 'DiMuon') {
+          attendance.TrangThai = 'VeSom';
+        }
       }
-    } else {
-      // Check-out logic
-      if (attendance.GioRa)
-        throw new BadRequestException('Already checked out');
 
-      attendance.GioRa = new Date();
-      const diffHours =
-        (attendance.GioRa.getTime() - attendance.GioVao.getTime()) / 3600000;
-      attendance.SoGioLam = parseFloat(diffHours.toFixed(2));
-
-      // Assume 5:30 PM end
-      const endTime = new Date(today);
-      endTime.setHours(17, 30, 0, 0);
-      if (attendance.GioRa < endTime && attendance.TrangThai !== 'DiMuon') {
-        attendance.TrangThai = 'VeSom';
-      }
+      const saved = await this.chamCongRepository.save(attendance);
+      console.log('[ATTENDANCE DEBUG] Save Success:', saved.Id);
+      return saved;
+    } catch (error) {
+      console.error('[ATTENDANCE FATAL ERROR]', error);
+      if (error instanceof BadRequestException) throw error;
+      throw new BadRequestException(`Lỗi: ${error.message || 'Không xác định'}`);
     }
+  }
 
-    return this.chamCongRepository.save(attendance);
+  async getTodayAttendance(userId: number) {
+    const dateStr = new Date().toISOString().split('T')[0];
+    return this.chamCongRepository.createQueryBuilder('cc')
+      .where('cc.MaNhanVienId = :userId', { userId })
+      .andWhere('CAST(cc.NgayLamViec AS DATE) = :date', { date: dateStr })
+      .getOne();
   }
 
   async approveOT(
@@ -94,11 +118,12 @@ export class AttendanceService {
   }
 
   async getAllHistory(startDate: Date, endDate: Date) {
-    return this.chamCongRepository.find({
-      where: { NgayLamViec: Between(startDate, endDate) },
-      relations: ['nhanVien'],
-      order: { NgayLamViec: 'DESC' },
-    });
+    return this.chamCongRepository.createQueryBuilder('cc')
+      .leftJoinAndSelect('cc.nhanVien', 'nv')
+      .leftJoinAndSelect('nv.phongBan', 'pb')
+      .where('cc.NgayLamViec BETWEEN :start AND :end', { start: startDate, end: endDate })
+      .orderBy('cc.NgayLamViec', 'DESC')
+      .getMany();
   }
 
   async getAllOTRequests(status?: string) {
@@ -110,5 +135,79 @@ export class AttendanceService {
       relations: ['nhanVien'],
       order: { NgayTao: 'DESC' },
     });
+  }
+
+  async deleteAttendance(id: number) {
+    const record = await this.chamCongRepository.findOne({ where: { Id: id } });
+    if (!record) throw new NotFoundException('Bản ghi chấm công không tồn tại');
+    return this.chamCongRepository.remove(record);
+  }
+
+  async updateAttendance(id: number, data: any) {
+    const record = await this.chamCongRepository.findOne({ where: { Id: id } });
+    if (!record) throw new NotFoundException('Bản ghi chấm công không tồn tại');
+
+    // Update fields
+    if (data.GioVao) record.GioVao = new Date(data.GioVao);
+    if (data.GioRa) record.GioRa = new Date(data.GioRa);
+    if (data.TrangThai) record.TrangThai = data.TrangThai;
+
+    // Recalculate hours
+    if (record.GioVao && record.GioRa) {
+      const diffHours = (record.GioRa.getTime() - record.GioVao.getTime()) / 3600000;
+      record.SoGioLam = parseFloat(diffHours.toFixed(2));
+    }
+
+    // Recalculate late minutes
+    if (record.GioVao) {
+      const startTime = new Date(record.NgayLamViec);
+      startTime.setHours(8, 30, 0, 0);
+      if (record.GioVao > startTime) {
+        const diff = record.GioVao.getTime() - startTime.getTime();
+        record.SoPhutDiMuon = Math.floor(diff / 60000);
+      } else {
+        record.SoPhutDiMuon = 0;
+      }
+    }
+
+    return this.chamCongRepository.save(record);
+  }
+
+  async getMonthlySummary(month: number, year: number) {
+    const startDate = new Date(year, month - 1, 1);
+    const endDate = new Date(year, month, 0);
+
+    const records = await this.chamCongRepository.find({
+      where: { NgayLamViec: Between(startDate, endDate) },
+      relations: ['nhanVien', 'nhanVien.phongBan'],
+    });
+
+    const summaryMap = new Map();
+
+    records.forEach(record => {
+      const empId = record.MaNhanVienId;
+      if (!summaryMap.has(empId)) {
+        summaryMap.set(empId, {
+          employeeId: empId,
+          employeeName: record.nhanVien?.HoTen || 'N/A',
+          employeeCode: record.nhanVien?.MaNhanVien || 'N/A',
+          department: record.nhanVien?.phongBan?.TenPhong || 'N/A',
+          totalWorkHours: 0,
+          totalLateMinutes: 0,
+          lateDays: 0,
+          earlyLeaveDays: 0,
+          totalDays: 0
+        });
+      }
+
+      const stats = summaryMap.get(empId);
+      stats.totalWorkHours += record.SoGioLam || 0;
+      stats.totalLateMinutes += record.SoPhutDiMuon || 0;
+      if (record.TrangThai === 'DiMuon') stats.lateDays += 1;
+      if (record.TrangThai === 'VeSom') stats.earlyLeaveDays += 1;
+      stats.totalDays += 1;
+    });
+
+    return Array.from(summaryMap.values());
   }
 }
