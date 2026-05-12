@@ -1,6 +1,6 @@
 "use client";
 
-import { Typography, Tag, Row, Col } from "antd";
+import { Typography, Tag, Row, Col, Tabs, DatePicker, Space } from "antd";
 import { 
   MinusCircleOutlined, 
   ClockCircleOutlined, 
@@ -9,35 +9,17 @@ import {
   DashboardOutlined 
 } from "@ant-design/icons";
 import Table from "@/components/shared/Table/Table";
+import { Table as AntTable } from "antd";
 import StatsCard from "@/components/shared/StatsCard/StatsCard";
 import type { TableColumnsType } from "antd";
 import Button from "@/components/shared/Button/Button";
 import { CheckInModal } from "@/components/attendance/CheckInModal";
 import { useState, useEffect, useMemo } from "react";
 import { AttendanceService } from "@/services/attendance.service";
-import { DatePicker, Space, Empty } from "antd";
 import dayjs from "dayjs";
-import { SearchOutlined } from "@ant-design/icons";
 
 const { RangePicker } = DatePicker;
-
-const { Title, Text } = Typography;
-
-interface AttendanceRecord {
-  id: string;
-  date: string;
-  checkIn: string;
-  checkOut: string;
-  workHours: number;
-  lateMinutes: number;
-  status: "on-time" | "late" | "absent" | "on-leave";
-}
-
-const MOCK_DATA: AttendanceRecord[] = [
-  { id: "1", date: "2024-04-27", checkIn: "08:00", checkOut: "17:30", workHours: 8.5, lateMinutes: 0, status: "on-time" },
-  { id: "2", date: "2024-04-26", checkIn: "08:15", checkOut: "17:45", workHours: 8.5, lateMinutes: 15, status: "late" },
-  { id: "3", date: "2024-04-25", checkIn: "-", checkOut: "-", workHours: 0, lateMinutes: 0, status: "on-leave" },
-];
+const { Text } = Typography;
 
 const statusConfig: Record<string, { label: string; color: string }> = {
   "on-time": { label: "Đúng giờ", color: "green" },
@@ -71,8 +53,8 @@ export default function StaffAttendancePage() {
         date: dayjs(item.NgayLamViec).format("DD/MM/YYYY"),
         checkIn: item.GioVao ? dayjs(item.GioVao).format("HH:mm") : "-",
         checkOut: item.GioRa ? dayjs(item.GioRa).format("HH:mm") : "-",
-        workHours: item.SoGioLam ? `${item.SoGioLam}h` : "0h",
-        late: item.SoPhutDiMuon ? `${item.SoPhutDiMuon} phút` : "-",
+        workHours: item.SoGioLam || 0,
+        late: item.SoPhutDiMuon || 0,
         status: mapBackendStatus(item.TrangThai),
       }));
       setHistory(mapped);
@@ -98,20 +80,89 @@ export default function StaffAttendancePage() {
     { title: "Ngày", dataIndex: "date", key: "date" },
     { title: "Giờ vào", dataIndex: "checkIn", key: "checkIn" },
     { title: "Giờ ra", dataIndex: "checkOut", key: "checkOut" },
-    { title: "Số giờ", dataIndex: "workHours", key: "workHours" },
-    { title: "Muộn", dataIndex: "late", key: "late" },
+    { title: "Số giờ", dataIndex: "workHours", key: "workHours", render: (h) => `${h}h` },
+    { title: "Muộn", dataIndex: "late", key: "late", render: (m) => m > 0 ? `${m} phút` : "-" },
     {
       title: "Trạng thái", dataIndex: "status", key: "status",
       render: (s: string) => <Tag color={statusConfig[s]?.color}>{statusConfig[s]?.label}</Tag>,
     },
   ];
 
-  const stats = [
-    { label: "Có mặt", value: 2, icon: <CheckCircleOutlined />, color: "var(--success-color)", bg: "#f6ffed" },
-    { label: "Đi muộn", value: 2, icon: <ClockCircleOutlined />, color: "var(--warning-color)", bg: "#fff7e6" },
-    { label: "Vắng mặt", value: 0, icon: <MinusCircleOutlined />, color: "var(--error-color)", bg: "#fff1f0" },
-    { label: "Nghỉ phép", value: 1, icon: <FileTextOutlined />, color: "var(--info-color)", bg: "#e6f7ff" },
-    { label: "Tổng giờ", value: "34 h", icon: <DashboardOutlined />, color: "#262626", bg: "#f5f5f5" },
+  const mainStats = [
+    { label: "Có mặt", value: history.filter(h => h.status === 'on-time').length, icon: <CheckCircleOutlined />, color: "var(--success-color)", bg: "#f6ffed" },
+    { label: "Đi muộn", value: history.filter(h => h.status === 'late').length, icon: <ClockCircleOutlined />, color: "var(--warning-color)", bg: "#fff7e6" },
+    { label: "Vắng mặt", value: history.filter(h => h.status === 'absent').length, icon: <MinusCircleOutlined />, color: "var(--error-color)", bg: "#fff1f0" },
+    { label: "Nghỉ phép", value: history.filter(h => h.status === 'on-leave').length, icon: <FileTextOutlined />, color: "var(--info-color)", bg: "#e6f7ff" },
+  ];
+
+  const totalHoursStat = { 
+    label: "Tổng giờ", 
+    value: `${history.reduce((a, b) => a + (b.workHours || 0), 0).toFixed(1)} h`, 
+    icon: <DashboardOutlined />, 
+    color: "#9c074fff", 
+    bg: "#fcedf2ff" 
+  };
+
+  const summaryData = useMemo(() => {
+    // ... logic giữ nguyên
+    const totalHours = history.reduce((acc, curr) => acc + parseFloat(curr.workHours || 0), 0);
+    const totalLate = history.reduce((acc, curr) => acc + (curr.late || 0), 0);
+    const lateDays = history.filter(h => h.status === 'late').length;
+    const workDays = history.filter(h => h.status === 'on-time' || h.status === 'late').length;
+
+    return [{
+      key: '1',
+      month: dateRange[0].format('MM/YYYY'),
+      totalWorkHours: totalHours.toFixed(1),
+      totalLateMinutes: totalLate,
+      lateDays: lateDays,
+      workDays: workDays
+    }];
+  }, [history, dateRange]);
+
+  const summaryColumns = [
+    { title: "Tháng", dataIndex: "month", key: "month" },
+    { title: "Tổng ngày công", dataIndex: "workDays", key: "workDays" },
+    { title: "Tổng giờ làm", dataIndex: "totalWorkHours", key: "totalWorkHours", render: (h: string) => <b>{h}h</b> },
+    { title: "Số ngày đi muộn", dataIndex: "lateDays", key: "lateDays", render: (d: number) => <span style={{ color: '#ff4d4f', fontWeight: 600 }}>{d} ngày</span> },
+    { title: "Tổng phút muộn", dataIndex: "totalLateMinutes", key: "totalLateMinutes", render: (m: number) => <span style={{ color: m > 0 ? '#ff4d4f' : '#52c41a' }}>{m} phút</span> },
+  ];
+
+  const tabItems = [
+    // ... logic giữ nguyên
+    {
+      key: '1',
+      label: 'Nhật ký chấm công',
+      children: (
+        <Table<any>
+          columns={columns}
+          dataSource={history}
+          loading={loading}
+          pagination={{ pageSize: 10 }}
+          searchable={false}
+          rowKey="id"
+          scroll={{ x: 'max-content' }}
+        />
+      )
+    },
+    {
+      key: '2',
+      label: 'Tổng hợp tháng',
+      children: (
+        <div style={{ marginTop: 8 }}>
+          <div style={{ marginBottom: 16 }}>
+            <Text type="secondary">Thống kê dữ liệu từ <b style={{ color: '#cb1414' }}>{dateRange[0].format('DD/MM/YYYY')}</b> đến <b style={{ color: '#cb1414' }}>{dateRange[1].format('DD/MM/YYYY')}</b></Text>
+          </div>
+          <AntTable 
+            columns={summaryColumns} 
+            dataSource={summaryData} 
+            pagination={false}
+            rowKey="month"
+            scroll={{ x: 'max-content' }}
+          />
+        </div>
+      )
+    }
   ];
 
   return (
@@ -126,65 +177,66 @@ export default function StaffAttendancePage() {
           </p>
           <Button 
             type="primary" 
-            size="large" 
             onClick={() => setIsCheckInModalVisible(true)}
-            style={{ padding: '0 24px', height: '40px', fontWeight: 'bold' }}
+            style={{ height: '40px', padding: '0 24px', fontWeight: 600, borderRadius: '8px' }}
           >
             Điểm danh ngay
           </Button>
         </div>
       </div>
 
-      <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
-        {stats.map((item, idx) => (
-          <Col xs={24} sm={12} md={idx === 4 ? 8 : 4} key={idx}>
-            <StatsCard 
-              label={item.label}
-              value={item.value}
-              icon={item.icon}
-              color={item.color}
-              bg={item.bg}
-              size="small"
-            />
+      {/* 4 Thẻ chính trên 1 hàng */}
+      <Row gutter={[16, 16]} style={{ marginBottom: 20 }}>
+        {mainStats.map((item, idx) => (
+          <Col xs={12} sm={6} key={idx}>
+            <StatsCard {...item} />
           </Col>
         ))}
       </Row>
 
-      {/* Filter Section - Minimalist */}
+      {/* Bộ lọc + Tổng giờ (Không bọc xám, Tổng giờ lên đầu) */}
       <div style={{ 
         display: "flex",
         justifyContent: "space-between",
         alignItems: "center",
-        marginBottom: "20px",
+        marginBottom: "24px",
+        padding: "0 4px"
       }}>
-        <Space size="middle">
-          <Text strong>Bộ lọc thời gian:</Text>
-          <RangePicker 
-            value={dateRange}
-            onChange={(dates) => {
-              if (dates && dates[0] && dates[1]) {
-                setDateRange([dates[0], dates[1]]);
-              }
-            }}
-            format="DD/MM/YYYY"
-            style={{ borderRadius: "8px" }}
-          />
+        <Space size="large" align="center">
+          <div style={{ width: 'calc(25% - 12px)', minWidth: '250px' }}>
+            <StatsCard {...totalHoursStat} />
+          </div>
+          <Space align="center" style={{ marginTop: -4 }}>
+            <Text strong>Bộ lọc thời gian:</Text>
+            <RangePicker 
+              value={dateRange}
+              onChange={(dates) => {
+                if (dates && dates[0] && dates[1]) {
+                  setDateRange([dates[0], dates[1]]);
+                }
+              }}
+              format="DD/MM/YYYY"
+              style={{ borderRadius: "8px" }}
+            />
+          </Space>
         </Space>
-        <Text type="secondary">
-          Hiển thị <b>{history.length}</b> bản ghi
-        </Text>
+        
+        <Button 
+          type="primary" 
+          style={{ 
+            background: '#cb1414', 
+            borderColor: '#cb1414',
+            borderRadius: '8px',
+            fontSize: '12px',
+            height: '32px',
+            padding: '0 12px'
+          }}
+        >
+          Hiển thị {history.length} bản ghi
+        </Button>
       </div>
 
-      {/* Table Section - Direct */}
-      <Table<any>
-        columns={columns}
-        dataSource={history}
-        loading={loading}
-        pagination={{ pageSize: 10 }}
-        searchable={false}
-        rowKey="id"
-        scroll={{ x: 'max-content' }}
-      />
+      <Tabs defaultActiveKey="1" items={tabItems} style={{ marginTop: 8 }} />
 
       <CheckInModal 
         open={isCheckInModalVisible} 
