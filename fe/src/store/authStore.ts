@@ -66,6 +66,11 @@ export const useAuthStore = create<AuthState>()(
           const userJson = localStorage.getItem('user');
           if (token && userJson) {
             const user = JSON.parse(userJson) as User;
+            // Đồng bộ lại cookie nếu bị thiếu (ví dụ sau khi refresh trang mà cookie hết hạn)
+            if (!document.cookie.includes('auth_token=')) {
+              document.cookie = `auth_token=${token}; path=/; max-age=86400; SameSite=Lax`;
+              document.cookie = `user_role=${user.role}; path=/; max-age=86400; SameSite=Lax`;
+            }
             set({ token, user, isAuthenticated: true });
           }
         } catch {
@@ -83,6 +88,15 @@ export const useAuthStore = create<AuthState>()(
         user: state.user,
         isAuthenticated: state.isAuthenticated,
       }),
+      // Khi hydrate lại state từ localStorage, kiểm tra và khôi phục cookie
+      onRehydrateStorage: () => (state) => {
+        if (state && state.isAuthenticated && state.token && state.user) {
+          if (typeof document !== 'undefined' && !document.cookie.includes('auth_token=')) {
+            document.cookie = `auth_token=${state.token}; path=/; max-age=86400; SameSite=Lax`;
+            document.cookie = `user_role=${state.user.role}; path=/; max-age=86400; SameSite=Lax`;
+          }
+        }
+      },
     },
   ),
 );
