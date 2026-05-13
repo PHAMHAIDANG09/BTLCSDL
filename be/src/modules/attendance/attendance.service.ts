@@ -17,13 +17,14 @@ export class AttendanceService {
   async checkInOut(userId: number) {
     try {
       const now = new Date();
-      const dateStr = now.toISOString().split('T')[0];
+      // Lấy ngày hiện tại theo giờ địa phương (YYYY-MM-DD)
+      const dateStr = now.toLocaleDateString('sv-SE');
       console.log(`[ATTENDANCE DEBUG] UserId: ${userId}, Date: ${dateStr}`);
       
-      // Tìm bản ghi hôm nay
+      // Tìm bản ghi hôm nay - Dùng CAST để đảm bảo so sánh chính xác trên SQL Server
       let attendance = await this.chamCongRepository.createQueryBuilder('cc')
         .where('cc.MaNhanVienId = :userId', { userId })
-        .andWhere('cc.NgayLamViec = :date', { date: dateStr })
+        .andWhere('CAST(cc.NgayLamViec AS DATE) = :date', { date: dateStr })
         .getOne();
 
       console.log(`[ATTENDANCE DEBUG] Found Record:`, attendance ? 'Yes, ID: ' + attendance.Id : 'No');
@@ -77,7 +78,7 @@ export class AttendanceService {
   }
 
   async getTodayAttendance(userId: number) {
-    const dateStr = new Date().toISOString().split('T')[0];
+    const dateStr = new Date().toLocaleDateString('sv-SE');
     return this.chamCongRepository.createQueryBuilder('cc')
       .where('cc.MaNhanVienId = :userId', { userId })
       .andWhere('CAST(cc.NgayLamViec AS DATE) = :date', { date: dateStr })
