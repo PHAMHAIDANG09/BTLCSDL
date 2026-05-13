@@ -1,4 +1,4 @@
-docker exec nexthr-db /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "Dang@12345" -C -i /init-db/SchemaNEXTHR.sql-- =============================================
+-- =============================================
 -- DỰ ÁN: NEXTHR - HỆ THỐNG QUẢN TRỊ NHÂN SỰ & TÍNH LƯƠNG
 -- Hệ quản trị: Microsoft SQL Server
 -- Bao gồm: Database + Schema + Constraint + Index + Data mẫu

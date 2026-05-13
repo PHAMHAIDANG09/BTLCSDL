@@ -26,17 +26,26 @@ export default function LoginPage() {
   const router = useRouter();
   const { message } = App.useApp();
   const { token } = theme.useToken();
-  const { setAuth, isAuthenticated, user } = useAuthStore();
+  const { setAuth, isAuthenticated, user, logout } = useAuthStore();
   const [loading, setLoading] = useState(false);
   const [form] = Form.useForm();
 
   // Redirect nếu đã đăng nhập
   useEffect(() => {
     if (isAuthenticated && user) {
+      // KIỂM TRA THÊM: Cookie có tồn tại không? 
+      // Nếu middleware redirect ta về đây nghĩa là cookie đã mất/hết hạn
+      // mà store vẫn đang nghĩ là đã login -> gây ra vòng lặp vô tận.
+      if (!document.cookie.includes('auth_token=')) {
+        console.warn('Detecting auth mismatch: Store is authenticated but cookies are missing. Clearing local state.');
+        logout();
+        return;
+      }
+
       const destination = ROLE_HOME_MAP[user.role] || '/admin/bang-dieu-khien';
       window.location.replace(destination);
     }
-  }, [isAuthenticated, user, router]);
+  }, [isAuthenticated, user, router, logout]);
 
   const handleLogin = async (values: LoginRequest & { remember?: boolean }) => {
     setLoading(true);
