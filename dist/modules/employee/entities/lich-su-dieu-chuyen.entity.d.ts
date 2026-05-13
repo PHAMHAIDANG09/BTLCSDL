@@ -4,12 +4,12 @@ import { ChucVu } from '../../organization/entities/chuc-vu.entity';
 export declare class LichSuDieuChuyen {
     Id: number;
     MaNhanVienId: number;
-    PhongBanCuId: number;
+    PhongBanCuId: number | null;
     PhongBanMoiId: number;
-    ChucVuCuId: number;
+    ChucVuCuId: number | null;
     ChucVuMoiId: number;
     NgayHieuLuc: Date;
-    LyDo: string;
+    LyDo: string | null;
     NguoiDuyetId: number;
     NgayTao: Date;
     nhanVien: NhanVien;

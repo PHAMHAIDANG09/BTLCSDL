@@ -5,9 +5,9 @@ export declare class HopDong {
     SoHopDong: string;
     LoaiHopDong: string;
     NgayBatDau: Date;
-    NgayKetThuc: Date;
+    NgayKetThuc: Date | null;
     NgayKy: Date;
-    DuongDanFile: string;
+    DuongDanFile: string | null;
     TrangThai: string;
     NgayTao: Date;
     nhanVien: NhanVien;

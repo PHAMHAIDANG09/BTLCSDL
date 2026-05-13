@@ -7,6 +7,7 @@ import { LichSuDieuChuyen } from './entities/lich-su-dieu-chuyen.entity';
 import { CreateNhanVienDto, UpdateNhanVienDto } from './dto/nhan-vien.dto';
 import { CreateHopDongDto, UpdateHopDongDto } from './dto/hop-dong.dto';
 import * as bcrypt from 'bcrypt';
+import * as ExcelJS from 'exceljs';
 
 @Injectable()
 export class EmployeeService {
@@ -16,7 +17,7 @@ export class EmployeeService {
     @InjectRepository(HopDong)
     private hopDongRepository: Repository<HopDong>,
     private dataSource: DataSource,
-  ) {}
+  ) { }
 
   async findAll() {
     return this.nhanVienRepository.find({
@@ -155,5 +156,83 @@ export class EmployeeService {
       },
       relations: ['nhanVien'],
     });
+  }
+
+  async importEmployeesFromExcel(file: Express.Multer.File) {
+    const workbook = new ExcelJS.Workbook();
+    await workbook.xlsx.load(file.buffer as any);
+    const worksheet = workbook.worksheets[0]; // Sheet 1
+
+    const hashedPassword = await bcrypt.hash('123456', 10);
+    const employeesToSave: any[] = [];
+
+    // Duyệt qua các dòng (bỏ qua header dòng 1)
+    for (let i = 2; i <= worksheet.rowCount; i++) {
+      const row = worksheet.getRow(i);
+
+      // Kiểm tra dòng trống
+      const values = row.values as any[];
+      if (!values || values.length === 0 || values.every((v) => v === null || v === undefined)) {
+        continue;
+      }
+
+      const maNhanVien = this.getCellValue(row.getCell(1));
+      const hoTen = this.getCellValue(row.getCell(2));
+      const email = this.getCellValue(row.getCell(3));
+      const maPhongIdRaw = this.getCellValue(row.getCell(4));
+      const maPhongId = maPhongIdRaw ? Number(maPhongIdRaw) : null;
+      const maChucVuIdRaw = this.getCellValue(row.getCell(5));
+      const maChucVuId = maChucVuIdRaw ? Number(maChucVuIdRaw) : null;
+      const maVaiTroIdRaw = this.getCellValue(row.getCell(6));
+      const maVaiTroId = maVaiTroIdRaw ? Number(maVaiTroIdRaw) : 3; // Mặc định 3 (Staff)
+      const ngayVaoLamRaw = row.getCell(7).value;
+      const ngayVaoLam = ngayVaoLamRaw ? new Date(ngayVaoLamRaw.toString()) : new Date();
+
+      // Kiểm tra thông tin bắt buộc
+      if (!hoTen || !email || !maNhanVien) continue;
+
+      // Validate email cơ bản (không trùng trong DB)
+      const isEmailExist = await this.nhanVienRepository.findOne({
+        where: { Email: email },
+      });
+      if (isEmailExist) continue;
+
+      // Chuẩn bị dữ liệu nhân viên (Dạng Object thuần để dùng với QueryBuilder)
+      employeesToSave.push({
+        MaNhanVien: maNhanVien,
+        HoTen: hoTen,
+        Email: email,
+        MaPhongId: maPhongId,
+        MaChucVuId: maChucVuId,
+        MaVaiTroId: maVaiTroId,
+        NgayVaoLam: ngayVaoLam,
+        MatKhauHash: hashedPassword,
+        TrangThai: 'Active',
+        SoNguoiPhuThuoc: 0,
+      });
+    }
+
+    // Sử dụng QueryBuilder để Bulk Insert trực tiếp vào DB
+    // Việc này sẽ bỏ qua các Hook/Subscriber (AuditSubscriber) giúp tránh lỗi kết nối SQL và tăng tốc
+    if (employeesToSave.length > 0) {
+      await this.nhanVienRepository
+        .createQueryBuilder()
+        .insert()
+        .into(NhanVien)
+        .values(employeesToSave)
+        .callListeners(false) // Vô hiệu hóa tất cả các Subscriber/Listener
+        .execute();
+    }
+
+    return `Đã nhập thành công ${employeesToSave.length} nhân viên`;
+  }
+
+  private getCellValue(cell: any): string {
+    if (!cell || cell.value === null || cell.value === undefined) return '';
+    const val = cell.value;
+    if (typeof val === 'object' && val.hasOwnProperty('text')) {
+      return val.text.toString().trim();
+    }
+    return val.toString().trim();
   }
 }

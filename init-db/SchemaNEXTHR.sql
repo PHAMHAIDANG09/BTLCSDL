@@ -121,6 +121,40 @@ ADD CONSTRAINT FK_PhongBan_MaQuanLy FOREIGN KEY (MaQuanLy) REFERENCES dbo.NhanVi
 GO
 
 -- =============================================
+-- TẠO VIEW SƠ ĐỒ TỔ CHỨC (Recursive CTE)
+-- =============================================
+
+CREATE VIEW dbo.vw_OrgChart AS
+WITH OrgCTE AS (
+    -- Anchor member: Start with top-level departments (MaPhongCha IS NULL)
+    SELECT 
+        Id, 
+        TenPhong, 
+        MaPhong, 
+        MaPhongCha, 
+        0 AS CapDo,
+        CAST(TenPhong AS NVARCHAR(MAX)) AS DuongDan
+    FROM dbo.PhongBan
+    WHERE MaPhongCha IS NULL
+
+    UNION ALL
+
+    -- Recursive member: Join sub-departments with their parents
+    SELECT 
+        pb.Id, 
+        pb.TenPhong, 
+        pb.MaPhong, 
+        pb.MaPhongCha, 
+        cte.CapDo + 1,
+        CAST(cte.DuongDan + ' > ' + pb.TenPhong AS NVARCHAR(MAX))
+    FROM dbo.PhongBan pb
+    INNER JOIN OrgCTE cte ON pb.MaPhongCha = cte.Id
+)
+SELECT * FROM OrgCTE;
+GO
+
+
+-- =============================================
 -- 2. TẠO BẢNG NGHIỆP VỤ NHÂN SỰ
 -- =============================================
 
@@ -334,6 +368,132 @@ CREATE TABLE dbo.NhatKyHeThong (
 GO
 
 -- =============================================
+-- TẠO TRIGGER CẬP NHẬT SỐ DƯ PHÉP
+-- =============================================
+GO
+CREATE TRIGGER dbo.trg_UpdateLeaveBalance 
+ON dbo.DonNghiPhep
+AFTER UPDATE
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    -- Kiểm tra nếu TrangThai thay đổi từ 'Pending' sang 'Approved'
+    IF EXISTS (
+        SELECT 1 
+        FROM inserted i
+        JOIN deleted d ON i.Id = d.Id
+        WHERE d.TrangThai = N'Pending' AND i.TrangThai = N'Approved'
+    )
+    BEGIN
+        -- 1. Kiểm tra xem có dòng nào vi phạm số dư không (số ngày nghỉ > số ngày còn lại)
+        IF EXISTS (
+            SELECT 1
+            FROM inserted i
+            JOIN deleted d ON i.Id = d.Id
+            JOIN dbo.SoDuPhep s ON i.MaNhanVienId = s.MaNhanVienId 
+                                AND i.MaLoaiPhepId = s.MaLoaiPhepId 
+                                AND YEAR(i.NgayBatDau) = s.Nam
+            WHERE d.TrangThai = N'Pending' AND i.TrangThai = N'Approved'
+              AND (s.TongNgayPhep - s.DaSuDung) < i.TongSoNgay
+        )
+        BEGIN
+            RAISERROR (N'Số ngày nghỉ vượt quá số dư phép còn lại.', 16, 1);
+            ROLLBACK TRANSACTION;
+            RETURN;
+        END
+
+        -- 2. Cập nhật số dư phép trong bảng SoDuPhep
+        UPDATE s
+        SET s.DaSuDung = s.DaSuDung + i.TongSoNgay
+        FROM dbo.SoDuPhep s
+        JOIN inserted i ON s.MaNhanVienId = i.MaNhanVienId 
+                        AND s.MaLoaiPhepId = i.MaLoaiPhepId 
+                        AND s.Nam = YEAR(i.NgayBatDau)
+        JOIN deleted d ON i.Id = d.Id
+        WHERE d.TrangThai = N'Pending' AND i.TrangThai = N'Approved';
+    END
+END;
+GO
+
+-- =============================================
+-- TẠO STORED PROCEDURE TÍNH LƯƠNG (PHIÊN BẢN CẢI TIẾN)
+-- =============================================
+USE NextHR;
+GO
+CREATE OR ALTER PROCEDURE dbo.sp_CalculatePayroll
+    @Thang INT,
+    @Nam INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    -- 1. Xóa các phiếu lương cũ
+    DELETE FROM dbo.PhieuLuong 
+    WHERE Thang = @Thang AND Nam = @Nam;
+
+    DECLARE @NguoiTaoId INT = 1;
+
+    -- 2. Thực hiện INSERT (Đã bỏ cột NgayTao vì bảng không có cột này)
+    INSERT INTO dbo.PhieuLuong (
+        MaNhanVienId, Thang, Nam, SoNgayCongChuan, SoNgayCongThucTe, 
+        SoNgayNghiHuongLuong, SoGioLamThem, LuongCoBan, PhuCap, 
+        TienLamThem, KhauTruDiMuon, BaoHiemXaHoi, BaoHiemYTe, 
+        BaoHiemThatNghiep, ThueTNCN, CacKhoanKhauTruKhac, 
+        TongLuongGop, LuongThucNhan, TrangThai, NgayThanhToan, -- Thay NgayTao bằng NgayThanhToan hoặc bỏ qua
+        GhiChu, NguoiTaoId
+    )
+    SELECT 
+        nv.Id,
+        @Thang,
+        @Nam,
+        26,
+        ISNULL(cc.SoNgayCong, 0),
+        0,
+        ISNULL(ot.TongGioOT, 0),
+        lsl.LuongCoBan,
+        lsl.PhuCap,
+        ca_ot.TienOT,
+        0,
+        ca_ins.BHXH,
+        ca_ins.BHYT,
+        ca_ins.BHTN,
+        ca_tax.ThueTNCN,
+        0,
+        ca_inc.TongThuNhap,
+        ca_net.LuongThucNhan,
+        N'Draft',
+        NULL, -- Cột NgayThanhToan để NULL vì đây mới là bản nháp
+        N'Tính lương tự động', -- Ghi chú
+        @NguoiTaoId
+    FROM dbo.NhanVien nv
+    INNER JOIN dbo.LichSuLuong lsl ON nv.Id = lsl.MaNhanVienId AND lsl.DangHieuLuc = 1
+    LEFT JOIN (
+        SELECT MaNhanVienId, COUNT(*) AS SoNgayCong
+        FROM dbo.ChamCong
+        WHERE TrangThai = N'CoMat' AND MONTH(NgayLamViec) = @Thang AND YEAR(NgayLamViec) = @Nam
+        GROUP BY MaNhanVienId
+    ) cc ON nv.Id = cc.MaNhanVienId
+    LEFT JOIN (
+        SELECT MaNhanVienId, SUM(TongSoGio) AS TongGioOT, SUM(TongSoGio * HeSoOT) AS GioOTQuyDoi
+        FROM dbo.DonLamThem
+        WHERE TrangThai = N'Approved' AND MONTH(NgayLamThem) = @Thang AND YEAR(NgayLamThem) = @Nam
+        GROUP BY MaNhanVienId
+    ) ot ON nv.Id = ot.MaNhanVienId
+    CROSS APPLY (SELECT (lsl.LuongCoBan / 26.0) * ISNULL(cc.SoNgayCong, 0) AS LuongTheoCong, ISNULL(ot.GioOTQuyDoi, 0) * (lsl.LuongCoBan / 208.0) AS TienOT) ca_ot
+    CROSS APPLY (SELECT (ca_ot.LuongTheoCong + lsl.PhuCap + ca_ot.TienOT) AS TongThuNhap) ca_inc
+    CROSS APPLY (SELECT lsl.LuongCoBan * 0.08 AS BHXH, lsl.LuongCoBan * 0.015 AS BHYT, lsl.LuongCoBan * 0.01 AS BHTN) ca_ins
+    CROSS APPLY (SELECT (ca_ins.BHXH + ca_ins.BHYT + ca_ins.BHTN) AS TongBaoHiem) ca_bi
+    CROSS APPLY (SELECT (ca_inc.TongThuNhap - ca_bi.TongBaoHiem) AS ThuNhapChiuThue) ca_tax_base
+    CROSS APPLY (SELECT ca_tax_base.ThuNhapChiuThue * 0.05 AS ThueTNCN) ca_tax
+    CROSS APPLY (SELECT (ca_inc.TongThuNhap - ca_bi.TongBaoHiem - ca_tax.ThueTNCN) AS LuongThucNhan) ca_net
+    WHERE nv.TrangThai = N'Active';
+
+    PRINT N'Đã hoàn thành tính lương tháng ' + CAST(@Thang AS VARCHAR) + '/' + CAST(@Nam AS VARCHAR);
+END;
+GO
+
+-- =============================================
 -- 3. TẠO INDEX
 -- =============================================
 
@@ -406,7 +566,7 @@ VALUES
  N'Hà Nội', 'MST001', 2, '100000001', N'Vietcombank', N'Hà Nội',
  1, 4, 1, '2025-01-02', NULL, N'Active', GETDATE()),
 
-('EMP-2025-002', N'Trần Thị Lan', 'lan.tran@nexthr.vn', 'HASH_MANAGER_HR', '0901000002', N'Nữ', '1990-07-20', '012345678902',
+('EMP-2025-002', N'Trần Thị Lan', 'vuongnguyen07022005@gmail.com', 'HASH_MANAGER_HR', '0901000002', N'Nữ', '1990-07-20', '012345678902',
  N'Hà Nội', 'MST002', 1, '100000002', N'ACB', N'Cầu Giấy',
  2, 3, 2, '2025-01-05', NULL, N'Active', GETDATE()),
 

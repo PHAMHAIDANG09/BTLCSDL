@@ -17,8 +17,10 @@ const schedule_1 = require("@nestjs/schedule");
 const database_config_1 = __importDefault(require("./config/database.config"));
 const redis_config_1 = __importDefault(require("./config/redis.config"));
 const control_api_config_1 = __importDefault(require("./config/control-api.config"));
+const mail_config_1 = __importDefault(require("./config/mail.config"));
 const redis_module_1 = require("./modules/redis/redis.module");
 const control_api_module_1 = require("./modules/control-api/control-api.module");
+const mail_module_1 = require("./modules/mail/mail.module");
 const app_controller_1 = require("./app.controller");
 const app_service_1 = require("./app.service");
 const auth_module_1 = require("./modules/auth/auth.module");
@@ -38,7 +40,7 @@ exports.AppModule = AppModule = __decorate([
         imports: [
             config_1.ConfigModule.forRoot({
                 isGlobal: true,
-                load: [database_config_1.default, redis_config_1.default, control_api_config_1.default],
+                load: [database_config_1.default, redis_config_1.default, control_api_config_1.default, mail_config_1.default],
             }),
             schedule_1.ScheduleModule.forRoot(),
             typeorm_1.TypeOrmModule.forRootAsync({
@@ -47,6 +49,7 @@ exports.AppModule = AppModule = __decorate([
             }),
             redis_module_1.RedisModule,
             control_api_module_1.ControlApiModule,
+            mail_module_1.MailModule,
             auth_module_1.AuthModule,
             organization_module_1.OrganizationModule,
             employee_module_1.EmployeeModule,

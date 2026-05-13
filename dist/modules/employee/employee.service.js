@@ -53,6 +53,7 @@ const nhan_vien_entity_1 = require("../auth/entities/nhan-vien.entity");
 const hop_dong_entity_1 = require("./entities/hop-dong.entity");
 const lich_su_dieu_chuyen_entity_1 = require("./entities/lich-su-dieu-chuyen.entity");
 const bcrypt = __importStar(require("bcrypt"));
+const ExcelJS = __importStar(require("exceljs"));
 let EmployeeService = class EmployeeService {
     nhanVienRepository;
     hopDongRepository;
@@ -169,6 +170,69 @@ let EmployeeService = class EmployeeService {
             },
             relations: ['nhanVien'],
         });
+    }
+    async importEmployeesFromExcel(file) {
+        const workbook = new ExcelJS.Workbook();
+        await workbook.xlsx.load(file.buffer);
+        const worksheet = workbook.worksheets[0];
+        const hashedPassword = await bcrypt.hash('123456', 10);
+        const employeesToSave = [];
+        for (let i = 2; i <= worksheet.rowCount; i++) {
+            const row = worksheet.getRow(i);
+            const values = row.values;
+            if (!values || values.length === 0 || values.every((v) => v === null || v === undefined)) {
+                continue;
+            }
+            const maNhanVien = this.getCellValue(row.getCell(1));
+            const hoTen = this.getCellValue(row.getCell(2));
+            const email = this.getCellValue(row.getCell(3));
+            const maPhongIdRaw = this.getCellValue(row.getCell(4));
+            const maPhongId = maPhongIdRaw ? Number(maPhongIdRaw) : null;
+            const maChucVuIdRaw = this.getCellValue(row.getCell(5));
+            const maChucVuId = maChucVuIdRaw ? Number(maChucVuIdRaw) : null;
+            const maVaiTroIdRaw = this.getCellValue(row.getCell(6));
+            const maVaiTroId = maVaiTroIdRaw ? Number(maVaiTroIdRaw) : 3;
+            const ngayVaoLamRaw = row.getCell(7).value;
+            const ngayVaoLam = ngayVaoLamRaw ? new Date(ngayVaoLamRaw.toString()) : new Date();
+            if (!hoTen || !email || !maNhanVien)
+                continue;
+            const isEmailExist = await this.nhanVienRepository.findOne({
+                where: { Email: email },
+            });
+            if (isEmailExist)
+                continue;
+            employeesToSave.push({
+                MaNhanVien: maNhanVien,
+                HoTen: hoTen,
+                Email: email,
+                MaPhongId: maPhongId,
+                MaChucVuId: maChucVuId,
+                MaVaiTroId: maVaiTroId,
+                NgayVaoLam: ngayVaoLam,
+                MatKhauHash: hashedPassword,
+                TrangThai: 'Active',
+                SoNguoiPhuThuoc: 0,
+            });
+        }
+        if (employeesToSave.length > 0) {
+            await this.nhanVienRepository
+                .createQueryBuilder()
+                .insert()
+                .into(nhan_vien_entity_1.NhanVien)
+                .values(employeesToSave)
+                .callListeners(false)
+                .execute();
+        }
+        return `Đã nhập thành công ${employeesToSave.length} nhân viên`;
+    }
+    getCellValue(cell) {
+        if (!cell || cell.value === null || cell.value === undefined)
+            return '';
+        const val = cell.value;
+        if (typeof val === 'object' && val.hasOwnProperty('text')) {
+            return val.text.toString().trim();
+        }
+        return val.toString().trim();
     }
 };
 exports.EmployeeService = EmployeeService;

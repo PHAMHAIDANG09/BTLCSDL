@@ -21,9 +21,21 @@
   <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
   [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
 
-## Description
+## 📖 Project Overview
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+**NextHR** là một hệ thống toàn diện để quản trị nhân sự (HRM) và tính lương (Payroll), được xây dựng trên nền tảng NestJS và SQL Server.
+
+> [!TIP]
+> Để tra cứu chi tiết cấu trúc thư mục, các bảng cơ sở dữ liệu và các module nghiệp vụ, vui lòng xem:
+> **[🗺️ PROJECT_MAP.md](./PROJECT_MAP.md)**
+
+## 🏗️ Kiến trúc Hệ thống
+
+- **Backend:** NestJS (Node.js framework)
+- **Database:** MS SQL Server (Quản lý qua Docker)
+- **Caching:** Redis
+- **Authentication:** JWT & Passport.js
+
 
 ## Project setup
 

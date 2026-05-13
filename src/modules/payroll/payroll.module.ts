@@ -7,6 +7,7 @@ import { DonLamThem } from '../attendance/entities/don-lam-them.entity';
 import { NhanVien } from '../auth/entities/nhan-vien.entity';
 import { PayrollService } from './payroll.service';
 import { PayrollController } from './payroll.controller';
+import { MailModule } from '../mail/mail.module';
 
 @Module({
   imports: [
@@ -17,7 +18,9 @@ import { PayrollController } from './payroll.controller';
       DonLamThem,
       NhanVien,
     ]),
+    MailModule,
   ],
+
   controllers: [PayrollController],
   providers: [PayrollService],
   exports: [PayrollService],

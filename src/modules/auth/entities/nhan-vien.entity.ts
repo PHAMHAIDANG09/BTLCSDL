@@ -31,41 +31,41 @@ export class NhanVien {
   MatKhauHash: string;
 
   @Column({ type: 'varchar', length: 15, nullable: true })
-  SoDienThoai: string;
+  SoDienThoai: string | null;
 
   @Column({ type: 'nvarchar', length: 10, nullable: true })
-  GioiTinh: string;
+  GioiTinh: string | null;
 
   @Column({ type: 'date', nullable: true })
-  NgaySinh: Date;
+  NgaySinh: Date | null;
 
   @Column({ type: 'varchar', length: 20, nullable: true })
-  SoCCCD: string;
+  SoCCCD: string | null;
 
   @Column({ type: 'nvarchar', length: 300, nullable: true })
-  DiaChi: string;
+  DiaChi: string | null;
 
   @Column({ type: 'varchar', length: 20, nullable: true })
-  MaSoThue: string;
+  MaSoThue: string | null;
 
   @Column({ type: 'int', default: 0 })
   SoNguoiPhuThuoc: number;
 
   @Column({ type: 'varchar', length: 30, nullable: true })
-  SoTaiKhoan: string;
+  SoTaiKhoan: string | null;
 
   @Column({ type: 'nvarchar', length: 100, nullable: true })
-  TenNganHang: string;
+  TenNganHang: string | null;
 
   @Column({ type: 'nvarchar', length: 100, nullable: true })
-  ChiNhanhNganHang: string;
+  ChiNhanhNganHang: string | null;
 
   @Column({ type: 'int', nullable: true })
   @Index('IDX_NhanVien_MaPhong')
-  MaPhongId: number;
+  MaPhongId: number | null;
 
   @Column({ type: 'int', nullable: true })
-  MaChucVuId: number;
+  MaChucVuId: number | null;
 
   @Column({ type: 'int' })
   MaVaiTroId: number;
@@ -74,7 +74,7 @@ export class NhanVien {
   NgayVaoLam: Date;
 
   @Column({ type: 'date', nullable: true })
-  NgayNghiViec: Date;
+  NgayNghiViec: Date | null;
 
   @Column({ type: 'nvarchar', length: 20, default: 'Active' })
   @Index('IDX_NhanVien_TrangThai')
@@ -84,7 +84,7 @@ export class NhanVien {
   NgayTao: Date;
 
   @UpdateDateColumn({ type: 'datetime', nullable: true })
-  NgayCapNhat: Date;
+  NgayCapNhat: Date | null;
 
   @ManyToOne(() => PhongBan, (pb) => pb.nhanViens)
   @JoinColumn({ name: 'MaPhongId' })

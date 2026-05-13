@@ -31,8 +31,8 @@ let PayrollController = class PayrollController {
             NguoiThayDoiId: req.user.Id,
         });
     }
-    calculate(data, req) {
-        return this.payrollService.calculatePayroll(data.Thang, data.Nam, req.user.Id);
+    calculate(data) {
+        return this.payrollService.calculatePayroll(data.Thang, data.Nam);
     }
     getMyPaySlips(req) {
         return this.payrollService.getMyPaySlips(req.user.Id);
@@ -60,9 +60,8 @@ __decorate([
     (0, roles_decorator_1.Roles)('Admin'),
     (0, swagger_1.ApiOperation)({ summary: 'Kích hoạt tính toán bảng lương thủ công' }),
     __param(0, (0, common_1.Body)()),
-    __param(1, (0, common_1.Request)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [payroll_dto_1.CalculatePayrollDto, Object]),
+    __metadata("design:paramtypes", [payroll_dto_1.CalculatePayrollDto]),
     __metadata("design:returntype", void 0)
 ], PayrollController.prototype, "calculate", null);
 __decorate([

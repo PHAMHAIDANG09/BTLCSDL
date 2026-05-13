@@ -43,7 +43,7 @@ __decorate([
 ], LichSuDieuChuyen.prototype, "MaNhanVienId", void 0);
 __decorate([
     (0, typeorm_1.Column)({ type: 'int', nullable: true }),
-    __metadata("design:type", Number)
+    __metadata("design:type", Object)
 ], LichSuDieuChuyen.prototype, "PhongBanCuId", void 0);
 __decorate([
     (0, typeorm_1.Column)({ type: 'int' }),
@@ -51,7 +51,7 @@ __decorate([
 ], LichSuDieuChuyen.prototype, "PhongBanMoiId", void 0);
 __decorate([
     (0, typeorm_1.Column)({ type: 'int', nullable: true }),
-    __metadata("design:type", Number)
+    __metadata("design:type", Object)
 ], LichSuDieuChuyen.prototype, "ChucVuCuId", void 0);
 __decorate([
     (0, typeorm_1.Column)({ type: 'int' }),
@@ -63,7 +63,7 @@ __decorate([
 ], LichSuDieuChuyen.prototype, "NgayHieuLuc", void 0);
 __decorate([
     (0, typeorm_1.Column)({ type: 'nvarchar', length: 500, nullable: true }),
-    __metadata("design:type", String)
+    __metadata("design:type", Object)
 ], LichSuDieuChuyen.prototype, "LyDo", void 0);
 __decorate([
     (0, typeorm_1.Column)({ type: 'int' }),

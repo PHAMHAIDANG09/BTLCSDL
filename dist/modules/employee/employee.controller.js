@@ -14,6 +14,7 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.EmployeeController = void 0;
 const common_1 = require("@nestjs/common");
+const platform_express_1 = require("@nestjs/platform-express");
 const swagger_1 = require("@nestjs/swagger");
 const employee_service_1 = require("./employee.service");
 const nhan_vien_dto_1 = require("./dto/nhan-vien.dto");
@@ -26,6 +27,10 @@ let EmployeeController = class EmployeeController {
     employeeService;
     constructor(employeeService) {
         this.employeeService = employeeService;
+    }
+    async importEmployees(file) {
+        const message = await this.employeeService.importEmployeesFromExcel(file);
+        return { message };
     }
     findAll() {
         return this.employeeService.findAll();
@@ -69,6 +74,28 @@ let EmployeeController = class EmployeeController {
     }
 };
 exports.EmployeeController = EmployeeController;
+__decorate([
+    (0, common_1.Post)('import'),
+    (0, roles_decorator_1.Roles)('Admin'),
+    (0, common_1.UseInterceptors)((0, platform_express_1.FileInterceptor)('file')),
+    (0, swagger_1.ApiOperation)({ summary: 'Import nhân viên từ file Excel' }),
+    (0, swagger_1.ApiConsumes)('multipart/form-data'),
+    (0, swagger_1.ApiBody)({
+        schema: {
+            type: 'object',
+            properties: {
+                file: {
+                    type: 'string',
+                    format: 'binary',
+                },
+            },
+        },
+    }),
+    __param(0, (0, common_1.UploadedFile)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", Promise)
+], EmployeeController.prototype, "importEmployees", null);
 __decorate([
     (0, common_1.Get)(),
     (0, roles_decorator_1.Roles)('Admin', 'Manager'),

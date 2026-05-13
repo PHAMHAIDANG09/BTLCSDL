@@ -8,8 +8,11 @@ import {
   Delete,
   UseGuards,
   Request,
+  UseInterceptors,
+  UploadedFile,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { ApiTags, ApiOperation, ApiBearerAuth, ApiConsumes, ApiBody } from '@nestjs/swagger';
 import { EmployeeService } from './employee.service';
 import { CreateNhanVienDto, UpdateNhanVienDto } from './dto/nhan-vien.dto';
 import { CreateHopDongDto, UpdateHopDongDto } from './dto/hop-dong.dto';
@@ -24,6 +27,27 @@ import { Roles } from '../auth/decorators/roles.decorator';
 @Controller('employees')
 export class EmployeeController {
   constructor(private readonly employeeService: EmployeeService) { }
+
+  @Post('import')
+  @Roles('Admin')
+  @UseInterceptors(FileInterceptor('file'))
+  @ApiOperation({ summary: 'Import nhân viên từ file Excel' })
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        file: {
+          type: 'string',
+          format: 'binary',
+        },
+      },
+    },
+  })
+  async importEmployees(@UploadedFile() file: Express.Multer.File) {
+    const message = await this.employeeService.importEmployeesFromExcel(file);
+    return { message };
+  }
 
   @Get()
   @Roles('Admin', 'Manager')

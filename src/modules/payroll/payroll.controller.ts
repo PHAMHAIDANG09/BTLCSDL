@@ -34,13 +34,10 @@ export class PayrollController {
   @Post('calculate')
   @Roles('Admin')
   @ApiOperation({ summary: 'Kích hoạt tính toán bảng lương thủ công' })
-  calculate(@Body() data: CalculatePayrollDto, @Request() req: any) {
-    return this.payrollService.calculatePayroll(
-      data.Thang,
-      data.Nam,
-      req.user.Id,
-    );
+  calculate(@Body() data: CalculatePayrollDto) {
+    return this.payrollService.calculatePayroll(data.Thang, data.Nam);
   }
+
 
   @Get('my-payslips')
   @ApiOperation({ summary: 'Lấy danh sách phiếu lương cá nhân' })

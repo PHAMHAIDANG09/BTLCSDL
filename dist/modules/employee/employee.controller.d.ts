@@ -5,6 +5,9 @@ import { TransferEmployeeDto } from './dto/transfer.dto';
 export declare class EmployeeController {
     private readonly employeeService;
     constructor(employeeService: EmployeeService);
+    importEmployees(file: Express.Multer.File): Promise<{
+        message: string;
+    }>;
     findAll(): Promise<import("../auth/entities/nhan-vien.entity").NhanVien[]>;
     findOne(id: string): Promise<import("../auth/entities/nhan-vien.entity").NhanVien>;
     create(dto: CreateNhanVienDto): Promise<import("../auth/entities/nhan-vien.entity").NhanVien>;

@@ -65,27 +65,27 @@ __decorate([
 ], NhanVien.prototype, "MatKhauHash", void 0);
 __decorate([
     (0, typeorm_1.Column)({ type: 'varchar', length: 15, nullable: true }),
-    __metadata("design:type", String)
+    __metadata("design:type", Object)
 ], NhanVien.prototype, "SoDienThoai", void 0);
 __decorate([
     (0, typeorm_1.Column)({ type: 'nvarchar', length: 10, nullable: true }),
-    __metadata("design:type", String)
+    __metadata("design:type", Object)
 ], NhanVien.prototype, "GioiTinh", void 0);
 __decorate([
     (0, typeorm_1.Column)({ type: 'date', nullable: true }),
-    __metadata("design:type", Date)
+    __metadata("design:type", Object)
 ], NhanVien.prototype, "NgaySinh", void 0);
 __decorate([
     (0, typeorm_1.Column)({ type: 'varchar', length: 20, nullable: true }),
-    __metadata("design:type", String)
+    __metadata("design:type", Object)
 ], NhanVien.prototype, "SoCCCD", void 0);
 __decorate([
     (0, typeorm_1.Column)({ type: 'nvarchar', length: 300, nullable: true }),
-    __metadata("design:type", String)
+    __metadata("design:type", Object)
 ], NhanVien.prototype, "DiaChi", void 0);
 __decorate([
     (0, typeorm_1.Column)({ type: 'varchar', length: 20, nullable: true }),
-    __metadata("design:type", String)
+    __metadata("design:type", Object)
 ], NhanVien.prototype, "MaSoThue", void 0);
 __decorate([
     (0, typeorm_1.Column)({ type: 'int', default: 0 }),
@@ -93,24 +93,24 @@ __decorate([
 ], NhanVien.prototype, "SoNguoiPhuThuoc", void 0);
 __decorate([
     (0, typeorm_1.Column)({ type: 'varchar', length: 30, nullable: true }),
-    __metadata("design:type", String)
+    __metadata("design:type", Object)
 ], NhanVien.prototype, "SoTaiKhoan", void 0);
 __decorate([
     (0, typeorm_1.Column)({ type: 'nvarchar', length: 100, nullable: true }),
-    __metadata("design:type", String)
+    __metadata("design:type", Object)
 ], NhanVien.prototype, "TenNganHang", void 0);
 __decorate([
     (0, typeorm_1.Column)({ type: 'nvarchar', length: 100, nullable: true }),
-    __metadata("design:type", String)
+    __metadata("design:type", Object)
 ], NhanVien.prototype, "ChiNhanhNganHang", void 0);
 __decorate([
     (0, typeorm_1.Column)({ type: 'int', nullable: true }),
     (0, typeorm_1.Index)('IDX_NhanVien_MaPhong'),
-    __metadata("design:type", Number)
+    __metadata("design:type", Object)
 ], NhanVien.prototype, "MaPhongId", void 0);
 __decorate([
     (0, typeorm_1.Column)({ type: 'int', nullable: true }),
-    __metadata("design:type", Number)
+    __metadata("design:type", Object)
 ], NhanVien.prototype, "MaChucVuId", void 0);
 __decorate([
     (0, typeorm_1.Column)({ type: 'int' }),
@@ -122,7 +122,7 @@ __decorate([
 ], NhanVien.prototype, "NgayVaoLam", void 0);
 __decorate([
     (0, typeorm_1.Column)({ type: 'date', nullable: true }),
-    __metadata("design:type", Date)
+    __metadata("design:type", Object)
 ], NhanVien.prototype, "NgayNghiViec", void 0);
 __decorate([
     (0, typeorm_1.Column)({ type: 'nvarchar', length: 20, default: 'Active' }),
@@ -135,7 +135,7 @@ __decorate([
 ], NhanVien.prototype, "NgayTao", void 0);
 __decorate([
     (0, typeorm_1.UpdateDateColumn)({ type: 'datetime', nullable: true }),
-    __metadata("design:type", Date)
+    __metadata("design:type", Object)
 ], NhanVien.prototype, "NgayCapNhat", void 0);
 __decorate([
     (0, typeorm_1.ManyToOne)(() => phong_ban_entity_1.PhongBan, (pb) => pb.nhanViens),

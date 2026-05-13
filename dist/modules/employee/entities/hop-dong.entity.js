@@ -49,7 +49,7 @@ __decorate([
 ], HopDong.prototype, "NgayBatDau", void 0);
 __decorate([
     (0, typeorm_1.Column)({ type: 'date', nullable: true }),
-    __metadata("design:type", Date)
+    __metadata("design:type", Object)
 ], HopDong.prototype, "NgayKetThuc", void 0);
 __decorate([
     (0, typeorm_1.Column)({ type: 'date' }),
@@ -57,7 +57,7 @@ __decorate([
 ], HopDong.prototype, "NgayKy", void 0);
 __decorate([
     (0, typeorm_1.Column)({ type: 'nvarchar', length: 500, nullable: true }),
-    __metadata("design:type", String)
+    __metadata("design:type", Object)
 ], HopDong.prototype, "DuongDanFile", void 0);
 __decorate([
     (0, typeorm_1.Column)({ type: 'nvarchar', length: 20, default: 'Active' }),

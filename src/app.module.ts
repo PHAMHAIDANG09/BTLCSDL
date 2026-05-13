@@ -5,8 +5,11 @@ import { ScheduleModule } from '@nestjs/schedule';
 import databaseConfig from './config/database.config';
 import redisConfig from './config/redis.config';
 import controlApiConfig from './config/control-api.config';
+import mailConfig from './config/mail.config';
 import { RedisModule } from './modules/redis/redis.module';
 import { ControlApiModule } from './modules/control-api/control-api.module';
+import { MailModule } from './modules/mail/mail.module';
+
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './modules/auth/auth.module';
@@ -23,8 +26,9 @@ import { DashboardModule } from './modules/dashboard/dashboard.module';
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      load: [databaseConfig, redisConfig, controlApiConfig],
+      load: [databaseConfig, redisConfig, controlApiConfig, mailConfig],
     }),
+
     ScheduleModule.forRoot(),
     TypeOrmModule.forRootAsync({
       inject: [ConfigService],
@@ -33,6 +37,8 @@ import { DashboardModule } from './modules/dashboard/dashboard.module';
     }),
     RedisModule,
     ControlApiModule,
+    MailModule,
+
     AuthModule,
     OrganizationModule,
     EmployeeModule,

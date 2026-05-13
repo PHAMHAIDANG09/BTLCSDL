@@ -16,6 +16,7 @@ const don_lam_them_entity_1 = require("../attendance/entities/don-lam-them.entit
 const nhan_vien_entity_1 = require("../auth/entities/nhan-vien.entity");
 const payroll_service_1 = require("./payroll.service");
 const payroll_controller_1 = require("./payroll.controller");
+const mail_module_1 = require("../mail/mail.module");
 let PayrollModule = class PayrollModule {
 };
 exports.PayrollModule = PayrollModule;
@@ -29,6 +30,7 @@ exports.PayrollModule = PayrollModule = __decorate([
                 don_lam_them_entity_1.DonLamThem,
                 nhan_vien_entity_1.NhanVien,
             ]),
+            mail_module_1.MailModule,
         ],
         controllers: [payroll_controller_1.PayrollController],
         providers: [payroll_service_1.PayrollService],

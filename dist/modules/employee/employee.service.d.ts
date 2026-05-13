@@ -28,4 +28,6 @@ export declare class EmployeeService {
     updateContract(id: number, dto: UpdateHopDongDto): Promise<HopDong>;
     deleteContract(id: number): Promise<HopDong>;
     getExpiringContracts(): Promise<HopDong[]>;
+    importEmployeesFromExcel(file: Express.Multer.File): Promise<string>;
+    private getCellValue;
 }

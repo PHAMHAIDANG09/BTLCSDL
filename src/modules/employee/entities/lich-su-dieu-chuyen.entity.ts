@@ -19,13 +19,13 @@ export class LichSuDieuChuyen {
   MaNhanVienId: number;
 
   @Column({ type: 'int', nullable: true })
-  PhongBanCuId: number;
+  PhongBanCuId: number | null;
 
   @Column({ type: 'int' })
   PhongBanMoiId: number;
 
   @Column({ type: 'int', nullable: true })
-  ChucVuCuId: number;
+  ChucVuCuId: number | null;
 
   @Column({ type: 'int' })
   ChucVuMoiId: number;
@@ -34,7 +34,7 @@ export class LichSuDieuChuyen {
   NgayHieuLuc: Date;
 
   @Column({ type: 'nvarchar', length: 500, nullable: true })
-  LyDo: string;
+  LyDo: string | null;
 
   @Column({ type: 'int' })
   NguoiDuyetId: number;

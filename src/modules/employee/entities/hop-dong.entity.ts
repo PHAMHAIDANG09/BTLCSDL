@@ -28,13 +28,13 @@ export class HopDong {
   NgayBatDau: Date;
 
   @Column({ type: 'date', nullable: true })
-  NgayKetThuc: Date;
+  NgayKetThuc: Date | null;
 
   @Column({ type: 'date' })
   NgayKy: Date;
 
   @Column({ type: 'nvarchar', length: 500, nullable: true })
-  DuongDanFile: string;
+  DuongDanFile: string | null;
 
   @Column({ type: 'nvarchar', length: 20, default: 'Active' })
   TrangThai: string;
