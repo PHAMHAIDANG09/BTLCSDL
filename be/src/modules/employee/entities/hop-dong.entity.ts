@@ -19,7 +19,7 @@ export class HopDong {
   MaNhanVienId: number;
 
   @Column({ type: 'varchar', length: 50, unique: true })
-  SoHopDong: string;
+  MaHopDong: string;
 
   @Column({ type: 'nvarchar', length: 50 })
   LoaiHopDong: string;
@@ -35,6 +35,12 @@ export class HopDong {
 
   @Column({ type: 'nvarchar', length: 500, nullable: true })
   DuongDanFile: string;
+
+  @Column({ type: 'decimal', precision: 18, scale: 2, default: 0 })
+  LuongCoBan: number;
+
+  @Column({ type: 'nvarchar', length: 500, nullable: true })
+  GhiChu: string;
 
   @Column({ type: 'nvarchar', length: 20, default: 'Active' })
   TrangThai: string;

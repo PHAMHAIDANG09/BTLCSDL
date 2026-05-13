@@ -40,28 +40,66 @@ export class EmployeeService {
   }
 
   async deleteEmployee(id: number) {
-    const nv = await this.findOne(id);
-    nv.TrangThai = 'Inactive'; // Soft delete
-    return this.nhanVienRepository.save(nv);
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
+    try {
+      console.log('Đang thực hiện xóa nhân viên (SQL RAW) ID:', id);
+      
+      // Chạy lệnh SQL trực tiếp
+      const result = await queryRunner.manager.query(
+        `UPDATE NhanVien SET TrangThai = 'Inactive' WHERE Id = @0`,
+        [id]
+      );
+      
+      console.log('Kết quả SQL:', result);
+      
+      await queryRunner.commitTransaction();
+      return { message: 'Xóa thành công' };
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+      console.error('Lỗi SQL khi xóa:', error);
+      throw new BadRequestException('Không thể xóa nhân viên này. Lỗi hệ thống.');
+    } finally {
+      await queryRunner.release();
+    }
   }
 
   async createEmployee(dto: CreateNhanVienDto) {
-    // 1. Generate MaNhanVien
-    const year = new Date().getFullYear();
-    const count = await this.nhanVienRepository.count();
-    const maNhanVien = `EMP-${year}-${(count + 1).toString().padStart(3, '0')}`;
+    // 1. Check duplicate Email
+    const existingUser = await this.nhanVienRepository.findOne({ where: { Email: dto.Email } });
+    if (existingUser) {
+      throw new BadRequestException('Email đã tồn tại trong hệ thống');
+    }
 
-    // 2. Hash password
+    // 2. Generate MaNhanVien (Find max ID to be safer)
+    const year = new Date().getFullYear();
+    const lastEmp = await this.nhanVienRepository.find({
+      order: { Id: 'DESC' },
+      take: 1,
+    });
+    const nextId = lastEmp.length > 0 ? lastEmp[0].Id + 1 : 1;
+    const maNhanVien = `EMP-${year}-${nextId.toString().padStart(3, '0')}`;
+
+    // 3. Hash password
     const hashedPassword = await bcrypt.hash(dto.MatKhau, 10);
 
-    // 3. Create entity
+    // 4. Create entity
+    const { MatKhau, ...restDto } = dto;
     const nv = this.nhanVienRepository.create({
-      ...dto,
+      ...restDto,
       MaNhanVien: maNhanVien,
       MatKhauHash: hashedPassword,
+      TrangThai: 'Active',
     });
 
-    return this.nhanVienRepository.save(nv);
+    try {
+      return await this.nhanVienRepository.save(nv);
+    } catch (error) {
+      console.error('Lỗi khi lưu nhân viên:', error);
+      throw new BadRequestException('Không thể lưu nhân viên. Vui lòng kiểm tra lại dữ liệu.');
+    }
   }
 
   // API thuyên chuyển công tác (Transaction)
@@ -112,7 +150,25 @@ export class EmployeeService {
   }
 
   // --- Hop Dong APIs ---
+  async findAllContracts() {
+    return this.hopDongRepository.find({
+      relations: ['nhanVien'],
+      order: { NgayKy: 'DESC' },
+    });
+  }
+
   async createContract(dto: CreateHopDongDto) {
+    // Tự động sinh mã hợp đồng nếu không có
+    if (!dto.MaHopDong) {
+      const year = new Date().getFullYear();
+      const lastHD = await this.hopDongRepository.find({
+        order: { Id: 'DESC' },
+        take: 1,
+      });
+      const nextId = lastHD.length > 0 ? lastHD[0].Id + 1 : 1;
+      dto.MaHopDong = `HDLD-${year}-${nextId.toString().padStart(3, '0')}`;
+    }
+    
     const hd = this.hopDongRepository.create(dto);
     return this.hopDongRepository.save(hd);
   }

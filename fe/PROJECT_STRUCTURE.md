@@ -777,6 +777,7 @@ npm run dev
 - **Core Pages:** Admin Profile, Staff Home (cơ bản), Staff Attendance (bảng danh sách).
 - **Infrastructure:** Axios Instance (`api.ts`), App Store (Zustand), API Endpoints.
 - **Localization:** Cấu hình Rewrites tiếng Việt cho toàn bộ đường dẫn.
+- **Admin – Contract Management:** Toàn bộ module Quản lý hợp đồng (Danh sách, Thêm mới, In ấn).
 
 **🔜 PHẢI LÀM (Theo thứ tự ưu tiên):**
 
@@ -794,29 +795,39 @@ npm run dev
    - *Component RoleGuard:* Chặn quyền truy cập (ví dụ: Staff không được vào `/admin/**`).
    - *Tích hợp:* Áp dụng vào `AdminLayout.tsx` và `StaffLayout.tsx`.
 
-3. **💰 Admin – Payroll UI**
+3. **🔌 Tích hợp API thật (Employee + Attendance)**
+   - Thay thế toàn bộ `MOCK_DATA` của Nhân viên và Chấm công bằng gọi API Axios thật.
+   - Xử lý các trạng thái Loading, Empty và Error handling chuyên nghiệp.
+   - *Mục tiêu:* Để các module sau có dữ liệu thật để tính toán.
+
+4. **💰 Admin – Payroll UI**
    - *Cơ sở:* Bảng `PhieuLuong` trong CSDL.
    - *Trang `/admin/luong`:* Table danh sách (Nhân viên, Tháng/Năm, Lương cơ bản, Thực lĩnh, Trạng thái).
    - *Tính năng:* Nút **"Tính lương tháng"** → gọi `POST /luong/tinh-luong` kèm loading spinner.
    - *Detail:* Modal chi tiết 1 phiếu lương (breakdown: BHXH, BHYT, BHTN, Thuế TNCN).
    - *Export:* Nút Xuất Excel bảng lương.
 
-4. **✅ Admin – Approval Workflow UI**
-   - *Cơ sở:* Bảng `DonNghiPhep` + `DonLamThem` trong CSDL.
-   - *Trang `/admin/duyet-don`:* Table danh sách đơn đang ở trạng thái `Pending`.
-   - *Hiển thị:* Nhân viên, Loại phép, Từ-Đến ngày, Số ngày, Lý do, Badge trạng thái.
-   - *Action:* 2 nút **Duyệt** / **Từ chối** (modal nhập lý do từ chối).
-   - *Phân loại:* 2 tab (Đơn nghỉ phép | Đơn làm thêm giờ).
-
-5. **🔌 Tích hợp API thật (Employee + Attendance)**
-   - Thay thế toàn bộ `MOCK_DATA` bằng gọi API Axios thật.
-   - Xử lý các trạng thái Loading, Empty và Error handling chuyên nghiệp.
-
-6. **💵 Staff – Payslip chi tiết + PDF**
-   - *Cơ sở:* Bảng `PhieuLuong`.
-   - *Trang:* Danh sách phiếu lương theo từng tháng.
+5. **💵 Staff – Payslip chi tiết + PDF**
+   - *Cơ sở:* Bảng `PhieuLuong` (sau khi Admin đã tính lương).
+   - *Trang:* Danh sách phiếu lương theo từng tháng của cá nhân.
    - *Detail:* Hiển thị chi tiết tất cả các khoản thu nhập và khấu trừ.
    - *Export:* Tích hợp nút **Tải file PDF** phiếu lương.
+
+6. **📅 Staff – Calendar Chấm công**
+   - *Cơ sở:* Bảng `ChamCong.TrangThai` (CoMat | DiMuon | Vang | NghiPhep).
+   - *UI:* Dùng Ant Design Calendar, tô màu các ngày theo trạng thái đi làm.
+   - *Detail:* Click vào ngày xem chi tiết giờ vào, giờ ra và tổng giờ làm.
+
+7. **✅ Admin/Staff – Widget Check-in/Check-out**
+   - *Cơ sở:* Bảng `ChamCong` (GioVao, GioRa, TrangThai).
+   - *UI:* Đồng hồ thời gian thực (HH:MM:SS) sống động.
+   - *Action:* Nút **Check In** / **Check Out** linh hoạt.
+   - *Status:* Hiển thị trạng thái hiện tại (VD: "Đã check in lúc 08:15").
+
+8. **📈 Admin – Reporting Center (Xây dựng khung báo cáo)**
+   - *Cơ sở:* View thống kê từ SQL Server dựa trên dữ liệu thật đã tích hợp.
+   - *Báo cáo:* Nhân sự (Biến động), Chấm công (Tỷ lệ đi muộn), Lương (Quỹ lương).
+   - *Tính năng:* Lọc theo thời gian, Xuất Excel/PDF.
 ---
 
 ### 👤 THÀNH VIÊN 5 – BẠN CỦA BẠN
@@ -826,34 +837,41 @@ npm run dev
 
 **🔜 PHẢI LÀM:**
 
-1. **📊 Admin Dashboard – Biểu đồ Chart.js**
+1. **✅ Admin – Approval Workflow UI (Phê duyệt đơn từ)**
+   - *Cơ sở:* Bảng `DonNghiPhep` + `DonLamThem` trong CSDL.
+   - *Trang `/admin/duyet-don`:* Table danh sách đơn đang ở trạng thái `Pending`.
+   - *Hiển thị:* Nhân viên, Loại phép, Từ-Đến ngày, Số ngày, Lý do, Badge trạng thái.
+   - *Action:* 2 nút **Duyệt** / **Từ chối** (modal nhập lý do từ chối).
+   - *Phân loại:* 2 tab (Đơn nghỉ phép | Đơn làm thêm giờ).
+
+2. **📊 Admin Dashboard – Biểu đồ Chart.js**
    - *Dữ liệu:* Bảng `NhanVien` (nhóm theo `MaPhongId`) + `PhieuLuong` (nhóm theo `Thang/Nam`).
    - *Biểu đồ cột:* Số lượng nhân viên theo từng phòng ban.
    - *Biểu đồ đường:* Biến động chi phí lương trong 6 tháng gần nhất.
    - *Tích hợp:* Nhúng vào trang `/admin/bang-dieu-khien` đã có.
 
-2. **🌳 Admin – Org Chart**
+3. **🌳 Admin – Org Chart**
    - *Dữ liệu:* Bảng `PhongBan.MaPhongCha` (đệ quy) + `NhanVien`.
    - *UI:* Hiển thị sơ đồ tổ chức dạng cây phân cấp trực quan.
    - *Interaction:* Hover hiện popup thông tin nhân viên, Search tìm nhanh vị trí nhân viên trong cây.
 
-3. **✅ Staff – Widget Check-in/Check-out**
-   - *Cơ sở:* Bảng `ChamCong` (GioVao, GioRa, TrangThai).
-   - *UI:* Đồng hồ thời gian thực (HH:MM:SS) sống động.
-   - *Action:* Nút **Check In** / **Check Out** linh hoạt.
-   - *Status:* Hiển thị trạng thái hiện tại (VD: "Đã check in lúc 08:15").
-
-4. **📅 Staff – Calendar Chấm công**
-   - *Cơ sở:* Bảng `ChamCong.TrangThai` (CoMat | DiMuon | Vang | NghiPhep).
-   - *UI:* Dùng Ant Design Calendar, tô màu các ngày theo trạng thái đi làm.
-   - *Detail:* Click vào ngày xem chi tiết giờ vào, giờ ra và tổng giờ làm.
-
-5. **📝 Staff – Leave Request Form**
+4. **📝 Staff – Leave Request Form**
    - *Cơ sở:* Bảng `DonNghiPhep` + `SoDuPhep` + `LoaiNghiPhep`.
    - *Features:* Chọn loại phép, hiển thị số ngày phép còn lại theo thời gian thực.
    - *Logic:* Dùng DateRangePicker, tự động tính số ngày nghỉ, validate không chọn ngày quá khứ.
 
-
-7. **📋 Staff – Leave List + My Requests**
+5. **📋 Staff – Leave List + My Requests**
    - *UI:* Bảng theo dõi các đơn từ đã gửi (`DonNghiPhep`, `DonLamThem`).
    - *Status:* Hiển thị Badge màu sắc sinh động (Chờ duyệt, Đã duyệt, Bị từ chối).
+
+6. **🔔 Staff – Notification System**
+   - *UI:* Popup thông báo ở Header + Trang danh sách thông báo chi tiết.
+   - *Logic:* Đánh dấu đã đọc, xóa thông báo, điều hướng nhanh đến đơn từ liên quan.
+
+7. **📊 Admin – Salary History (Lịch sử biến động lương)**
+   - *UI:* Trang theo dõi quá trình tăng/giảm lương của từng nhân viên.
+   - *Dữ liệu:* Bảng `LichSuThayDoiLuong`.
+
+8. **🛡️ Admin – System Audit Logs & Holidays**
+   - *Audit Logs:* Xem nhật ký thao tác (Ai làm gì, lúc nào) – Bảng `NhatKyHeThong`.
+   - *Holidays:* Quản lý danh mục ngày lễ trong năm – Bảng `NgayLe`.

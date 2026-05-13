@@ -194,7 +194,7 @@ export default function ProfileView({ data, isAdmin = false, onRefresh }: Profil
           >
             <Descriptions column={{ xs: 1, sm: 2, md: 4 }} size="small" labelStyle={{ fontWeight: 600 }}>
               <Descriptions.Item label="Loại hợp đồng">{data.contractType}</Descriptions.Item>
-              <Descriptions.Item label="Số hợp đồng"><Tag color="warning">{data.contractNumber}</Tag></Descriptions.Item>
+              <Descriptions.Item label="Tổng số hợp đồng"><Tag color="blue">{data.contracts?.length || 0} bản</Tag></Descriptions.Item>
               <Descriptions.Item label="Lương dự kiến"><span style={{ fontWeight: 700, color: token.colorError }}>{formatSalary(data.baseSalary)}</span></Descriptions.Item>
               <Descriptions.Item label="Ngày vào">{dayjs(data.contractSignDate).format("DD/MM/YYYY")}</Descriptions.Item>
             </Descriptions>

@@ -8,8 +8,6 @@ const nextConfig: NextConfig = {
       { source: "/admin/nhan-vien", destination: "/admin/employee" },
       { source: "/admin/co-cau-to-chuc", destination: "/admin/structure" },
       { source: "/admin/hop-dong", destination: "/admin/contract" },
-      { source: "/admin/cham-cong", destination: "/admin/attendance" },
-      { source: "/admin/cham-cong/:path*", destination: "/admin/attendance/:path*" },
       { source: "/admin/nghi-phep", destination: "/admin/leave" },
       { source: "/admin/nghi-phep/:path*", destination: "/admin/leave/:path*" },
       { source: "/admin/lam-them-gio", destination: "/admin/overtime" },
@@ -25,7 +23,6 @@ const nextConfig: NextConfig = {
       
       // Staff Routes
       { source: "/staff/trang-chu", destination: "/staff/home" },
-      { source: "/staff/cham-cong", destination: "/staff/attendance" },
       { source: "/staff/nghi-phep", destination: "/staff/leave" },
       { source: "/staff/phieu-luong", destination: "/staff/payslip" },
       { source: "/staff/ho-so", destination: "/staff/profile" },

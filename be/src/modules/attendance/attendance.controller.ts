@@ -8,6 +8,7 @@ import {
   Put,
   Get,
   Query,
+  Delete,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { AttendanceService } from './attendance.service';
@@ -20,17 +21,23 @@ import { UpdateOTStatusDto } from './dto/update-ot.dto';
 @ApiTags('Attendance')
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard, RolesGuard)
-@Controller('attendance')
+@Controller('cham-cong')
 export class AttendanceController {
   constructor(private readonly attendanceService: AttendanceService) { }
 
-  @Post('check-in-out')
+  @Post('diem-danh')
   @ApiOperation({ summary: 'Điểm danh vào/ra hằng ngày' })
   checkInOut(@Request() req: any) {
     return this.attendanceService.checkInOut(req.user.Id);
   }
 
-  @Get('history')
+  @Get('hom-nay')
+  @ApiOperation({ summary: 'Lấy trạng thái chấm công hôm nay' })
+  getTodayStatus(@Request() req: any) {
+    return this.attendanceService.getTodayAttendance(req.user.Id);
+  }
+
+  @Get('lich-su')
   @ApiOperation({ summary: 'Lấy lịch sử chấm công cá nhân' })
   getHistory(
     @Request() req: any,
@@ -44,7 +51,7 @@ export class AttendanceController {
     );
   }
 
-  @Get('all-history')
+  @Get('tat-ca-lich-su')
   @Roles('Admin', 'Manager')
   @ApiOperation({
     summary: 'Lấy lịch sử chấm công toàn bộ nhân viên (Admin/Manager)',
@@ -78,5 +85,26 @@ export class AttendanceController {
   @ApiOperation({ summary: 'Lấy tất cả yêu cầu làm thêm (Admin/Manager)' })
   getAllOT(@Query('status') status?: string) {
     return this.attendanceService.getAllOTRequests(status);
+  }
+
+  @Delete(':id')
+  @Roles('Admin')
+  @ApiOperation({ summary: 'Xóa bản ghi chấm công (Admin)' })
+  deleteAttendance(@Param('id') id: string) {
+    return this.attendanceService.deleteAttendance(+id);
+  }
+
+  @Put(':id')
+  @Roles('Admin')
+  @ApiOperation({ summary: 'Cập nhật bản ghi chấm công (Admin)' })
+  updateAttendance(@Param('id') id: string, @Body() data: any) {
+    return this.attendanceService.updateAttendance(+id, data);
+  }
+
+  @Get('summary')
+  @Roles('Admin')
+  @ApiOperation({ summary: 'Lấy báo cáo tổng hợp tháng (Admin)' })
+  getSummary(@Query('month') month: number, @Query('year') year: number) {
+    return this.attendanceService.getMonthlySummary(month, year);
   }
 }

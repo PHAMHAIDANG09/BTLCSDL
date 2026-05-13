@@ -12,6 +12,7 @@ import {
 import { PhongBan } from '../../organization/entities/phong-ban.entity';
 import { ChucVu } from '../../organization/entities/chuc-vu.entity';
 import { VaiTro } from './vai-tro.entity';
+import { HopDong } from '../../employee/entities/hop-dong.entity';
 
 @Entity('NhanVien')
 export class NhanVien {
@@ -85,6 +86,9 @@ export class NhanVien {
 
   @UpdateDateColumn({ type: 'datetime', nullable: true })
   NgayCapNhat: Date;
+
+  @OneToMany(() => HopDong, (hd) => hd.nhanVien)
+  hopDongs: HopDong[];
 
   @ManyToOne(() => PhongBan, (pb) => pb.nhanViens)
   @JoinColumn({ name: 'MaPhongId' })

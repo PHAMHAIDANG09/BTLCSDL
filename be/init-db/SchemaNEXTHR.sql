@@ -127,16 +127,18 @@ GO
 CREATE TABLE dbo.HopDong (
     Id INT IDENTITY(1,1) NOT NULL,
     MaNhanVienId INT NOT NULL,
-    SoHopDong VARCHAR(50) NOT NULL,
+    MaHopDong VARCHAR(50) NOT NULL,
     LoaiHopDong NVARCHAR(50) NOT NULL,
     NgayBatDau DATE NOT NULL,
     NgayKetThuc DATE NULL,
     NgayKy DATE NOT NULL,
     DuongDanFile NVARCHAR(500) NULL,
+    LuongCoBan DECIMAL(18,2) NOT NULL CONSTRAINT DF_HopDong_LuongCoBan DEFAULT (0),
+    GhiChu NVARCHAR(500) NULL,
     TrangThai NVARCHAR(20) NOT NULL CONSTRAINT DF_HopDong_TrangThai DEFAULT (N'Active'),
     NgayTao DATETIME NOT NULL CONSTRAINT DF_HopDong_NgayTao DEFAULT (GETDATE()),
     CONSTRAINT PK_HopDong PRIMARY KEY (Id),
-    CONSTRAINT UQ_HopDong_SoHopDong UNIQUE (SoHopDong),
+    CONSTRAINT UQ_HopDong_MaHopDong UNIQUE (MaHopDong),
     CONSTRAINT FK_HopDong_NhanVien FOREIGN KEY (MaNhanVienId) REFERENCES dbo.NhanVien(Id),
     CONSTRAINT CK_HopDong_LoaiHopDong CHECK (LoaiHopDong IN (N'Thử việc', N'Xác định thời hạn', N'Không xác định thời hạn')),
     CONSTRAINT CK_HopDong_TrangThai CHECK (TrangThai IN (N'Active', N'Inactive', N'Expired', N'Terminated')),
@@ -434,14 +436,14 @@ END;
 GO
 
 INSERT INTO dbo.HopDong (
-    MaNhanVienId, SoHopDong, LoaiHopDong, NgayBatDau, NgayKetThuc, NgayKy, DuongDanFile, TrangThai
+    MaNhanVienId, MaHopDong, LoaiHopDong, NgayBatDau, NgayKetThuc, NgayKy, DuongDanFile, LuongCoBan, GhiChu, TrangThai
 )
 VALUES
-(1, 'HD-2025-001', N'Không xác định thời hạn', '2025-01-02', NULL, '2024-12-28', N'/contracts/HD-2025-001.pdf', N'Active'),
-(2, 'HD-2025-002', N'Xác định thời hạn', '2025-01-05', '2026-01-04', '2024-12-30', N'/contracts/HD-2025-002.pdf', N'Active'),
-(3, 'HD-2025-003', N'Xác định thời hạn', '2025-01-10', '2026-01-09', '2025-01-03', N'/contracts/HD-2025-003.pdf', N'Active'),
-(4, 'HD-2025-004', N'Thử việc', '2025-02-01', '2025-04-30', '2025-01-25', N'/contracts/HD-2025-004.pdf', N'Expired'),
-(5, 'HD-2025-005', N'Xác định thời hạn', '2025-02-15', '2026-02-14', '2025-02-10', N'/contracts/HD-2025-005.pdf', N'Active');
+(1, 'HD-2025-001', N'Không xác định thời hạn', '2025-01-02', NULL, '2024-12-28', N'/contracts/HD-2025-001.pdf', 50000000, N'Hợp đồng giám đốc', N'Active'),
+(2, 'HD-2025-002', N'Xác định thời hạn', '2025-01-05', '2026-01-04', '2024-12-30', N'/contracts/HD-2025-002.pdf', 25000000, N'Hợp đồng trưởng phòng', N'Active'),
+(3, 'HD-2025-003', N'Xác định thời hạn', '2025-01-10', '2026-01-09', '2025-01-03', N'/contracts/HD-2025-003.pdf', 30000000, NULL, N'Active'),
+(4, 'HD-2025-004', N'Thử việc', '2025-02-01', '2025-04-30', '2025-01-25', N'/contracts/HD-2025-004.pdf', 15000000, N'Hợp đồng thử việc', N'Expired'),
+(5, 'HD-2025-005', N'Xác định thời hạn', '2025-02-15', '2026-02-14', '2025-02-10', N'/contracts/HD-2025-005.pdf', 14000000, NULL, N'Active');
 GO
 
 INSERT INTO dbo.LichSuDieuChuyen (

@@ -13,6 +13,8 @@ export default function StaffProfilePage() {
     try {
       const data: any = await getProfileApi();
       
+      const activeContract = data.hopDongs?.find((h: any) => h.TrangThai === 'Active') || data.hopDongs?.[0];
+      
       const mappedData = {
         fullName: data.HoTen,
         email: data.Email,
@@ -34,11 +36,12 @@ export default function StaffProfilePage() {
         startDate: data.NgayVaoLam,
         status: data.TrangThai === "Active" ? "Đang làm" : "Nghỉ việc",
         
-        contractType: "Chính thức",
-        contractNumber: "HĐ-" + data.MaNhanVien,
-        baseSalary: 10000000,
-        contractSignDate: data.NgayVaoLam,
-        contractExpiredDate: null,
+        contractType: activeContract?.LoaiHopDong || "Chưa có",
+        contractNumber: activeContract?.MaHopDong || "N/A",
+        baseSalary: activeContract?.LuongCoBan || 0,
+        contractSignDate: activeContract?.NgayKy || data.NgayVaoLam,
+        contractExpiredDate: activeContract?.NgayKetThuc || null,
+        contracts: data.hopDongs || [],
       };
       
       setProfileData(mappedData);
