@@ -542,3 +542,39 @@ SELECT TOP 5 * FROM dbo.PhongBan ORDER BY Id;
 SELECT TOP 5 * FROM dbo.NhanVien ORDER BY Id;
 SELECT TOP 5 * FROM dbo.PhieuLuong ORDER BY Id;
 GO
+
+-- =============================================
+-- 6. BỔ SUNG CÁC ĐỐI TƯỢNG LOGIC (AUDIT FIX)
+-- =============================================
+
+-- View Sơ đồ tổ chức đa cấp (Recursive CTE)
+IF OBJECT_ID('dbo.vw_OrgChart', 'V') IS NOT NULL
+    DROP VIEW dbo.vw_OrgChart;
+GO
+
+CREATE VIEW dbo.vw_OrgChart AS
+WITH OrgCTE AS (
+    -- Gốc: Các phòng ban không có phòng cha
+    SELECT 
+        Id AS DepartmentId, 
+        TenPhong AS DepartmentName, 
+        MaPhongCha AS ParentId, 
+        0 AS LevelDepth,
+        CAST(TenPhong AS NVARCHAR(MAX)) AS FullPath
+    FROM dbo.PhongBan
+    WHERE MaPhongCha IS NULL
+    
+    UNION ALL
+    
+    -- Đệ quy: Tìm các phòng ban con
+    SELECT 
+        pb.Id AS DepartmentId, 
+        pb.TenPhong AS DepartmentName, 
+        pb.MaPhongCha AS ParentId, 
+        octe.LevelDepth + 1 AS LevelDepth,
+        CAST(octe.FullPath + ' > ' + pb.TenPhong AS NVARCHAR(MAX)) AS FullPath
+    FROM dbo.PhongBan pb
+    INNER JOIN OrgCTE octe ON pb.MaPhongCha = octe.DepartmentId
+)
+SELECT * FROM OrgCTE;
+GO

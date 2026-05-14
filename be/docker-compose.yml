@@ -8,15 +8,15 @@ services:
       - ACCEPT_EULA=Y
       - MSSQL_SA_PASSWORD=Dang@12345
       - TZ=Asia/Ha_Noi
-      - MSSQL_AGENT_ENABLED=True  #lập lịch sao lưu
+      - MSSQL_AGENT_ENABLED=True #lập lịch sao lưu
     volumes:
       - sqlserver_data:/var/opt/mssql
       - ./init-db:/init-db:ro
-      - "U:/Hoàng Quốc Việt năm 3/Năm 3 kỳ 2/Hệ quản trị CSDL/Backup:/backup" #thay đổi theo máy
+      - "./sqlserver_data:/var/opt/mssql/data" #thay đổi theo máy
     networks:
       - app-network
     healthcheck:
-      test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P \"$$MSSQL_SA_PASSWORD\" -C -Q 'SELECT 1' || exit 1"]
+      test: [ "CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P \"$$MSSQL_SA_PASSWORD\" -C -Q 'SELECT 1' || exit 1" ]
       interval: 10s
       timeout: 5s
       retries: 20
@@ -31,8 +31,7 @@ services:
     volumes:
       - ./init-db:/init-db:ro
     entrypoint: >
-      /bin/bash -c "
-      /opt/mssql-tools18/bin/sqlcmd -S sqlserver -U sa -P 'Dang@12345' -C -i /init-db/SchemaNEXTHR.sql"
+      /bin/bash -c " /opt/mssql-tools18/bin/sqlcmd -S sqlserver -U sa -P 'Dang@12345' -C -i /init-db/SchemaNEXTHR.sql"
     networks:
       - app-network
     restart: 'no'
@@ -45,7 +44,7 @@ services:
     networks:
       - app-network
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: [ "CMD", "redis-cli", "ping" ]
       interval: 30s
       timeout: 10s
       retries: 5
@@ -54,14 +53,10 @@ services:
     image: alpine
     container_name: nexthr-backup-cleanup
     volumes:
-      - "U:/Hoàng Quốc Việt năm 3/Năm 3 kỳ 2/Hệ quản trị CSDL/Backup:/backup"
+      - "./sqlserver_data:/var/opt/mssql/data"
     restart: always
     entrypoint: >
-      sh -c "
-      echo '0 0 * * * find /backup/Full -name \"*.bak\" -mtime +14 -delete' > /etc/crontabs/root &&
-      echo '0 * * * * find /backup/Differential -name \"*.bak\" -mtime +2 -delete' >> /etc/crontabs/root &&
-      echo '*/15 * * * * find /backup/TransactionLog -name \"*.trn\" -mtime +3 -delete' >> /etc/crontabs/root &&
-      crond -f"
+      sh -c " echo '0 0 * * * find /backup/Full -name \"*.bak\" -mtime +14 -delete' > /etc/crontabs/root && echo '0 * * * * find /backup/Differential -name \"*.bak\" -mtime +2 -delete' >> /etc/crontabs/root && echo '*/15 * * * * find /backup/TransactionLog -name \"*.trn\" -mtime +3 -delete' >> /etc/crontabs/root && crond -f"
 
 networks:
   app-network:
