@@ -612,3 +612,36 @@ BEGIN
     PRINT 'Đã tạo bảng và seed dữ liệu cho dbo.CauHinhLichLamViec';
 END
 GO
+
+-- Bảng cấu hình bảo hiểm (Dùng để tính lương động)
+IF OBJECT_ID('dbo.CauHinhBaoHiem', 'U') IS NULL
+BEGIN
+    CREATE TABLE dbo.CauHinhBaoHiem (
+        Id INT IDENTITY(1,1) NOT NULL,
+        LoaiBaoHiem NVARCHAR(20) NOT NULL, -- BHXH, BHYT, BHTN
+        TyLeNhanVien DECIMAL(6,4) NOT NULL, -- Ví dụ: 0.0800 cho 8%
+        TyLeCongTy DECIMAL(6,4) NOT NULL,
+        NgayBatDau DATE NOT NULL,
+        NgayKetThuc DATE NULL,
+        DangHieuLuc BIT NOT NULL CONSTRAINT DF_CauHinhBaoHiem_DangHieuLuc DEFAULT (1),
+        GhiChu NVARCHAR(255) NULL,
+        NgayTao DATETIME NOT NULL CONSTRAINT DF_CauHinhBaoHiem_NgayTao DEFAULT (GETDATE()),
+        CONSTRAINT PK_CauHinhBaoHiem PRIMARY KEY (Id),
+        CONSTRAINT CK_CauHinhBaoHiem_TyLeNhanVien CHECK (TyLeNhanVien >= 0),
+        CONSTRAINT CK_CauHinhBaoHiem_TyLeCongTy CHECK (TyLeCongTy >= 0),
+        CONSTRAINT CK_CauHinhBaoHiem_LoaiBaoHiem CHECK (LoaiBaoHiem IN ('BHXH', 'BHYT', 'BHTN'))
+    );
+
+    -- Seed dữ liệu mẫu (Theo quy định VN hiện hành)
+    IF NOT EXISTS (SELECT 1 FROM dbo.CauHinhBaoHiem)
+    BEGIN
+        INSERT INTO dbo.CauHinhBaoHiem (LoaiBaoHiem, TyLeNhanVien, TyLeCongTy, NgayBatDau, DangHieuLuc)
+        VALUES 
+        ('BHXH', 0.0800, 0.1750, '2026-01-01', 1),
+        ('BHYT', 0.0150, 0.0300, '2026-01-01', 1),
+        ('BHTN', 0.0100, 0.0100, '2026-01-01', 1);
+        
+        PRINT 'Đã tạo bảng và seed dữ liệu cho dbo.CauHinhBaoHiem';
+    END
+END
+GO
