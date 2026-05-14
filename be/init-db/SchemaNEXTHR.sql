@@ -578,3 +578,37 @@ WITH OrgCTE AS (
 )
 SELECT * FROM OrgCTE;
 GO
+
+-- Bảng cấu hình lịch làm việc (Dùng để tính lương động)
+IF OBJECT_ID('dbo.CauHinhLichLamViec', 'U') IS NULL
+BEGIN
+    CREATE TABLE dbo.CauHinhLichLamViec (
+        Id INT IDENTITY(1,1) NOT NULL,
+        ThuTrongTuan INT NOT NULL, -- 2: Thứ 2, ..., 8: Chủ nhật
+        TenThu NVARCHAR(20) NOT NULL,
+        LaNgayLamViec BIT NOT NULL CONSTRAINT DF_CauHinhLichLamViec_LaNgayLamViec DEFAULT (1),
+        GioBatDau TIME NULL,
+        GioKetThuc TIME NULL,
+        SoGioLamViec FLOAT NOT NULL CONSTRAINT DF_CauHinhLichLamViec_SoGioLamViec DEFAULT (8),
+        GhiChu NVARCHAR(255) NULL,
+        NgayTao DATETIME NOT NULL CONSTRAINT DF_CauHinhLichLamViec_NgayTao DEFAULT (GETDATE()),
+        CONSTRAINT PK_CauHinhLichLamViec PRIMARY KEY (Id),
+        CONSTRAINT UQ_CauHinhLichLamViec_ThuTrongTuan UNIQUE (ThuTrongTuan),
+        CONSTRAINT CK_CauHinhLichLamViec_ThuTrongTuan CHECK (ThuTrongTuan BETWEEN 2 AND 8),
+        CONSTRAINT CK_CauHinhLichLamViec_SoGioLamViec CHECK (SoGioLamViec >= 0)
+    );
+
+    -- Seed dữ liệu mẫu (T2-T6: 8h, T7: 4h, CN: Nghỉ)
+    INSERT INTO dbo.CauHinhLichLamViec (ThuTrongTuan, TenThu, LaNgayLamViec, GioBatDau, GioKetThuc, SoGioLamViec)
+    VALUES 
+    (2, N'Thứ 2', 1, '08:00', '17:00', 8),
+    (3, N'Thứ 3', 1, '08:00', '17:00', 8),
+    (4, N'Thứ 4', 1, '08:00', '17:00', 8),
+    (5, N'Thứ 5', 1, '08:00', '17:00', 8),
+    (6, N'Thứ 6', 1, '08:00', '17:00', 8),
+    (7, N'Thứ 7', 1, '08:00', '12:00', 4),
+    (8, N'Chủ nhật', 0, NULL, NULL, 0);
+    
+    PRINT 'Đã tạo bảng và seed dữ liệu cho dbo.CauHinhLichLamViec';
+END
+GO

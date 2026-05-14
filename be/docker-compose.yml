@@ -10,9 +10,9 @@ services:
       - TZ=Asia/Ha_Noi
       - MSSQL_AGENT_ENABLED=True #lập lịch sao lưu
     volumes:
-      - sqlserver_data:/var/opt/mssql
+      - sqlserver_data_v2:/var/opt/mssql
       - ./init-db:/init-db:ro
-      - "./sqlserver_data:/var/opt/mssql/data" #thay đổi theo máy
+      # - "./sqlserver_data:/var/opt/mssql/data" #thay đổi theo máy
     networks:
       - app-network
     healthcheck:
@@ -48,22 +48,21 @@ services:
       interval: 30s
       timeout: 10s
       retries: 5
-
-  backup-cleanup:
-    image: alpine
-    container_name: nexthr-backup-cleanup
-    volumes:
-      - "./sqlserver_data:/var/opt/mssql/data"
-    restart: always
-    entrypoint: >
-      sh -c " echo '0 0 * * * find /backup/Full -name \"*.bak\" -mtime +14 -delete' > /etc/crontabs/root && echo '0 * * * * find /backup/Differential -name \"*.bak\" -mtime +2 -delete' >> /etc/crontabs/root && echo '*/15 * * * * find /backup/TransactionLog -name \"*.trn\" -mtime +3 -delete' >> /etc/crontabs/root && crond -f"
+  # backup-cleanup:
+  #   image: alpine
+  #   container_name: nexthr-backup-cleanup
+  #   volumes:
+  #     - "./sqlserver_data:/var/opt/mssql/data"
+  #   restart: always
+  #   entrypoint: >
+  #     sh -c " echo '0 0 * * * find /backup/Full -name \"*.bak\" -mtime +14 -delete' > /etc/crontabs/root && echo '0 * * * * find /backup/Differential -name \"*.bak\" -mtime +2 -delete' >> /etc/crontabs/root && echo '*/15 * * * * find /backup/TransactionLog -name \"*.trn\" -mtime +3 -delete' >> /etc/crontabs/root && crond -f"
 
 networks:
   app-network:
     driver: bridge
 
 volumes:
-  sqlserver_data:
+  sqlserver_data_v2:
     driver: local
   redis_data:
     driver: local
