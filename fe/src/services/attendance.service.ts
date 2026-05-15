@@ -55,4 +55,32 @@ export const AttendanceService = {
     const response = await api.get('/cham-cong/summary', { params: { month, year } });
     return response as any;
   },
+
+  // --- OT APIs ---
+  registerOT: async (data: {
+    NgayLamThem: string;
+    GioBatDau: string;
+    GioKetThuc: string;
+    TongSoGio: number;
+    LyDo?: string;
+    LoaiOT?: string;
+  }): Promise<any> => {
+    const response = await api.post('/cham-cong/ot', data);
+    return response;
+  },
+
+  approveOT: async (id: number, status: 'Approved' | 'Rejected'): Promise<any> => {
+    const response = await api.put(`/cham-cong/ot/${id}/approve`, { status });
+    return response;
+  },
+
+  getAllOTRequests: async (status?: string): Promise<any[]> => {
+    const response = await api.get('/cham-cong/ot', { params: { status } });
+    return response as any;
+  },
+
+  getOTHistory: async (): Promise<any[]> => {
+    const response = await api.get('/cham-cong/ot/history');
+    return response as any;
+  },
 };
