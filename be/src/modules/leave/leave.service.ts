@@ -27,7 +27,7 @@ export class LeaveService {
     @InjectRepository(NhanVien)
     private nhanVienRepository: Repository<NhanVien>,
     private dataSource: DataSource,
-  ) { }
+  ) {}
 
   // Cronjob: Chạy vào mùng 1 đầu năm để cấp phép năm
   @Cron('0 0 1 1 *')

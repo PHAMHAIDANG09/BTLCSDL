@@ -19,7 +19,7 @@ import { UpdateSalaryDto, CalculatePayrollDto } from './dto/payroll.dto';
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('payroll')
 export class PayrollController {
-  constructor(private readonly payrollService: PayrollService) { }
+  constructor(private readonly payrollService: PayrollService) {}
 
   @Post('update-salary')
   @Roles('Admin')

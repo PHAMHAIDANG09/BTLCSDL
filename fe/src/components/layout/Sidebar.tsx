@@ -159,7 +159,7 @@ const staffMenuItems = [
     type: "group" as const,
     children: [
       {
-        key: "home",
+        key: "trang-chu",
         icon: <HomeOutlined />,
         label: <Link href="/staff/trang-chu">Trang chủ</Link>,
       },
@@ -171,7 +171,7 @@ const staffMenuItems = [
     type: "group" as const,
     children: [
       {
-        key: "profile",
+        key: "ho-so",
         icon: <UserOutlined />,
         label: <Link href="/staff/ho-so">Thông tin cá nhân</Link>,
       },
@@ -200,7 +200,7 @@ const staffMenuItems = [
     type: "group" as const,
     children: [
       {
-        key: "payslip",
+        key: "phieu-luong",
         icon: <DollarOutlined />,
         label: <Link href="/staff/phieu-luong">Phiếu lương</Link>,
       },

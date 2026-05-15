@@ -78,7 +78,6 @@ const getBreadcrumbs = (
   const breadcrumbs: Array<{ title: React.ReactNode; href?: string }> = [
     {
       title: <Link href={rootHref}>{rootLabel}</Link>,
-      href: rootHref,
     },
   ];
 
@@ -93,7 +92,6 @@ const getBreadcrumbs = (
     if (!isLast) {
       breadcrumbs.push({
         title: <Link href={path}>{label}</Link>,
-        href: path,
       });
     } else {
       breadcrumbs.push({
@@ -125,7 +123,7 @@ export const Header: React.FC<HeaderProps> = ({
       label: "Hồ sơ cá nhân",
       onClick: () => {
         const isStaff = pathname.startsWith("/staff");
-        router.push(isStaff ? "/staff/profile" : "/admin/profile");
+        router.push(isStaff ? "/staff/ho-so" : "/admin/ho-so");
       },
     },
     {
@@ -134,7 +132,7 @@ export const Header: React.FC<HeaderProps> = ({
       label: "Cài đặt",
       onClick: () => {
         const isStaff = pathname.startsWith("/staff");
-        router.push(isStaff ? "/staff/profile" : "/admin/settings");
+        router.push(isStaff ? "/staff/ho-so" : "/admin/settings");
       },
     },
     {

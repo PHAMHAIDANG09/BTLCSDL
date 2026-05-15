@@ -12,7 +12,7 @@ import { CreateNgayLeDto } from './dto/create-ngay-le.dto';
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('system')
 export class SystemController {
-  constructor(private readonly systemService: SystemService) { }
+  constructor(private readonly systemService: SystemService) {}
 
   @Get('logs')
   @Roles('Admin')

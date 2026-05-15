@@ -26,7 +26,12 @@ export class AuditSubscriber implements EntitySubscriberInterface {
     this.logAction(event, 'UPDATE', event.databaseEntity, event.entity);
   }
 
-  private async logAction(event: any, action: string, oldVal: any, newVal: any) {
+  private async logAction(
+    event: any,
+    action: string,
+    oldVal: any,
+    newVal: any,
+  ) {
     const tableName = event.metadata.tableName;
     if (tableName === 'NhatKyHeThong') return; // Avoid infinite loop
 

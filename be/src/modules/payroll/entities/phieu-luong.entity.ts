@@ -81,9 +81,6 @@ export class PhieuLuong {
   @Column({ type: 'int' })
   NguoiTaoId: number;
 
-  @CreateDateColumn({ type: 'datetime' })
-  NgayTao: Date;
-
   @ManyToOne(() => NhanVien)
   @JoinColumn({ name: 'MaNhanVienId' })
   nhanVien: NhanVien;

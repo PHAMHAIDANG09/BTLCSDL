@@ -36,10 +36,11 @@ const getToken = (): string | null => {
 /**
  * Create Axios Instance
  */
-const createApiInstance = (): AxiosInstance => {
+  const createApiInstance = (): AxiosInstance => {
   const instance = axios.create({
     baseURL: process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000",
     timeout: 30000,
+    withCredentials: true,
     headers: {
       "Content-Type": "application/json",
     },
@@ -72,12 +73,20 @@ const createApiInstance = (): AxiosInstance => {
       const status = error.response?.status;
       const originalRequest = error.config;
 
-      if (status === 401 && originalRequest && !(originalRequest as any)._retry) {
+      // Không xử lý refresh nếu đang ở trang login hoặc chính request refresh bị lỗi
+      const isLoginRequest = originalRequest?.url?.includes("/auth/login");
+      const isRefreshRequest = originalRequest?.url?.includes("/auth/refresh");
+
+      if (status === 401 && originalRequest && !isLoginRequest && !isRefreshRequest && !(originalRequest as any)._retry) {
         (originalRequest as any)._retry = true;
         try {
+          const token = getToken();
+          if (!token) throw new Error("No token found");
+
           const response: any = await axios.post(`${instance.defaults.baseURL}/auth/refresh`, {}, {
-            headers: { Authorization: `Bearer ${getToken()}` }
+            headers: { Authorization: `Bearer ${token}` }
           });
+          
           const { access_token } = response.data;
           if (typeof window !== "undefined") {
             localStorage.setItem("token", access_token);
@@ -86,18 +95,24 @@ const createApiInstance = (): AxiosInstance => {
           originalRequest.headers.Authorization = `Bearer ${access_token}`;
           return instance(originalRequest);
         } catch (refreshError) {
-          if (typeof window !== "undefined") {
+          console.error("Token refresh failed:", refreshError);
+          if (typeof window !== "undefined" && !isLoginRequest) {
             localStorage.removeItem("token");
             localStorage.removeItem("user");
             document.cookie = "auth_token=; path=/; max-age=0";
-            window.location.href = "/login";
+            document.cookie = "user_role=; path=/; max-age=0";
+            if (window.location.pathname !== "/login") {
+              window.location.href = "/login";
+            }
           }
           return Promise.reject(refreshError);
         }
       }
 
       if (status === 403 && typeof window !== "undefined") {
-        window.location.href = "/forbidden";
+        if (window.location.pathname !== "/forbidden") {
+          window.location.href = "/forbidden";
+        }
       }
 
       const apiError: ApiError = {

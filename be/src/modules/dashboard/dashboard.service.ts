@@ -23,17 +23,20 @@ export class DashboardService {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    const [totalEmployees, presentToday, pendingLeaves, expiringContracts] = await Promise.all([
-      this.nhanVienRepo.count({ where: { TrangThai: 'Active' } }),
-      this.chamCongRepo.count({ where: { NgayLamViec: today } }),
-      this.nghiPhepRepo.count({ where: { TrangThai: 'Pending' } }),
-      this.hopDongRepo.count({
-        where: {
-          TrangThai: 'Active',
-          NgayKetThuc: LessThanOrEqual(new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)),
-        },
-      }),
-    ]);
+    const [totalEmployees, presentToday, pendingLeaves, expiringContracts] =
+      await Promise.all([
+        this.nhanVienRepo.count({ where: { TrangThai: 'Active' } }),
+        this.chamCongRepo.count({ where: { NgayLamViec: today } }),
+        this.nghiPhepRepo.count({ where: { TrangThai: 'Pending' } }),
+        this.hopDongRepo.count({
+          where: {
+            TrangThai: 'Active',
+            NgayKetThuc: LessThanOrEqual(
+              new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+            ),
+          },
+        }),
+      ]);
 
     return {
       totalEmployees,
