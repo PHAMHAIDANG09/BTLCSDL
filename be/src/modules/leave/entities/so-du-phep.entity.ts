@@ -1,10 +1,4 @@
-import {
-  Entity,
-  Column,
-  ManyToOne,
-  JoinColumn,
-  PrimaryColumn,
-} from 'typeorm';
+import { Entity, Column, ManyToOne, JoinColumn, PrimaryColumn } from 'typeorm';
 import { NhanVien } from '../../auth/entities/nhan-vien.entity';
 import { LoaiNghiPhep } from './loai-nghi-phep.entity';
 

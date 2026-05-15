@@ -50,7 +50,7 @@ export default function StaffLeavePage() {
           <Title level={2} style={{ margin: 0 }}>Nghỉ phép</Title>
           <Text type="secondary">Quản lý đơn xin nghỉ phép của bạn</Text>
         </div>
-        <Link href="/staff/leave/request">
+        <Link href="/staff/nghi-phep/request">
           <Button type="primary" icon={<PlusOutlined />}>Tạo đơn xin phép</Button>
         </Link>
       </div>

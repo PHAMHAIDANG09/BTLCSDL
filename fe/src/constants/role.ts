@@ -22,5 +22,5 @@ export const STAFF_ROLES: string[] = [ROLES.NHAN_VIEN];
 export const ROLE_HOME_MAP: Record<string, string> = {
   [ROLES.ADMIN]: '/admin/bang-dieu-khien',
   [ROLES.MANAGER]: '/admin/bang-dieu-khien',
-  [ROLES.NHAN_VIEN]: '/staff/home',
+  [ROLES.NHAN_VIEN]: '/staff/trang-chu',
 };

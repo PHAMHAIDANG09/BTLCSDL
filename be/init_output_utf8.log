@@ -1,0 +1,116 @@
+﻿Changed database context to 'master'.
+Msg 5170, Level 16, State 4, Server c828eb373203, Line 2
+Cannot create file '/var/opt/mssql/data/NextHR.mdf' because it already exists. Change the file path or the file name, and retry the operation.
+Msg 1802, Level 16, State 4, Server c828eb373203, Line 2
+CREATE DATABASE failed. Some file names listed could not be created. Check related errors.
+Msg 911, Level 16, State 1, Server c828eb373203, Line 2
+Database 'NextHR' does not exist. Make sure that the name is entered correctly.
+Msg 2714, Level 16, State 6, Server c828eb373203, Line 2
+There is already an object named 'VaiTro' in the database.
+Msg 2714, Level 16, State 6, Server c828eb373203, Line 2
+There is already an object named 'LoaiNghiPhep' in the database.
+Msg 2714, Level 16, State 6, Server c828eb373203, Line 2
+There is already an object named 'NgayLe' in the database.
+Msg 2714, Level 16, State 6, Server c828eb373203, Line 2
+There is already an object named 'PhongBan' in the database.
+Msg 1767, Level 16, State 1, Server c828eb373203, Line 2
+Foreign key 'FK_NhanVien_ChucVu' references invalid table 'dbo.ChucVu'.
+Msg 1750, Level 16, State 1, Server c828eb373203, Line 2
+Could not create constraint or index. See previous errors.
+Msg 1767, Level 16, State 1, Server c828eb373203, Line 2
+Foreign key 'FK_PhongBan_MaQuanLy' references invalid table 'dbo.NhanVien'.
+Msg 1750, Level 16, State 1, Server c828eb373203, Line 2
+Could not create constraint or index. See previous errors.
+Msg 1767, Level 16, State 1, Server c828eb373203, Line 6
+Foreign key 'FK_HopDong_NhanVien' references invalid table 'dbo.NhanVien'.
+Msg 1750, Level 16, State 1, Server c828eb373203, Line 6
+Could not create constraint or index. See previous errors.
+Msg 1767, Level 16, State 1, Server c828eb373203, Line 2
+Foreign key 'FK_LichSuDieuChuyen_NhanVien' references invalid table 'dbo.NhanVien'.
+Msg 1750, Level 16, State 1, Server c828eb373203, Line 2
+Could not create constraint or index. See previous errors.
+Msg 1767, Level 16, State 1, Server c828eb373203, Line 2
+Foreign key 'FK_LichSuLuong_NhanVien' references invalid table 'dbo.NhanVien'.
+Msg 1750, Level 16, State 1, Server c828eb373203, Line 2
+Could not create constraint or index. See previous errors.
+Msg 1767, Level 16, State 1, Server c828eb373203, Line 2
+Foreign key 'FK_ChamCong_NhanVien' references invalid table 'dbo.NhanVien'.
+Msg 1750, Level 16, State 1, Server c828eb373203, Line 2
+Could not create constraint or index. See previous errors.
+Msg 1767, Level 16, State 1, Server c828eb373203, Line 2
+Foreign key 'FK_SoDuPhep_NhanVien' references invalid table 'dbo.NhanVien'.
+Msg 1750, Level 16, State 1, Server c828eb373203, Line 2
+Could not create constraint or index. See previous errors.
+Msg 1767, Level 16, State 1, Server c828eb373203, Line 2
+Foreign key 'FK_DonNghiPhep_NhanVien' references invalid table 'dbo.NhanVien'.
+Msg 1750, Level 16, State 1, Server c828eb373203, Line 2
+Could not create constraint or index. See previous errors.
+Msg 1767, Level 16, State 1, Server c828eb373203, Line 2
+Foreign key 'FK_DonLamThem_NhanVien' references invalid table 'dbo.NhanVien'.
+Msg 1750, Level 16, State 1, Server c828eb373203, Line 2
+Could not create constraint or index. See previous errors.
+Msg 1767, Level 16, State 1, Server c828eb373203, Line 2
+Foreign key 'FK_PhieuLuong_NhanVien' references invalid table 'dbo.NhanVien'.
+Msg 1750, Level 16, State 1, Server c828eb373203, Line 2
+Could not create constraint or index. See previous errors.
+Msg 1767, Level 16, State 1, Server c828eb373203, Line 2
+Foreign key 'FK_NhatKyHeThong_NguoiThucHien' references invalid table 'dbo.NhanVien'.
+Msg 1750, Level 16, State 1, Server c828eb373203, Line 2
+Could not create constraint or index. See previous errors.
+Msg 1913, Level 16, State 1, Server c828eb373203, Line 6
+The operation failed because an index or statistics with name 'IDX_PhongBan_MaPhongCha' already exists on table 'dbo.PhongBan'.
+Msg 1088, Level 16, State 12, Server c828eb373203, Line 2
+Cannot find the object "dbo.NhanVien" because it does not exist or you do not have permissions.
+Msg 1088, Level 16, State 12, Server c828eb373203, Line 2
+Cannot find the object "dbo.NhanVien" because it does not exist or you do not have permissions.
+Msg 1088, Level 16, State 12, Server c828eb373203, Line 2
+Cannot find the object "dbo.HopDong" because it does not exist or you do not have permissions.
+Msg 1088, Level 16, State 12, Server c828eb373203, Line 2
+Cannot find the object "dbo.LichSuLuong" because it does not exist or you do not have permissions.
+Msg 2627, Level 14, State 1, Server c828eb373203, Line 6
+Violation of UNIQUE KEY constraint 'UQ_VaiTro_TenVaiTro'. Cannot insert duplicate key in object 'dbo.VaiTro'. The duplicate key value is (Admin).
+The statement has been terminated.
+Msg 208, Level 16, State 1, Server c828eb373203, Line 2
+Invalid object name 'dbo.ChucVu'.
+Msg 2627, Level 14, State 1, Server c828eb373203, Line 2
+Violation of UNIQUE KEY constraint 'UQ_LoaiNghiPhep_TenLoaiPhep'. Cannot insert duplicate key in object 'dbo.LoaiNghiPhep'. The duplicate key value is (Ph├⌐p n─âm).
+The statement has been terminated.
+Msg 2627, Level 14, State 1, Server c828eb373203, Line 2
+Violation of UNIQUE KEY constraint 'UQ_NgayLe_NgayLe'. Cannot insert duplicate key in object 'dbo.NgayLe'. The duplicate key value is (2026-01-01).
+The statement has been terminated.
+Msg 2627, Level 14, State 1, Server c828eb373203, Line 2
+Violation of UNIQUE KEY constraint 'UQ_PhongBan_MaPhong'. Cannot insert duplicate key in object 'dbo.PhongBan'. The duplicate key value is (BOD).
+The statement has been terminated.
+Msg 208, Level 16, State 1, Server c828eb373203, Line 2
+Invalid object name 'dbo.NhanVien'.
+
+(5 rows affected)
+Msg 208, Level 16, State 1, Server c828eb373203, Line 2
+Invalid object name 'dbo.HopDong'.
+Msg 208, Level 16, State 1, Server c828eb373203, Line 2
+Invalid object name 'dbo.LichSuDieuChuyen'.
+Msg 208, Level 16, State 1, Server c828eb373203, Line 2
+Invalid object name 'dbo.LichSuLuong'.
+Msg 208, Level 16, State 1, Server c828eb373203, Line 2
+Invalid object name 'dbo.ChamCong'.
+Msg 208, Level 16, State 1, Server c828eb373203, Line 2
+Invalid object name 'dbo.SoDuPhep'.
+Msg 208, Level 16, State 1, Server c828eb373203, Line 2
+Invalid object name 'dbo.DonNghiPhep'.
+Msg 208, Level 16, State 1, Server c828eb373203, Line 2
+Invalid object name 'dbo.DonLamThem'.
+Msg 208, Level 16, State 1, Server c828eb373203, Line 2
+Invalid object name 'dbo.PhieuLuong'.
+Msg 208, Level 16, State 1, Server c828eb373203, Line 2
+Invalid object name 'dbo.NhatKyHeThong'.
+Id          TenPhong                                                                                             MaPhong              MaPhongCha  MaQuanLy    DangHoatDong NgayTao                
+----------- ---------------------------------------------------------------------------------------------------- -------------------- ----------- ----------- ------------ -----------------------
+          1 Ban Gi├â┬ím ├äΓÇÿ├í┬╗ΓÇÿc                                                                                     BOD                         NULL           1            1 2026-05-12 21:40:48.303
+          2 Ph├â┬▓ng Nh├â┬ón s├í┬╗┬▒                                                                                    HR                          NULL           2            1 2026-05-12 21:40:48.303
+          3 Ph├â┬▓ng C├â┬┤ng ngh├í┬╗ΓÇí                                                                                  DEV                         NULL           3            1 2026-05-12 21:40:48.303
+          4 Ph├â┬▓ng K├í┬║┬┐ to├â┬ín                                                                                    ACC                         NULL           5            1 2026-05-12 21:40:48.303
+          5 Nh├â┬│m Backend                                                                                        DEV-BE                         3           3            1 2026-05-12 21:40:48.303
+
+(5 rows affected)
+Msg 208, Level 16, State 1, Server c828eb373203, Line 7
+Invalid object name 'dbo.NhanVien'.

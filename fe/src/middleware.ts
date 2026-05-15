@@ -32,9 +32,7 @@ export function middleware(request: NextRequest) {
 
     if (role && !ADMIN_ROLES.includes(role)) {
       // Đã login nhưng không có quyền admin → redirect về staff hoặc forbidden
-      if (STAFF_ROLES.includes(role)) {
-        return NextResponse.redirect(new URL('/staff/home', request.url));
-      }
+      return NextResponse.redirect(new URL('/staff/trang-chu', request.url));
       return NextResponse.redirect(new URL('/forbidden', request.url));
     }
   }
@@ -67,7 +65,7 @@ export function middleware(request: NextRequest) {
     if (role && ADMIN_ROLES.includes(role)) {
       return NextResponse.redirect(new URL('/admin/bang-dieu-khien', request.url));
     }
-    return NextResponse.redirect(new URL('/staff/home', request.url));
+    return NextResponse.redirect(new URL('/staff/trang-chu', request.url));
   }
 
   // ─── Nếu đã login mà vào /login → redirect về đúng trang ─────────────────
@@ -75,9 +73,7 @@ export function middleware(request: NextRequest) {
     if (ADMIN_ROLES.includes(role)) {
       return NextResponse.redirect(new URL('/admin/bang-dieu-khien', request.url));
     }
-    if (STAFF_ROLES.includes(role)) {
-      return NextResponse.redirect(new URL('/staff/home', request.url));
-    }
+    return NextResponse.redirect(new URL('/staff/trang-chu', request.url));
   }
 
   return NextResponse.next();

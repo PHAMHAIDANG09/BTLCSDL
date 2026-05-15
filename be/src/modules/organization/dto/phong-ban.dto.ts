@@ -1,7 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsNotEmpty, IsString, IsOptional, IsNumber } from 'class-validator';
 
-
 export class CreatePhongBanDto {
   @ApiProperty({ example: 'Phòng Phát triển Phần mềm' })
   @IsString()
