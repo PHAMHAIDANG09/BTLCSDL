@@ -419,7 +419,7 @@ export default function AttendancePage() {
             key: '2',
             label: 'Báo cáo tổng hợp',
             children: (
-              <div style={{ background: '#fff', padding: '24px', borderRadius: '8px' }}>
+              <div>
                 <div style={{ marginBottom: 24, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <Space size="middle">
                     <Typography.Text strong>Tháng báo cáo:</Typography.Text>

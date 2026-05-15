@@ -14,7 +14,10 @@ export class ReportController {
 
   @Get('bang-cong/export')
   @Roles('Admin', 'Manager')
-  @Header('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+  @Header(
+    'Content-Type',
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  )
   @Header('Content-Disposition', 'attachment; filename="AttendanceReport.xlsx"')
   @ApiOperation({ summary: 'Xuất báo cáo bảng công ra file Excel' })
   exportAttendance(@Query('thang') thang: number, @Query('nam') nam: number) {
@@ -23,7 +26,10 @@ export class ReportController {
 
   @Get('phieu-luong/export')
   @Roles('Admin', 'Manager')
-  @Header('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+  @Header(
+    'Content-Type',
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  )
   @Header('Content-Disposition', 'attachment; filename="PayrollReport.xlsx"')
   @ApiOperation({ summary: 'Xuất báo cáo bảng lương ra file Excel' })
   exportPayroll(@Query('thang') thang: number, @Query('nam') nam: number) {

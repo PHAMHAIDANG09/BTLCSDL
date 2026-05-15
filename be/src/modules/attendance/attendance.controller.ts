@@ -23,7 +23,7 @@ import { UpdateOTStatusDto } from './dto/update-ot.dto';
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('cham-cong')
 export class AttendanceController {
-  constructor(private readonly attendanceService: AttendanceService) { }
+  constructor(private readonly attendanceService: AttendanceService) {}
 
   @Post('diem-danh')
   @ApiOperation({ summary: 'Điểm danh vào/ra hằng ngày' })

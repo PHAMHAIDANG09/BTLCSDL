@@ -1,4 +1,8 @@
-import { Injectable, UnauthorizedException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  UnauthorizedException,
+  BadRequestException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -16,7 +20,7 @@ export class AuthService {
     @InjectRepository(NhatKyHeThong)
     private logRepository: Repository<NhatKyHeThong>,
     private jwtService: JwtService,
-  ) { }
+  ) {}
 
   async login(loginDto: LoginDto) {
     const { email, password } = loginDto;
@@ -69,8 +73,12 @@ export class AuthService {
       throw new UnauthorizedException('User account is not active');
     }
 
-    console.log(`DEBUG: Comparing password "${password}" with hash "${user.MatKhauHash}"`);
-    const isPasswordValid = (email === 'admin@nexthr.com' && password === '123456') || await bcrypt.compare(password, user.MatKhauHash);
+    console.log(
+      `DEBUG: Comparing password "${password}" with hash "${user.MatKhauHash}"`,
+    );
+    const isPasswordValid =
+      (email === 'admin@nexthr.com' && password === '123456') ||
+      (await bcrypt.compare(password, user.MatKhauHash));
     console.log(`DEBUG: isPasswordValid result: ${isPasswordValid}`);
     if (!isPasswordValid) {
       const log = new NhatKyHeThong();
@@ -158,11 +166,19 @@ export class AuthService {
   async updateProfile(userId: number, updateDto: any) {
     // Chỉ cho phép cập nhật một số trường nhất định
     const allowedFields = [
-      'HoTen', 'SoDienThoai', 'GioiTinh', 'NgaySinh', 
-      'SoCCCD', 'DiaChi', 'MaSoThue', 'SoNguoiPhuThuoc', 
-      'SoTaiKhoan', 'TenNganHang', 'ChiNhanhNganHang'
+      'HoTen',
+      'SoDienThoai',
+      'GioiTinh',
+      'NgaySinh',
+      'SoCCCD',
+      'DiaChi',
+      'MaSoThue',
+      'SoNguoiPhuThuoc',
+      'SoTaiKhoan',
+      'TenNganHang',
+      'ChiNhanhNganHang',
     ];
-    
+
     const updateData: Record<string, any> = {};
     Object.keys(updateDto).forEach((key) => {
       if (allowedFields.includes(key)) {

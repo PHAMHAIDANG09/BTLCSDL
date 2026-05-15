@@ -1,9 +1,4 @@
-import {
-  Entity,
-  PrimaryGeneratedColumn,
-  Column,
-  OneToMany,
-} from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
 import { SoDuPhep } from './so-du-phep.entity';
 import { DonNghiPhep } from './don-nghi-phep.entity';
 

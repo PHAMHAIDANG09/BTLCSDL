@@ -295,6 +295,7 @@ CREATE TABLE dbo.PhieuLuong (
     NgayThanhToan DATETIME NULL,
     GhiChu NVARCHAR(500) NULL,
     NguoiTaoId INT NOT NULL,
+    NgayTao DATETIME NOT NULL CONSTRAINT DF_PhieuLuong_NgayTao DEFAULT (GETDATE()),
     CONSTRAINT PK_PhieuLuong PRIMARY KEY (Id),
     CONSTRAINT FK_PhieuLuong_NhanVien FOREIGN KEY (MaNhanVienId) REFERENCES dbo.NhanVien(Id),
     CONSTRAINT FK_PhieuLuong_NguoiTao FOREIGN KEY (NguoiTaoId) REFERENCES dbo.NhanVien(Id),

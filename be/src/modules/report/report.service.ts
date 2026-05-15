@@ -32,7 +32,7 @@ export class ReportService {
       relations: ['nhanVien'],
     });
     // Filter by thang/nam (simplified)
-    
+
     data.forEach((item) => {
       worksheet.addRow({
         maNv: item.nhanVien?.MaNhanVien,
@@ -82,7 +82,10 @@ export class ReportService {
         lcb: p.LuongCoBan,
         pc: p.PhuCap,
         ot: p.TienLamThem,
-        bh: Number(p.BaoHiemXaHoi) + Number(p.BaoHiemYTe) + Number(p.BaoHiemThatNghiep),
+        bh:
+          Number(p.BaoHiemXaHoi) +
+          Number(p.BaoHiemYTe) +
+          Number(p.BaoHiemThatNghiep),
         thue: p.ThueTNCN,
         net: p.LuongThucNhan,
       });

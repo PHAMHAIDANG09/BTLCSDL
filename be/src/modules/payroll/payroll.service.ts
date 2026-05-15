@@ -27,7 +27,7 @@ export class PayrollService {
     @InjectRepository(NhanVien)
     private nhanVienRepository: Repository<NhanVien>,
     private dataSource: DataSource,
-  ) { }
+  ) {}
 
   // Nghiệp vụ SCD Type 2 cho Lịch sử lương
   async updateSalary(

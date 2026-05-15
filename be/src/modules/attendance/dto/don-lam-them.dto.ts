@@ -1,5 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsString, IsNumber, IsOptional, IsDateString } from 'class-validator';
+import {
+  IsNotEmpty,
+  IsString,
+  IsNumber,
+  IsOptional,
+  IsDateString,
+} from 'class-validator';
 
 export class CreateDonLamThemDto {
   @ApiProperty({ example: '2025-04-16' })
@@ -27,7 +33,10 @@ export class CreateDonLamThemDto {
   @IsOptional()
   LyDo?: string;
 
-  @ApiProperty({ example: 'NgayThuong', enum: ['NgayThuong', 'CuoiTuan', 'NgayLe'] })
+  @ApiProperty({
+    example: 'NgayThuong',
+    enum: ['NgayThuong', 'CuoiTuan', 'NgayLe'],
+  })
   @IsString()
   @IsOptional()
   LoaiOT?: string;

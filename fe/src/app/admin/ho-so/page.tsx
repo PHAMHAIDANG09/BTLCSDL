@@ -3,9 +3,10 @@
 import React, { useEffect, useState } from "react";
 import ProfileView from "@/components/profile/ProfileView";
 import { getProfileApi } from "@/services/auth.service";
-import { Spin, message } from "antd";
+import { Spin, App } from "antd";
 
 export default function AdminProfilePage() {
+  const { message } = App.useApp();
   const [profileData, setProfileData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 

@@ -1,10 +1,24 @@
-import { Controller, Post, Body, UseGuards, Request, Param, Put, Get, Delete, Query } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Body,
+  UseGuards,
+  Request,
+  Param,
+  Put,
+  Get,
+  Delete,
+  Query,
+} from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { LeaveService } from './leave.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
-import { CreateLoaiNghiPhepDto, UpdateLoaiNghiPhepDto } from './dto/loai-nghi-phep.dto';
+import {
+  CreateLoaiNghiPhepDto,
+  UpdateLoaiNghiPhepDto,
+} from './dto/loai-nghi-phep.dto';
 import { CreateDonNghiPhepDto } from './dto/don-nghi-phep.dto';
 
 @ApiTags('Leave Management')
