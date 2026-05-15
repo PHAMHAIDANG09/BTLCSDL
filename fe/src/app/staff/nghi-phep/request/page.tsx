@@ -51,7 +51,7 @@ export default function LeaveRequestPage() {
       
       await LeaveService.applyLeave(payload);
       message.success("Đã gửi đơn xin nghỉ phép thành công!");
-      router.push("/staff/leave");
+      router.push("/staff/nghi-phep");
     } catch (error: any) {
       message.error(error?.message || "Không thể gửi đơn, vui lòng thử lại sau.");
     } finally {
@@ -73,7 +73,7 @@ export default function LeaveRequestPage() {
       
       await AttendanceService.registerOT(payload);
       message.success("Đã gửi đơn đăng ký làm thêm giờ thành công!");
-      router.push("/staff/leave");
+      router.push("/staff/nghi-phep");
     } catch (error: any) {
       message.error(error?.message || "Không thể gửi đơn, vui lòng thử lại sau.");
     } finally {
@@ -160,7 +160,7 @@ export default function LeaveRequestPage() {
 
       <Form.Item style={{ marginBottom: 0, textAlign: 'right' }}>
         <Space>
-          <Button onClick={() => router.push("/staff/leave")}>Hủy</Button>
+          <Button onClick={() => router.push("/staff/nghi-phep")}>Hủy</Button>
           <Button type="primary" htmlType="submit" loading={loading}>Gửi đơn</Button>
         </Space>
       </Form.Item>
@@ -242,7 +242,7 @@ export default function LeaveRequestPage() {
 
       <Form.Item style={{ marginBottom: 0, textAlign: 'right' }}>
         <Space>
-          <Button onClick={() => router.push("/staff/leave")}>Hủy</Button>
+          <Button onClick={() => router.push("/staff/nghi-phep")}>Hủy</Button>
           <Button type="primary" htmlType="submit" loading={loading}>Gửi đơn</Button>
         </Space>
       </Form.Item>
@@ -268,7 +268,7 @@ export default function LeaveRequestPage() {
         <Button 
           type="text" 
           icon={<ArrowLeftOutlined />} 
-          onClick={() => router.push("/staff/leave")}
+          onClick={() => router.push("/staff/nghi-phep")}
           className="hover:bg-gray-100"
         />
         <div>
