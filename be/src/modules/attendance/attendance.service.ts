@@ -138,6 +138,13 @@ export class AttendanceService {
     });
   }
 
+  async getOTHistory(employeeId: number) {
+    return this.donLamThemRepository.find({
+      where: { MaNhanVienId: employeeId },
+      order: { NgayTao: 'DESC' },
+    });
+  }
+
   async deleteAttendance(id: number) {
     const record = await this.chamCongRepository.findOne({ where: { Id: id } });
     if (!record) throw new NotFoundException('Bản ghi chấm công không tồn tại');

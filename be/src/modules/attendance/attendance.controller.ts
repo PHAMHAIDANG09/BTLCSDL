@@ -87,6 +87,12 @@ export class AttendanceController {
     return this.attendanceService.getAllOTRequests(status);
   }
 
+  @Get('ot/history')
+  @ApiOperation({ summary: 'Lấy lịch sử yêu cầu làm thêm cá nhân' })
+  getOTHistory(@Request() req: any) {
+    return this.attendanceService.getOTHistory(req.user.Id);
+  }
+
   @Delete(':id')
   @Roles('Admin')
   @ApiOperation({ summary: 'Xóa bản ghi chấm công (Admin)' })
