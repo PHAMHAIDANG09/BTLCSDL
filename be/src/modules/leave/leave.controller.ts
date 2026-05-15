@@ -36,9 +36,14 @@ export class LeaveController {
 
   @Put(':id/approve')
   @Roles('Admin', 'Manager')
-  @ApiOperation({ summary: 'Phê duyệt đơn nghỉ phép và trừ số dư phép' })
-  approveLeave(@Param('id') id: string, @Request() req: any) {
-    return this.leaveService.approveLeave(+id, req.user.Id);
+  @ApiOperation({ summary: 'Phê duyệt hoặc từ chối đơn nghỉ phép' })
+  approveLeave(
+    @Param('id') id: string, 
+    @Body('status') status: 'Approved' | 'Rejected',
+    @Body('reason') reason: string,
+    @Request() req: any
+  ) {
+    return this.leaveService.approveLeave(+id, req.user.Id, status, reason);
   }
 
   @Get('balances')
