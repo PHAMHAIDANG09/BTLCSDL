@@ -1,7 +1,11 @@
 USE NextHR;
 GO
 
-CREATE OR ALTER PROCEDURE dbo.sp_CalculatePayroll
+IF OBJECT_ID('dbo.sp_CalculatePayroll', 'P') IS NOT NULL
+    DROP PROCEDURE dbo.sp_CalculatePayroll;
+GO
+
+CREATE PROCEDURE dbo.sp_CalculatePayroll
     @Month INT,
     @Year INT,
     @NguoiTaoId INT = 1
@@ -97,6 +101,7 @@ BEGIN
                 
                 -- 5.1. Công thực tế (Quy đổi từ giờ)
                 ISNULL(cc.TongSoGioLam, 0) / @SoGioNgayChuan AS SoNgayCongThucTe,
+                ISNULL(cc.TongPhutDiMuon, 0) AS TongPhutDiMuon,
                 
                 -- 5.2. Nghỉ hưởng lương (Approved & CoHuongLuong = 1)
                 ISNULL(np_hl.TongNgay, 0) AS SoNgayNghiHuongLuong,
@@ -114,6 +119,8 @@ BEGIN
                 -- 5.6. Các biến trung gian để tính toán
                 -- LuongGio = LuongCoBan / SoNgayCongChuan / SoGioNgayChuan
                 (ISNULL(ot.SoGioOTQuyDoi, 0) * (lsl.LuongCoBan / @SoNgayCongChuan / @SoGioNgayChuan)) AS TienLamThem,
+                
+                (ISNULL(cc.TongPhutDiMuon, 0) / 60.0) * (lsl.LuongCoBan / @SoNgayCongChuan / @SoGioNgayChuan) AS KhauTruDiMuon,
                 
                 -- Khấu trừ khác = (Nghỉ không lương + Thiếu công không lý do) * Lương ngày
                 (
@@ -138,7 +145,9 @@ BEGIN
             
             -- Tổng hợp Chấm công
             LEFT JOIN (
-                SELECT MaNhanVienId, SUM(ISNULL(SoGioLam, 0)) AS TongSoGioLam
+                SELECT MaNhanVienId, 
+                       SUM(ISNULL(SoGioLam, 0)) AS TongSoGioLam,
+                       SUM(ISNULL(SoPhutDiMuon, 0)) AS TongPhutDiMuon
                 FROM dbo.ChamCong
                 WHERE MONTH(NgayLamViec) = @Month AND YEAR(NgayLamViec) = @Year
                 GROUP BY MaNhanVienId
@@ -146,22 +155,34 @@ BEGIN
             
             -- Tổng hợp Nghỉ hưởng lương
             LEFT JOIN (
-                SELECT MaNhanVienId, SUM(TongSoNgay) AS TongNgay
+                SELECT 
+                    dnp.MaNhanVienId,
+                    SUM(mc.SoGioLamViec / @SoGioNgayChuan) AS TongNgay
                 FROM dbo.DonNghiPhep dnp
                 JOIN dbo.LoaiNghiPhep lnp ON dnp.MaLoaiPhepId = lnp.Id
-                WHERE dnp.TrangThai = 'Approved' AND lnp.CoHuongLuong = 1
-                AND dnp.NgayBatDau <= @EndDate AND dnp.NgayKetThuc >= @StartDate
-                GROUP BY MaNhanVienId
+                JOIN #MonthlyCalendar mc
+                    ON mc.DateValue BETWEEN dnp.NgayBatDau AND dnp.NgayKetThuc
+                WHERE dnp.TrangThai = 'Approved'
+                  AND lnp.CoHuongLuong = 1
+                  AND mc.LaNgayLamViec = 1
+                  AND mc.IsHoliday = 0
+                GROUP BY dnp.MaNhanVienId
             ) np_hl ON nv.Id = np_hl.MaNhanVienId
             
             -- Tổng hợp Nghỉ không lương
             LEFT JOIN (
-                SELECT MaNhanVienId, SUM(TongSoNgay) AS TongNgay
+                SELECT 
+                    dnp.MaNhanVienId,
+                    SUM(mc.SoGioLamViec / @SoGioNgayChuan) AS TongNgay
                 FROM dbo.DonNghiPhep dnp
                 JOIN dbo.LoaiNghiPhep lnp ON dnp.MaLoaiPhepId = lnp.Id
-                WHERE dnp.TrangThai = 'Approved' AND lnp.CoHuongLuong = 0
-                AND dnp.NgayBatDau <= @EndDate AND dnp.NgayKetThuc >= @StartDate
-                GROUP BY MaNhanVienId
+                JOIN #MonthlyCalendar mc
+                    ON mc.DateValue BETWEEN dnp.NgayBatDau AND dnp.NgayKetThuc
+                WHERE dnp.TrangThai = 'Approved'
+                  AND lnp.CoHuongLuong = 0
+                  AND mc.LaNgayLamViec = 1
+                  AND mc.IsHoliday = 0
+                GROUP BY dnp.MaNhanVienId
             ) np_kl ON nv.Id = np_kl.MaNhanVienId
             
             -- Tổng hợp Làm thêm (OT)
@@ -186,7 +207,7 @@ BEGIN
                 LuongCoBan = source.LuongCoBan,
                 PhuCap = source.PhuCap,
                 TienLamThem = source.TienLamThem,
-                KhauTruDiMuon = 0,
+                KhauTruDiMuon = source.KhauTruDiMuon,
                 BaoHiemXaHoi = source.LuongCoBan * @TyLeBHXH,
                 BaoHiemYTe = source.LuongCoBan * @TyLeBHYT,
                 BaoHiemThatNghiep = source.LuongCoBan * @TyLeBHTN,
@@ -202,6 +223,7 @@ BEGIN
                                     WHEN (source.LuongCoBan + source.PhuCap + source.TienLamThem - (source.LuongCoBan * (@TyLeBHXH + @TyLeBHYT + @TyLeBHTN)) - @PersonalDeduction - source.SoNguoiPhuThuoc * @DependentDeduction) > 0 
                                     THEN (source.LuongCoBan + source.PhuCap + source.TienLamThem - (source.LuongCoBan * (@TyLeBHXH + @TyLeBHYT + @TyLeBHTN)) - @PersonalDeduction - source.SoNguoiPhuThuoc * @DependentDeduction) * @TaxRate 
                                     ELSE 0 END) 
+                                - source.KhauTruDiMuon
                                 - source.CacKhoanKhauTruKhac,
                 NguoiTaoId = @NguoiTaoId
         
@@ -213,7 +235,7 @@ BEGIN
             )
             VALUES (
                 source.MaNhanVienId, source.Thang, source.Nam, source.SoNgayCongChuan, source.SoNgayCongThucTe, source.SoNgayNghiHuongLuong, source.SoGioLamThem,
-                source.LuongCoBan, source.PhuCap, source.TienLamThem, 0, 
+                source.LuongCoBan, source.PhuCap, source.TienLamThem, source.KhauTruDiMuon, 
                 source.LuongCoBan * @TyLeBHXH, source.LuongCoBan * @TyLeBHYT, source.LuongCoBan * @TyLeBHTN,
                 -- Tính Thuế TNCN
                 CASE 
@@ -229,6 +251,7 @@ BEGIN
                     WHEN (source.LuongCoBan + source.PhuCap + source.TienLamThem - (source.LuongCoBan * (@TyLeBHXH + @TyLeBHYT + @TyLeBHTN)) - @PersonalDeduction - source.SoNguoiPhuThuoc * @DependentDeduction) > 0 
                     THEN (source.LuongCoBan + source.PhuCap + source.TienLamThem - (source.LuongCoBan * (@TyLeBHXH + @TyLeBHYT + @TyLeBHTN)) - @PersonalDeduction - source.SoNguoiPhuThuoc * @DependentDeduction) * @TaxRate 
                     ELSE 0 END) 
+                - source.KhauTruDiMuon
                 - source.CacKhoanKhauTruKhac,
                 'Draft', @NguoiTaoId
             );
