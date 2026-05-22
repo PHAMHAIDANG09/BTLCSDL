@@ -97,7 +97,7 @@ BEGIN
                 nv.Id AS MaNhanVienId,
                 @Month AS Thang,
                 @Year AS Nam,
-                @SoNgayCongChuan AS SoNgayCongChuan,
+                ISNULL(emp_work.SoNgayCongChuanCaNhan, 0) AS SoNgayCongChuan,
                 
                 -- 5.1. Công thực tế (Quy đổi từ giờ)
                 ISNULL(cc.TongSoGioLam, 0) / @SoGioNgayChuan AS SoNgayCongThucTe,
@@ -118,25 +118,25 @@ BEGIN
                 
                 -- 5.6. Các biến trung gian để tính toán
                 -- LuongGio = LuongCoBan / SoNgayCongChuan / SoGioNgayChuan
-                (ISNULL(ot.SoGioOTQuyDoi, 0) * (lsl.LuongCoBan / @SoNgayCongChuan / @SoGioNgayChuan)) AS TienLamThem,
+                ISNULL(ISNULL(ot.SoGioOTQuyDoi, 0) * (lsl.LuongCoBan / NULLIF(ISNULL(emp_work.SoNgayCongChuanCaNhan, 0), 0) / @SoGioNgayChuan), 0) AS TienLamThem,
                 
-                (ISNULL(cc.TongPhutDiMuon, 0) / 60.0) * (lsl.LuongCoBan / @SoNgayCongChuan / @SoGioNgayChuan) AS KhauTruDiMuon,
+                ISNULL((ISNULL(cc.TongPhutDiMuon, 0) / 60.0) * (lsl.LuongCoBan / NULLIF(ISNULL(emp_work.SoNgayCongChuanCaNhan, 0), 0) / @SoGioNgayChuan), 0) AS KhauTruDiMuon,
                 
                 -- Khấu trừ khác = (Nghỉ không lương + Thiếu công không lý do) * Lương ngày
-                (
+                ISNULL((
                     ISNULL(np_kl.TongNgay, 0)
                     + CASE
-                        WHEN (@SoNgayCongChuan 
+                        WHEN (ISNULL(emp_work.SoNgayCongChuanCaNhan, 0) 
                               - (ISNULL(cc.TongSoGioLam, 0) / @SoGioNgayChuan)
                               - ISNULL(np_hl.TongNgay, 0)
                               - ISNULL(np_kl.TongNgay, 0)) > 0
-                        THEN (@SoNgayCongChuan 
+                        THEN (ISNULL(emp_work.SoNgayCongChuanCaNhan, 0) 
                               - (ISNULL(cc.TongSoGioLam, 0) / @SoGioNgayChuan)
                               - ISNULL(np_hl.TongNgay, 0)
                               - ISNULL(np_kl.TongNgay, 0))
                         ELSE 0
                       END
-                ) * (lsl.LuongCoBan / @SoNgayCongChuan) AS CacKhoanKhauTruKhac,
+                ) * (lsl.LuongCoBan / NULLIF(ISNULL(emp_work.SoNgayCongChuanCaNhan, 0), 0)), 0) AS CacKhoanKhauTruKhac,
                 
                 nv.SoNguoiPhuThuoc
 
@@ -194,7 +194,31 @@ BEGIN
                 GROUP BY MaNhanVienId
             ) ot ON nv.Id = ot.MaNhanVienId
             
-            WHERE nv.TrangThai = 'Active'
+            CROSS APPLY (
+                SELECT
+                    CASE 
+                        WHEN nv.NgayVaoLam > @StartDate THEN nv.NgayVaoLam 
+                        ELSE @StartDate 
+                    END AS EmployeeStartDate,
+                    CASE 
+                        WHEN nv.NgayNghiViec IS NOT NULL AND nv.NgayNghiViec < @EndDate THEN nv.NgayNghiViec 
+                        ELSE @EndDate 
+                    END AS EmployeeEndDate
+            ) emp_range
+            
+            OUTER APPLY (
+                SELECT 
+                    SUM(CASE 
+                        WHEN mc.IsHoliday = 1 THEN 0 
+                        ELSE mc.SoGioLamViec 
+                    END) / @SoGioNgayChuan AS SoNgayCongChuanCaNhan
+                FROM #MonthlyCalendar mc
+                WHERE mc.LaNgayLamViec = 1
+                  AND mc.DateValue BETWEEN emp_range.EmployeeStartDate AND emp_range.EmployeeEndDate
+            ) emp_work
+            
+            WHERE nv.NgayVaoLam <= @EndDate
+              AND (nv.NgayNghiViec IS NULL OR nv.NgayNghiViec >= @StartDate)
         ) AS source
         ON (target.MaNhanVienId = source.MaNhanVienId AND target.Thang = source.Thang AND target.Nam = source.Nam)
         
