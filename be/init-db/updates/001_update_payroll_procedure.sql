@@ -37,12 +37,32 @@ BEGIN
         IF @SoGioNgayChuan IS NULL OR @SoGioNgayChuan = 0
             THROW 50001, N'Lỗi: Không tìm thấy cấu hình số giờ làm việc chuẩn trong dbo.CauHinhLichLamViec.', 1;
 
-        -- 3. LẤY TỶ LỆ BẢO HIỂM HIỆN HÀNH
-        DECLARE @TyLeBHXH DECIMAL(6,4), @TyLeBHYT DECIMAL(6,4), @TyLeBHTN DECIMAL(6,4);
+        -- 3. LẤY TỶ LỆ VÀ TRẦN BẢO HIỂM HIỆN HÀNH
+        DECLARE 
+            @TyLeBHXH DECIMAL(6,4), 
+            @TyLeBHYT DECIMAL(6,4), 
+            @TyLeBHTN DECIMAL(6,4),
+            @MucTranBHXH DECIMAL(18,2),
+            @MucTranBHYT DECIMAL(18,2),
+            @MucTranBHTN DECIMAL(18,2);
         
-        SELECT @TyLeBHXH = TyLeNhanVien FROM dbo.CauHinhBaoHiem WHERE LoaiBaoHiem = 'BHXH' AND DangHieuLuc = 1;
-        SELECT @TyLeBHYT = TyLeNhanVien FROM dbo.CauHinhBaoHiem WHERE LoaiBaoHiem = 'BHYT' AND DangHieuLuc = 1;
-        SELECT @TyLeBHTN = TyLeNhanVien FROM dbo.CauHinhBaoHiem WHERE LoaiBaoHiem = 'BHTN' AND DangHieuLuc = 1;
+        SELECT 
+            @TyLeBHXH = TyLeNhanVien,
+            @MucTranBHXH = MucTranDong
+        FROM dbo.CauHinhBaoHiem 
+        WHERE LoaiBaoHiem = 'BHXH' AND DangHieuLuc = 1;
+
+        SELECT 
+            @TyLeBHYT = TyLeNhanVien,
+            @MucTranBHYT = MucTranDong
+        FROM dbo.CauHinhBaoHiem 
+        WHERE LoaiBaoHiem = 'BHYT' AND DangHieuLuc = 1;
+
+        SELECT 
+            @TyLeBHTN = TyLeNhanVien,
+            @MucTranBHTN = MucTranDong
+        FROM dbo.CauHinhBaoHiem 
+        WHERE LoaiBaoHiem = 'BHTN' AND DangHieuLuc = 1;
 
         IF @TyLeBHXH IS NULL OR @TyLeBHYT IS NULL OR @TyLeBHTN IS NULL
             THROW 50002, N'Lỗi: Thiếu cấu hình tỷ lệ bảo hiểm (BHXH, BHYT hoặc BHTN) trong dbo.CauHinhBaoHiem.', 1;
@@ -115,6 +135,21 @@ BEGIN
                 -- 5.5. Dữ liệu lương gốc
                 lsl.LuongCoBan,
                 lsl.PhuCap,
+                
+                CASE 
+                    WHEN @MucTranBHXH IS NOT NULL AND lsl.LuongCoBan > @MucTranBHXH THEN @MucTranBHXH
+                    ELSE lsl.LuongCoBan
+                END AS LuongDongBHXH,
+
+                CASE 
+                    WHEN @MucTranBHYT IS NOT NULL AND lsl.LuongCoBan > @MucTranBHYT THEN @MucTranBHYT
+                    ELSE lsl.LuongCoBan
+                END AS LuongDongBHYT,
+
+                CASE 
+                    WHEN @MucTranBHTN IS NOT NULL AND lsl.LuongCoBan > @MucTranBHTN THEN @MucTranBHTN
+                    ELSE lsl.LuongCoBan
+                END AS LuongDongBHTN,
                 
                 -- 5.6. Các biến trung gian để tính toán
                 -- LuongGio = LuongCoBan / SoNgayCongChuan / SoGioNgayChuan
@@ -232,20 +267,20 @@ BEGIN
                 PhuCap = source.PhuCap,
                 TienLamThem = source.TienLamThem,
                 KhauTruDiMuon = source.KhauTruDiMuon,
-                BaoHiemXaHoi = source.LuongCoBan * @TyLeBHXH,
-                BaoHiemYTe = source.LuongCoBan * @TyLeBHYT,
-                BaoHiemThatNghiep = source.LuongCoBan * @TyLeBHTN,
+                BaoHiemXaHoi = source.LuongDongBHXH * @TyLeBHXH,
+                BaoHiemYTe = source.LuongDongBHYT * @TyLeBHYT,
+                BaoHiemThatNghiep = source.LuongDongBHTN * @TyLeBHTN,
                 CacKhoanKhauTruKhac = source.CacKhoanKhauTruKhac,
                 TongLuongGop = source.LuongCoBan + source.PhuCap + source.TienLamThem,
                 ThueTNCN = CASE 
-                    WHEN (source.LuongCoBan + source.PhuCap + source.TienLamThem - (source.LuongCoBan * (@TyLeBHXH + @TyLeBHYT + @TyLeBHTN)) - @PersonalDeduction - source.SoNguoiPhuThuoc * @DependentDeduction) > 0 
-                    THEN (source.LuongCoBan + source.PhuCap + source.TienLamThem - (source.LuongCoBan * (@TyLeBHXH + @TyLeBHYT + @TyLeBHTN)) - @PersonalDeduction - source.SoNguoiPhuThuoc * @DependentDeduction) * @TaxRate 
+                    WHEN (source.LuongCoBan + source.PhuCap + source.TienLamThem - (source.LuongDongBHXH * @TyLeBHXH + source.LuongDongBHYT * @TyLeBHYT + source.LuongDongBHTN * @TyLeBHTN) - @PersonalDeduction - source.SoNguoiPhuThuoc * @DependentDeduction) > 0 
+                    THEN (source.LuongCoBan + source.PhuCap + source.TienLamThem - (source.LuongDongBHXH * @TyLeBHXH + source.LuongDongBHYT * @TyLeBHYT + source.LuongDongBHTN * @TyLeBHTN) - @PersonalDeduction - source.SoNguoiPhuThuoc * @DependentDeduction) * @TaxRate 
                     ELSE 0 END,
                 LuongThucNhan = (source.LuongCoBan + source.PhuCap + source.TienLamThem) 
-                                - (source.LuongCoBan * (@TyLeBHXH + @TyLeBHYT + @TyLeBHTN))
+                                - (source.LuongDongBHXH * @TyLeBHXH + source.LuongDongBHYT * @TyLeBHYT + source.LuongDongBHTN * @TyLeBHTN)
                                 - (CASE 
-                                    WHEN (source.LuongCoBan + source.PhuCap + source.TienLamThem - (source.LuongCoBan * (@TyLeBHXH + @TyLeBHYT + @TyLeBHTN)) - @PersonalDeduction - source.SoNguoiPhuThuoc * @DependentDeduction) > 0 
-                                    THEN (source.LuongCoBan + source.PhuCap + source.TienLamThem - (source.LuongCoBan * (@TyLeBHXH + @TyLeBHYT + @TyLeBHTN)) - @PersonalDeduction - source.SoNguoiPhuThuoc * @DependentDeduction) * @TaxRate 
+                                    WHEN (source.LuongCoBan + source.PhuCap + source.TienLamThem - (source.LuongDongBHXH * @TyLeBHXH + source.LuongDongBHYT * @TyLeBHYT + source.LuongDongBHTN * @TyLeBHTN) - @PersonalDeduction - source.SoNguoiPhuThuoc * @DependentDeduction) > 0 
+                                    THEN (source.LuongCoBan + source.PhuCap + source.TienLamThem - (source.LuongDongBHXH * @TyLeBHXH + source.LuongDongBHYT * @TyLeBHYT + source.LuongDongBHTN * @TyLeBHTN) - @PersonalDeduction - source.SoNguoiPhuThuoc * @DependentDeduction) * @TaxRate 
                                     ELSE 0 END) 
                                 - source.KhauTruDiMuon
                                 - source.CacKhoanKhauTruKhac,
@@ -260,20 +295,20 @@ BEGIN
             VALUES (
                 source.MaNhanVienId, source.Thang, source.Nam, source.SoNgayCongChuan, source.SoNgayCongThucTe, source.SoNgayNghiHuongLuong, source.SoGioLamThem,
                 source.LuongCoBan, source.PhuCap, source.TienLamThem, source.KhauTruDiMuon, 
-                source.LuongCoBan * @TyLeBHXH, source.LuongCoBan * @TyLeBHYT, source.LuongCoBan * @TyLeBHTN,
+                source.LuongDongBHXH * @TyLeBHXH, source.LuongDongBHYT * @TyLeBHYT, source.LuongDongBHTN * @TyLeBHTN,
                 -- Tính Thuế TNCN
                 CASE 
-                    WHEN (source.LuongCoBan + source.PhuCap + source.TienLamThem - (source.LuongCoBan * (@TyLeBHXH + @TyLeBHYT + @TyLeBHTN)) - @PersonalDeduction - source.SoNguoiPhuThuoc * @DependentDeduction) > 0 
-                    THEN (source.LuongCoBan + source.PhuCap + source.TienLamThem - (source.LuongCoBan * (@TyLeBHXH + @TyLeBHYT + @TyLeBHTN)) - @PersonalDeduction - source.SoNguoiPhuThuoc * @DependentDeduction) * @TaxRate 
+                    WHEN (source.LuongCoBan + source.PhuCap + source.TienLamThem - (source.LuongDongBHXH * @TyLeBHXH + source.LuongDongBHYT * @TyLeBHYT + source.LuongDongBHTN * @TyLeBHTN) - @PersonalDeduction - source.SoNguoiPhuThuoc * @DependentDeduction) > 0 
+                    THEN (source.LuongCoBan + source.PhuCap + source.TienLamThem - (source.LuongDongBHXH * @TyLeBHXH + source.LuongDongBHYT * @TyLeBHYT + source.LuongDongBHTN * @TyLeBHTN) - @PersonalDeduction - source.SoNguoiPhuThuoc * @DependentDeduction) * @TaxRate 
                     ELSE 0 END,
                 source.CacKhoanKhauTruKhac,
                 source.LuongCoBan + source.PhuCap + source.TienLamThem,
                 -- Tính Lương thực nhận
                 (source.LuongCoBan + source.PhuCap + source.TienLamThem) 
-                - (source.LuongCoBan * (@TyLeBHXH + @TyLeBHYT + @TyLeBHTN))
+                - (source.LuongDongBHXH * @TyLeBHXH + source.LuongDongBHYT * @TyLeBHYT + source.LuongDongBHTN * @TyLeBHTN)
                 - (CASE 
-                    WHEN (source.LuongCoBan + source.PhuCap + source.TienLamThem - (source.LuongCoBan * (@TyLeBHXH + @TyLeBHYT + @TyLeBHTN)) - @PersonalDeduction - source.SoNguoiPhuThuoc * @DependentDeduction) > 0 
-                    THEN (source.LuongCoBan + source.PhuCap + source.TienLamThem - (source.LuongCoBan * (@TyLeBHXH + @TyLeBHYT + @TyLeBHTN)) - @PersonalDeduction - source.SoNguoiPhuThuoc * @DependentDeduction) * @TaxRate 
+                    WHEN (source.LuongCoBan + source.PhuCap + source.TienLamThem - (source.LuongDongBHXH * @TyLeBHXH + source.LuongDongBHYT * @TyLeBHYT + source.LuongDongBHTN * @TyLeBHTN) - @PersonalDeduction - source.SoNguoiPhuThuoc * @DependentDeduction) > 0 
+                    THEN (source.LuongCoBan + source.PhuCap + source.TienLamThem - (source.LuongDongBHXH * @TyLeBHXH + source.LuongDongBHYT * @TyLeBHYT + source.LuongDongBHTN * @TyLeBHTN) - @PersonalDeduction - source.SoNguoiPhuThuoc * @DependentDeduction) * @TaxRate 
                     ELSE 0 END) 
                 - source.KhauTruDiMuon
                 - source.CacKhoanKhauTruKhac,
