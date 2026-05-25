@@ -95,7 +95,10 @@ export class EmployeeService {
     });
 
     try {
-      return await this.nhanVienRepository.save(nv);
+      const savedEmployee = await this.nhanVienRepository.save(nv);
+      // MatKhauHash is set on this in-memory entity, so remove it before returning to the client.
+      const { MatKhauHash, ...safeEmployee } = savedEmployee;
+      return safeEmployee;
     } catch (error) {
       console.error('Lỗi khi lưu nhân viên:', error);
       throw new BadRequestException('Không thể lưu nhân viên. Vui lòng kiểm tra lại dữ liệu.');
