@@ -1,6 +1,6 @@
 import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, DataSource } from 'typeorm';
+import { Repository, DataSource, Between } from 'typeorm';
 import { NhanVien } from '../auth/entities/nhan-vien.entity';
 import { HopDong } from './entities/hop-dong.entity';
 import { LichSuDieuChuyen } from './entities/lich-su-dieu-chuyen.entity';
@@ -201,12 +201,16 @@ export class EmployeeService {
   }
 
   async getExpiringContracts() {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
     const thirtyDaysFromNow = new Date();
     thirtyDaysFromNow.setDate(thirtyDaysFromNow.getDate() + 30);
+    thirtyDaysFromNow.setHours(0, 0, 0, 0);
 
     return this.hopDongRepository.find({
       where: {
-        NgayKetThuc: thirtyDaysFromNow, // simplified logic, usually between now and 30 days
+        NgayKetThuc: Between(today, thirtyDaysFromNow),
         TrangThai: 'Active',
       },
       relations: ['nhanVien'],
