@@ -1,8 +1,8 @@
 "use client";
 
 import React, { useState } from "react";
-import { Space, Tag, Avatar, Tooltip } from "antd";
-import { EyeOutlined, EditOutlined, DeleteOutlined } from "@ant-design/icons";
+import { Space, Tag, Avatar, Tooltip, Input, Button as AntButton } from "antd";
+import { EyeOutlined, EditOutlined, DeleteOutlined, SearchOutlined } from "@ant-design/icons";
 import type { TableColumnsType } from "antd";
 import Button from "@/components/shared/Button/Button";
 import Table from "@/components/shared/Table/Table";
@@ -51,12 +51,62 @@ export default function EmployeeTable({
     onChange: onSelectChange,
   };
 
+  const getColumnSearchProps = (dataIndex: string, placeholder: string) => ({
+    filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters }: any) => (
+      <div style={{ padding: 8 }} onKeyDown={(e) => e.stopPropagation()}>
+        <Input
+          placeholder={placeholder}
+          value={selectedKeys[0]}
+          onChange={(e) => setSelectedKeys(e.target.value ? [e.target.value] : [])}
+          onPressEnter={() => confirm()}
+          style={{ marginBottom: 8, display: 'block' }}
+        />
+        <Space>
+          <AntButton
+            type="primary"
+            onClick={() => confirm()}
+            icon={<SearchOutlined />}
+            size="small"
+            style={{ width: 90 }}
+          >
+            Tìm
+          </AntButton>
+          <AntButton
+            onClick={() => {
+              clearFilters?.();
+              confirm();
+            }}
+            size="small"
+            style={{ width: 90 }}
+          >
+            Reset
+          </AntButton>
+        </Space>
+      </div>
+    ),
+    filterIcon: (filtered: boolean) => (
+      <SearchOutlined style={{ color: filtered ? '#1890ff' : undefined }} />
+    ),
+    onFilter: (value: any, record: Employee) => {
+      const searchVal = String(value).toLowerCase();
+      if (dataIndex === 'employee_search') {
+        return (
+          record.HoTen?.toLowerCase().includes(searchVal) ||
+          record.Email?.toLowerCase().includes(searchVal)
+        );
+      }
+      const val = (record as any)[dataIndex];
+      return val ? val.toString().toLowerCase().includes(searchVal) : false;
+    },
+  });
+
   const columns: TableColumnsType<Employee> = [
     {
       title: "Nhân viên",
       key: "employee",
       width: 220,
       sorter: (a, b) => a.HoTen.localeCompare(b.HoTen),
+      ...getColumnSearchProps('employee_search', 'Tìm tên hoặc email...'),
       render: (_, record) => (
         <Space size="middle">
           <Avatar style={{ backgroundColor: "#cc1212ff" }} size={32}>
@@ -75,6 +125,7 @@ export default function EmployeeTable({
       key: "MaNhanVien",
       width: 100,
       sorter: (a, b) => a.MaNhanVien.localeCompare(b.MaNhanVien),
+      ...getColumnSearchProps('MaNhanVien', 'Tìm mã NV...'),
       render: (code: string) => (
         <Tag style={{ borderRadius: 12, fontSize: 11, fontWeight: 500 }}>{code}</Tag>
       ),
@@ -83,18 +134,46 @@ export default function EmployeeTable({
       title: "Phòng ban",
       key: "department",
       width: 120,
+      filters: Array.from(
+        new Set(
+          (data || [])
+            .map(item => item.phongBan?.TenPhong)
+            .filter((name): name is string => !!name)
+        )
+      ).map(name => ({
+        text: name,
+        value: name,
+      })),
+      onFilter: (value: any, record: Employee) => record.phongBan?.TenPhong === value,
       render: (_, record) => record.phongBan?.TenPhong || "N/A",
     },
     {
       title: "Chức vụ",
       key: "position",
       width: 140,
+      filters: Array.from(
+        new Set(
+          (data || [])
+            .map(item => item.chucVu?.TenChucVu)
+            .filter((name): name is string => !!name)
+        )
+      ).map(name => ({
+        text: name,
+        value: name,
+      })),
+      onFilter: (value: any, record: Employee) => record.chucVu?.TenChucVu === value,
       render: (_, record) => record.chucVu?.TenChucVu || "N/A",
     },
     {
       title: "Vai trò",
       key: "role",
       width: 100,
+      filters: [
+        { text: "Admin", value: "Admin" },
+        { text: "Manager", value: "Manager" },
+        { text: "Staff", value: "Staff" }
+      ],
+      onFilter: (value: any, record: Employee) => (record.vaiTro?.TenVaiTro || "Staff") === value,
       render: (_, record) => (
         <Tag color={getRoleColor(record.vaiTro?.TenVaiTro || "Staff")}>
           {record.vaiTro?.TenVaiTro || "Nhân viên"}
@@ -113,8 +192,17 @@ export default function EmployeeTable({
       dataIndex: "TrangThai",
       key: "TrangThai",
       width: 110,
+      filters: [
+        { text: "Đang làm", value: "Active" },
+        { text: "Nghỉ việc", value: "Inactive" },
+      ],
+      onFilter: (value: any, record: Employee) => {
+        const isActive = record.TrangThai === "Active";
+        if (value === "Active") return isActive;
+        return !isActive;
+      },
       render: (status: string) => {
-        const isActive = status === "Active" || status === "Đang làm";
+        const isActive = status === "Active";
         return (
           <Tag color={isActive ? "success" : "error"} className="font-medium">
             {isActive ? "Đang làm" : "Nghỉ việc"}

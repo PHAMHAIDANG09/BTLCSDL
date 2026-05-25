@@ -1,5 +1,5 @@
 import api from "./api";
-import { PhieuLuong, CalculatePayrollDto } from "@/types/payroll";
+import { PhieuLuong, CalculatePayrollDto, LichSuLuong, UpdateSalaryDto } from "@/types/payroll";
 
 export const payrollService = {
   /**
@@ -22,6 +22,34 @@ export const payrollService = {
    */
   getMyPaySlips: async (): Promise<PhieuLuong[]> => {
     return api.get("/payroll/my-payslips");
+  },
+
+  /**
+   * Cập nhật mức lương nhân viên (SCD Loại 2)
+   */
+  updateSalary: async (data: UpdateSalaryDto): Promise<any> => {
+    return api.post("/payroll/update-salary", data);
+  },
+
+  /**
+   * Lấy lịch sử thay đổi lương cá nhân
+   */
+  getMySalaryHistory: async (): Promise<LichSuLuong[]> => {
+    return api.get("/payroll/my-salary-history");
+  },
+
+  /**
+   * Lấy lịch sử thay đổi lương của nhân viên cụ thể (Admin)
+   */
+  getEmployeeSalaryHistory: async (employeeId: number): Promise<LichSuLuong[]> => {
+    return api.get(`/payroll/history/${employeeId}`);
+  },
+
+  /**
+   * Lấy danh sách phiếu lương của nhân viên cụ thể (Admin)
+   */
+  getEmployeePaySlips: async (employeeId: number): Promise<PhieuLuong[]> => {
+    return api.get(`/payroll/employee-payslips/${employeeId}`);
   },
 };
 

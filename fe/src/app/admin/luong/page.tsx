@@ -12,19 +12,26 @@ import {
   Row,
   Col,
   Tooltip,
+  Modal,
+  Form,
+  Input,
+  InputNumber,
 } from "antd";
 import {
   CalculatorOutlined,
   FileExcelOutlined,
   EyeOutlined,
   ReloadOutlined,
+  DollarOutlined,
+  SearchOutlined,
 } from "@ant-design/icons";
 import Table from "@/components/shared/Table/Table";
 import type { TableColumnsType } from "antd";
 import { PhieuLuong } from "@/types/payroll";
 import payrollService from "@/services/payroll.service";
+import { getEmployeesApi, Employee } from "@/services/employee.service";
 import PayrollDetailModal from "@/components/payroll/PayrollDetailModal";
-import * as XLSX from "xlsx";
+import exportService from "@/components/shared/utils/export";
 import confetti from "canvas-confetti";
 import dayjs from "dayjs";
 
@@ -37,6 +44,10 @@ export default function AdminPayrollPage() {
   const [loading, setLoading] = useState(false);
   const [calculating, setCalculating] = useState(false);
   const [data, setData] = useState<PhieuLuong[]>([]);
+  const [employees, setEmployees] = useState<Employee[]>([]);
+  const [isSalaryModalOpen, setIsSalaryModalOpen] = useState(false);
+  const [updatingSalary, setUpdatingSalary] = useState(false);
+  const [salaryForm] = Form.useForm();
   const [selectedMonth, setSelectedMonth] = useState(dayjs().month() + 1);
   const [selectedYear, setSelectedYear] = useState(dayjs().year());
   const [selectedItem, setSelectedItem] = useState<PhieuLuong | null>(null);
@@ -54,9 +65,39 @@ export default function AdminPayrollPage() {
     }
   };
 
+  const fetchEmployees = async () => {
+    try {
+      const res = await getEmployeesApi();
+      setEmployees(res.filter((e) => e.TrangThai === "Active"));
+    } catch (error: any) {
+      console.error("Không thể tải danh sách nhân viên", error);
+    }
+  };
+
   useEffect(() => {
     fetchPaySlips();
+    fetchEmployees();
   }, [selectedMonth, selectedYear]);
+
+  const handleUpdateSalary = async (values: any) => {
+    setUpdatingSalary(true);
+    try {
+      await payrollService.updateSalary({
+        MaNhanVienId: values.MaNhanVienId,
+        LuongCoBan: values.LuongCoBan,
+        PhuCap: values.PhuCap,
+        GhiChu: values.GhiChu,
+      });
+      message.success("Cập nhật mức lương thành công!");
+      setIsSalaryModalOpen(false);
+      salaryForm.resetFields();
+      fetchPaySlips();
+    } catch (error: any) {
+      message.error(error.message || "Lỗi khi cập nhật mức lương");
+    } finally {
+      setUpdatingSalary(false);
+    }
+  };
 
   const handleCalculate = async () => {
     setCalculating(true);
@@ -103,18 +144,57 @@ export default function AdminPayrollPage() {
       "Trạng thái": item.TrangThai === "Paid" ? "Đã thanh toán" : "Chờ xử lý",
     }));
 
-    const ws = XLSX.utils.json_to_sheet(exportData);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Payroll");
-    XLSX.writeFile(wb, `Bang_Luong_${selectedMonth}_${selectedYear}.xlsx`);
+    exportService.exportToExcel(exportData, `Bang_Luong_${selectedMonth}_${selectedYear}`, "Payroll");
   };
 
   const columns: TableColumnsType<PhieuLuong> = [
     {
       title: "Nhân viên",
       key: "employee",
-      fixed: "left",
-      width: 200,
+      filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters }) => (
+        <div style={{ padding: 8 }} onKeyDown={(e) => e.stopPropagation()}>
+          <Input
+            placeholder="Tìm tên hoặc mã NV..."
+            value={selectedKeys[0] as string}
+            onChange={(e) => setSelectedKeys(e.target.value ? [e.target.value] : [])}
+            onPressEnter={() => confirm()}
+            style={{ marginBottom: 8, display: "block", width: 220 }}
+          />
+          <Space>
+            <Button
+              type="primary"
+              onClick={() => confirm()}
+              icon={<SearchOutlined />}
+              size="small"
+              style={{ width: 90 }}
+              className="bg-blue-600 border-none hover:bg-blue-700"
+            >
+              Tìm
+            </Button>
+            <Button
+              onClick={() => {
+                clearFilters && clearFilters();
+                confirm();
+              }}
+              size="small"
+              style={{ width: 90 }}
+            >
+              Xóa
+            </Button>
+          </Space>
+        </div>
+      ),
+      filterIcon: (filtered) => (
+        <SearchOutlined style={{ color: filtered ? "#1677ff" : undefined }} />
+      ),
+      onFilter: (value, record) => {
+        const hoTen = record.nhanVien?.HoTen || "";
+        const maNV = record.nhanVien?.MaNhanVien || "";
+        return (
+          hoTen.toLowerCase().includes((value as string).toLowerCase()) ||
+          maNV.toLowerCase().includes((value as string).toLowerCase())
+        );
+      },
       render: (_, r) => (
         <Space direction="vertical" size={0}>
           <Text strong>{r.nhanVien?.HoTen}</Text>
@@ -125,28 +205,34 @@ export default function AdminPayrollPage() {
     {
       title: "Tháng/Năm",
       key: "period",
-      width: 120,
       render: (_, r) => `${r.Thang}/${r.Nam}`,
     },
     {
       title: "Lương cơ bản",
       dataIndex: "LuongCoBan",
       key: "baseSalary",
-      width: 150,
       render: fmt,
     },
     {
       title: "Thực lĩnh",
       dataIndex: "LuongThucNhan",
       key: "netSalary",
-      width: 150,
       render: (v) => <Text strong className="text-blue-600">{fmt(v)}</Text>,
     },
     {
       title: "Trạng thái",
       dataIndex: "TrangThai",
       key: "status",
-      width: 130,
+      filters: [
+        { text: "Đã thanh toán", value: "Paid" },
+        { text: "Chờ xử lý", value: "Draft" },
+      ],
+      onFilter: (value: any, record: PhieuLuong) => {
+        if (value === "Draft") {
+          return record.TrangThai !== "Paid";
+        }
+        return record.TrangThai === value;
+      },
       render: (s) => (
         <Tag color={s === "Paid" ? "green" : "orange"}>
           {s === "Paid" ? "Đã thanh toán" : "Chờ xử lý"}
@@ -156,8 +242,7 @@ export default function AdminPayrollPage() {
     {
       title: "Thao tác",
       key: "action",
-      fixed: "right",
-      width: 100,
+      width: 80,
       render: (_, r) => (
         <Tooltip title="Xem chi tiết">
           <Button
@@ -175,7 +260,7 @@ export default function AdminPayrollPage() {
 
   return (
     <div className="p-6">
-      <Row gutter={[16, 16]} align="middle" justify="space-between" className="mb-6">
+      <Row gutter={[16, 16]} align="middle" justify="space-between" className="mb-0">
         <Col>
           <Title level={2} className="m-0">Quản lý lương</Title>
           <Text type="secondary">Tính toán và theo dõi bảng lương hàng tháng</Text>
@@ -188,6 +273,14 @@ export default function AdminPayrollPage() {
               loading={loading}
             >
               Làm mới
+            </Button>
+            <Button
+              type="primary"
+              icon={<DollarOutlined />}
+              onClick={() => setIsSalaryModalOpen(true)}
+              className="bg-green-600 hover:bg-green-700 border-none"
+            >
+              Cập nhật mức lương
             </Button>
             <Button
               type="primary"
@@ -209,7 +302,9 @@ export default function AdminPayrollPage() {
         </Col>
       </Row>
 
-      <Card className="mb-6 shadow-sm">
+      <div style={{ height: "32px" }} />
+
+      <div className="mb-0">
         <Space size="large">
           <div>
             <Text strong className="mr-2">Chọn tháng:</Text>
@@ -236,7 +331,9 @@ export default function AdminPayrollPage() {
             </Select>
           </div>
         </Space>
-      </Card>
+      </div>
+
+      <div style={{ height: "32px" }} />
 
       <Table<PhieuLuong>
         columns={columns}
@@ -244,6 +341,8 @@ export default function AdminPayrollPage() {
         loading={loading}
         rowKey="Id"
         totalText="phiếu lương"
+        noScroll={true}
+        searchable={false}
       />
 
       <PayrollDetailModal
@@ -251,6 +350,76 @@ export default function AdminPayrollPage() {
         onClose={() => setIsModalOpen(false)}
         data={selectedItem}
       />
+
+      <Modal
+        title="Cập nhật mức lương nhân viên (SCD Loại 2)"
+        open={isSalaryModalOpen}
+        onCancel={() => {
+          setIsSalaryModalOpen(false);
+          salaryForm.resetFields();
+        }}
+        onOk={() => salaryForm.submit()}
+        confirmLoading={updatingSalary}
+        okText="Cập nhật"
+        cancelText="Hủy"
+        width={500}
+      >
+        <Form
+          form={salaryForm}
+          layout="vertical"
+          onFinish={handleUpdateSalary}
+        >
+          <Form.Item
+            name="MaNhanVienId"
+            label="Chọn nhân viên"
+            rules={[{ required: true, message: "Vui lòng chọn nhân viên" }]}
+          >
+            <Select
+              placeholder="Chọn nhân viên cần điều chỉnh lương"
+              showSearch
+              filterOption={(input, option) =>
+                (option?.label ?? "").toLowerCase().includes(input.toLowerCase())
+              }
+              options={employees.map((e) => ({
+                value: e.Id,
+                label: `${e.HoTen} (${e.MaNhanVien}) - ${e.phongBan?.TenPhong || ""}`,
+              }))}
+            />
+          </Form.Item>
+
+          <Form.Item
+            name="LuongCoBan"
+            label="Lương cơ bản mới"
+            rules={[{ required: true, message: "Vui lòng nhập lương cơ bản" }]}
+          >
+            <InputNumber
+              className="w-full"
+              min={0}
+              placeholder="Ví dụ: 10,000,000"
+              formatter={(v) => `${v}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
+              parser={(value) => value!.replace(/\$\s?|(,*)/g, "") as any}
+            />
+          </Form.Item>
+
+          <Form.Item
+            name="PhuCap"
+            label="Phụ cấp mới"
+            rules={[{ required: true, message: "Vui lòng nhập phụ cấp" }]}
+          >
+            <InputNumber
+              className="w-full"
+              min={0}
+              placeholder="Ví dụ: 1,000,000"
+              formatter={(v) => `${v}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
+              parser={(value) => value!.replace(/\$\s?|(,*)/g, "") as any}
+            />
+          </Form.Item>
+
+          <Form.Item name="GhiChu" label="Ghi chú điều chỉnh">
+            <Input.TextArea rows={3} placeholder="Lý do điều chỉnh lương..." />
+          </Form.Item>
+        </Form>
+      </Modal>
     </div>
   );
 }

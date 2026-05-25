@@ -166,7 +166,8 @@ export const Header: React.FC<HeaderProps> = ({
         height,
         zIndex: 1000,
         backgroundColor: "#fff",
-        boxShadow: "0 4px 12px rgba(0, 0, 0, 0.05)",
+        boxShadow: "none",
+        borderBottom: "1px solid #f0f0f0",
         transition: "left 0.2s, width 0.2s",
       }}
     >
@@ -189,18 +190,18 @@ export const Header: React.FC<HeaderProps> = ({
           className="hover:bg-gray-100"
         />
 
-        {/* User Avatar & Dropdown */}
         <Dropdown menu={{ items: userMenuItems }} trigger={["click"]}>
-          <div className="flex items-center gap-2 cursor-pointer hover:bg-gray-100 px-3 py-1 rounded">
-            <Avatar size="large" icon={<UserOutlined />} src={user?.avatar} />
-            <div className="hidden sm:block">
-              <p className="text-sm font-medium mb-0">
-                {user?.name || "Admin"}
-              </p>
-              <p className="text-xs text-gray-500 mb-0">
-                {user?.role || "Administrator"}
-              </p>
-            </div>
+          <div className="flex items-center gap-2 cursor-pointer hover:bg-gray-100 px-3 py-1 rounded" style={{ lineHeight: "normal" }}>
+            <Avatar 
+              size={32} 
+              style={{ backgroundColor: "#cb1414" }}
+              src={user?.avatar}
+            >
+              {user?.name ? user.name.charAt(0).toUpperCase() : <UserOutlined />}
+            </Avatar>
+            <span className="text-sm font-semibold text-gray-800">
+              {user?.name || "Admin"}
+            </span>
           </div>
         </Dropdown>
       </Space>

@@ -6,6 +6,7 @@ import {
   Request,
   Get,
   Query,
+  Param,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { PayrollService } from './payroll.service';
@@ -62,5 +63,19 @@ export class PayrollController {
       thang ? +thang : undefined,
       nam ? +nam : undefined,
     );
+  }
+
+  @Get('history/:employeeId')
+  @Roles('Admin', 'Manager')
+  @ApiOperation({ summary: 'Lấy lịch sử lương của nhân viên cụ thể' })
+  getEmployeeSalaryHistory(@Param('employeeId') employeeId: string) {
+    return this.payrollService.getSalaryHistory(+employeeId);
+  }
+
+  @Get('employee-payslips/:employeeId')
+  @Roles('Admin', 'Manager')
+  @ApiOperation({ summary: 'Lấy danh sách phiếu lương của nhân viên cụ thể' })
+  getEmployeePaySlips(@Param('employeeId') employeeId: string) {
+    return this.payrollService.getMyPaySlips(+employeeId);
   }
 }

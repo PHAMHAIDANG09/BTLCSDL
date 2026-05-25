@@ -100,14 +100,15 @@ export class LeaveService {
       }
       const nam = ngayBatDau.getFullYear();
 
-      // Update balance
-      const balance = await queryRunner.manager.findOne(SoDuPhep, {
-        where: {
-          MaNhanVienId: request.MaNhanVienId,
-          MaLoaiPhepId: request.MaLoaiPhepId,
-          Nam: nam,
-        },
-      });
+      if (status === 'Approved') {
+        // Update balance
+        const balance = await queryRunner.manager.findOne(SoDuPhep, {
+          where: {
+            MaNhanVienId: request.MaNhanVienId,
+            MaLoaiPhepId: request.MaLoaiPhepId,
+            Nam: nam,
+          },
+        });
 
         if (balance) {
           balance.DaSuDung += request.TongSoNgay;
