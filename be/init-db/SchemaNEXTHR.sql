@@ -414,6 +414,11 @@ CREATE INDEX IDX_NhanVien_MaPhong ON dbo.NhanVien(MaPhongId);
 CREATE INDEX IDX_NhanVien_TrangThai ON dbo.NhanVien(TrangThai);
 CREATE INDEX IDX_HopDong_NhanVien ON dbo.HopDong(MaNhanVienId);
 CREATE INDEX IDX_LichSuLuong_HienTai ON dbo.LichSuLuong(MaNhanVienId, DangHieuLuc);
+CREATE INDEX IDX_ChamCong_Ngay_NhanVien ON dbo.ChamCong(NgayLamViec, MaNhanVienId);
+CREATE INDEX IDX_DonNghiPhep_TrangThai_Ngay_NhanVien ON dbo.DonNghiPhep(TrangThai, NgayBatDau, NgayKetThuc, MaNhanVienId);
+CREATE INDEX IDX_DonLamThem_TrangThai_Ngay_NhanVien ON dbo.DonLamThem(TrangThai, NgayLamThem, MaNhanVienId);
+CREATE INDEX IDX_PhieuLuong_Nam_Thang ON dbo.PhieuLuong(Nam, Thang);
+CREATE INDEX IDX_HopDong_TrangThai_NgayKetThuc ON dbo.HopDong(TrangThai, NgayKetThuc);
 GO
 
 -- =============================================
