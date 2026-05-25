@@ -1,6 +1,6 @@
 import { Injectable, StreamableFile } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { And, LessThan, MoreThanOrEqual, Repository } from 'typeorm';
 import * as ExcelJS from 'exceljs';
 import { ChamCong } from '../attendance/entities/cham-cong.entity';
 import { PhieuLuong } from '../payroll/entities/phieu-luong.entity';
@@ -17,6 +17,8 @@ export class ReportService {
   async exportAttendance(thang: number, nam: number) {
     const workbook = new ExcelJS.Workbook();
     const worksheet = workbook.addWorksheet('Bang Cong');
+    const formatDate = (value?: Date | string | null) =>
+      value ? new Date(value).toISOString().split('T')[0] : '';
 
     worksheet.columns = [
       { header: 'Mã NV', key: 'maNv', width: 15 },
@@ -28,16 +30,21 @@ export class ReportService {
       { header: 'Trạng Thái', key: 'trangThai', width: 15 },
     ];
 
+    const startDate = new Date(nam, thang - 1, 1);
+    const endDate = new Date(nam, thang, 1);
+
     const data = await this.chamCongRepository.find({
+      where: {
+        NgayLamViec: And(MoreThanOrEqual(startDate), LessThan(endDate)),
+      },
       relations: ['nhanVien'],
     });
-    // Filter by thang/nam (simplified)
     
     data.forEach((item) => {
       worksheet.addRow({
         maNv: item.nhanVien?.MaNhanVien,
         hoTen: item.nhanVien?.HoTen,
-        ngay: item.NgayLamViec.toISOString().split('T')[0],
+        ngay: formatDate(item.NgayLamViec),
         gioVao: item.GioVao?.toLocaleTimeString(),
         gioRa: item.GioRa?.toLocaleTimeString(),
         muon: item.SoPhutDiMuon,
