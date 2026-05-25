@@ -78,7 +78,6 @@ const getBreadcrumbs = (
   const breadcrumbs: Array<{ title: React.ReactNode; href?: string }> = [
     {
       title: <Link href={rootHref}>{rootLabel}</Link>,
-      href: rootHref,
     },
   ];
 
@@ -93,7 +92,6 @@ const getBreadcrumbs = (
     if (!isLast) {
       breadcrumbs.push({
         title: <Link href={path}>{label}</Link>,
-        href: path,
       });
     } else {
       breadcrumbs.push({

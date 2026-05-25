@@ -73,7 +73,7 @@ export default function DashboardPage() {
           <Card
             title="Nhân Viên Theo Phòng Ban"
             className="border-0 shadow-sm"
-            bodyStyle={{ height: "300px" }}
+            styles={{ body: { height: "300px" } }}
           >
             <div className="flex items-center justify-center h-full text-gray-400">
               📊 Biểu đồ sẽ được thêm sau
@@ -85,7 +85,7 @@ export default function DashboardPage() {
           <Card
             title="Chi Phí Lương Theo Tháng"
             className="border-0 shadow-sm"
-            bodyStyle={{ height: "300px" }}
+            styles={{ body: { height: "300px" } }}
           >
             <div className="flex items-center justify-center h-full text-gray-400">
               📈 Biểu đồ sẽ được thêm sau
