@@ -498,13 +498,108 @@ VALUES
 (5, 15000000, 1500000, '2025-02-15', NULL, 1, 1, N'Lương khởi tạo');
 GO
 
-INSERT INTO dbo.ChamCong (MaNhanVienId, NgayLamViec, GioVao, GioRa, SoGioLam, SoPhutDiMuon, TrangThai, NguonChamCong)
-VALUES
-(1, '2026-03-02', '2026-03-02T08:00:00', '2026-03-02T17:00:00', 8, 0, N'CoMat', N'Manual'),
-(2, '2026-03-02', '2026-03-02T08:15:00', '2026-03-02T17:00:00', 7.75, 0, N'CoMat', N'Manual'),
-(3, '2026-03-02', '2026-03-02T08:45:00', '2026-03-02T17:30:00', 8.75, 15, N'DiMuon', N'Manual'),
-(4, '2026-03-02', '2026-03-02T08:30:00', '2026-03-02T17:30:00', 9, 0, N'CoMat', N'Manual'),
-(5, '2026-03-02', '2026-03-02T08:20:00', '2026-03-02T17:15:00', 8.92, 0, N'CoMat', N'Manual');
+-- Demo chấm công tháng 3/2026
+-- Lịch làm việc: Thứ 2 đến Thứ 6 = 8h, Thứ 7 = 4h, Chủ nhật nghỉ
+-- Tháng 3/2026 có 24 công chuẩn theo cấu hình lịch làm việc hiện tại
+DECLARE @d DATE = '2026-03-01';
+
+WHILE @d <= '2026-03-31'
+BEGIN
+    IF DATEPART(WEEKDAY, @d) <> 1
+    BEGIN
+        DECLARE @standardHours FLOAT =
+            CASE
+                WHEN DATEPART(WEEKDAY, @d) = 7 THEN 4
+                ELSE 8
+            END;
+
+        -- Hùng: đi làm đủ công
+        INSERT INTO dbo.ChamCong (
+            MaNhanVienId, NgayLamViec, GioVao, GioRa,
+            SoGioLam, SoPhutDiMuon, TrangThai, NguonChamCong
+        )
+        VALUES (
+            1, @d,
+            DATEADD(HOUR, 8, CAST(@d AS DATETIME)),
+            DATEADD(HOUR, CASE WHEN @standardHours = 4 THEN 12 ELSE 17 END, CAST(@d AS DATETIME)),
+            @standardHours,
+            0,
+            N'CoMat',
+            N'Manual'
+        );
+
+        -- Lan: nghỉ phép có lương ngày 10/03 nên không chấm công ngày đó
+        IF @d <> '2026-03-10'
+        BEGIN
+            INSERT INTO dbo.ChamCong (
+                MaNhanVienId, NgayLamViec, GioVao, GioRa,
+                SoGioLam, SoPhutDiMuon, TrangThai, NguonChamCong
+            )
+            VALUES (
+                2, @d,
+                DATEADD(HOUR, 8, CAST(@d AS DATETIME)),
+                DATEADD(HOUR, CASE WHEN @standardHours = 4 THEN 12 ELSE 17 END, CAST(@d AS DATETIME)),
+                @standardHours,
+                0,
+                N'CoMat',
+                N'Manual'
+            );
+        END;
+
+        -- Khoa: đi làm đủ nhưng có các ngày đi muộn, và có OT cuối tuần trong DonLamThem
+        INSERT INTO dbo.ChamCong (
+            MaNhanVienId, NgayLamViec, GioVao, GioRa,
+            SoGioLam, SoPhutDiMuon, TrangThai, NguonChamCong
+        )
+        VALUES (
+            3, @d,
+            DATEADD(MINUTE,
+                CASE WHEN @d IN ('2026-03-02', '2026-03-09', '2026-03-18') THEN 30 ELSE 0 END,
+                DATEADD(HOUR, 8, CAST(@d AS DATETIME))
+            ),
+            DATEADD(HOUR, CASE WHEN @standardHours = 4 THEN 12 ELSE 17 END, CAST(@d AS DATETIME)),
+            @standardHours,
+            CASE WHEN @d IN ('2026-03-02', '2026-03-09', '2026-03-18') THEN 30 ELSE 0 END,
+            CASE WHEN @d IN ('2026-03-02', '2026-03-09', '2026-03-18') THEN N'DiMuon' ELSE N'CoMat' END,
+            N'Manual'
+        );
+
+        -- Hà: đi làm đủ, có OT ngày thường trong DonLamThem
+        INSERT INTO dbo.ChamCong (
+            MaNhanVienId, NgayLamViec, GioVao, GioRa,
+            SoGioLam, SoPhutDiMuon, TrangThai, NguonChamCong
+        )
+        VALUES (
+            4, @d,
+            DATEADD(HOUR, 8, CAST(@d AS DATETIME)),
+            DATEADD(HOUR, CASE WHEN @standardHours = 4 THEN 12 ELSE 17 END, CAST(@d AS DATETIME)),
+            @standardHours,
+            0,
+            N'CoMat',
+            N'Manual'
+        );
+
+        -- Bảo: nghỉ không lương ngày 16/03, thiếu công không lý do ngày 23/03 và 24/03
+        IF @d NOT IN ('2026-03-16', '2026-03-23', '2026-03-24')
+        BEGIN
+            INSERT INTO dbo.ChamCong (
+                MaNhanVienId, NgayLamViec, GioVao, GioRa,
+                SoGioLam, SoPhutDiMuon, TrangThai, NguonChamCong
+            )
+            VALUES (
+                5, @d,
+                DATEADD(HOUR, 8, CAST(@d AS DATETIME)),
+                DATEADD(HOUR, CASE WHEN @standardHours = 4 THEN 12 ELSE 17 END, CAST(@d AS DATETIME)),
+                @standardHours,
+                0,
+                N'CoMat',
+                N'Manual'
+            );
+        END;
+    END;
+
+    SET @d = DATEADD(DAY, 1, @d);
+END;
 GO
 
 INSERT INTO dbo.SoDuPhep (MaNhanVienId, MaLoaiPhepId, Nam, TongNgayPhep, DaSuDung)
@@ -516,13 +611,13 @@ GO
 INSERT INTO dbo.DonNghiPhep (MaNhanVienId, MaLoaiPhepId, NgayBatDau, NgayKetThuc, TongSoNgay, LyDo, TrangThai, NguoiDuyetId, NgayDuyet)
 VALUES
 (2, 1, '2026-03-10', '2026-03-10', 1, N'Nghỉ việc gia đình', N'Approved', 1, GETDATE()),
-(4, 1, '2026-03-20', '2026-03-21', 2, N'Nghỉ phép cá nhân', N'Pending', NULL, NULL);
+(5, 3, '2026-03-16', '2026-03-16', 1, N'Nghỉ việc cá nhân không lương', N'Approved', 1, GETDATE());
 GO
 
 INSERT INTO dbo.DonLamThem (MaNhanVienId, NgayLamThem, GioBatDau, GioKetThuc, TongSoGio, LoaiOT, HeSoOT, LyDo, TrangThai, NguoiDuyetId)
 VALUES
 (4, '2026-03-03', '18:00', '20:00', 2, N'NgayThuong', 1.50, N'Hoàn thành sprint', N'Approved', 3),
-(5, '2026-03-07', '08:00', '12:00', 4, N'CuoiTuan', 2.00, N'Đóng sổ kế toán', N'Pending', NULL);
+(3, '2026-03-08', '08:00', '12:00', 4, N'CuoiTuan', 2.00, N'Hỗ trợ triển khai hệ thống', N'Approved', 1);
 GO
 
 INSERT INTO dbo.PhieuLuong (
