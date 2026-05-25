@@ -1,3 +1,9 @@
+/*
+WARNING:
+File này dùng để dựng/reset database NextHR local từ đầu.
+Chạy file này có thể xoá dữ liệu hiện tại trong các bảng và seed lại dữ liệu demo.
+Chỉ chạy trên môi trường local/dev. Không chạy trên database có dữ liệu cần giữ nếu chưa backup.
+*/
 USE master;
 GO
 
@@ -662,7 +668,259 @@ VALUES
 GO
 
 -- =============================================
--- 5. VIEWS
+-- 5. AUDIT TRIGGERS
+-- =============================================
+CREATE OR ALTER TRIGGER dbo.trg_Audit_NhanVien
+ON dbo.NhanVien
+AFTER INSERT, UPDATE, DELETE
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    INSERT INTO dbo.NhatKyHeThong (
+        TenBang,
+        MaBanGhi,
+        HanhDong,
+        GiaTriCu,
+        GiaTriMoi,
+        MaNguoiThucHienId
+    )
+    SELECT
+        'NhanVien',
+        i.Id,
+        N'INSERT',
+        NULL,
+        (
+            SELECT *
+            FROM inserted x
+            WHERE x.Id = i.Id
+            FOR JSON PATH, WITHOUT_ARRAY_WRAPPER
+        ),
+        1
+    FROM inserted i
+    WHERE NOT EXISTS (SELECT 1 FROM deleted d WHERE d.Id = i.Id);
+
+    INSERT INTO dbo.NhatKyHeThong (
+        TenBang,
+        MaBanGhi,
+        HanhDong,
+        GiaTriCu,
+        GiaTriMoi,
+        MaNguoiThucHienId
+    )
+    SELECT
+        'NhanVien',
+        i.Id,
+        N'UPDATE',
+        (
+            SELECT *
+            FROM deleted x
+            WHERE x.Id = d.Id
+            FOR JSON PATH, WITHOUT_ARRAY_WRAPPER
+        ),
+        (
+            SELECT *
+            FROM inserted x
+            WHERE x.Id = i.Id
+            FOR JSON PATH, WITHOUT_ARRAY_WRAPPER
+        ),
+        1
+    FROM inserted i
+    INNER JOIN deleted d ON d.Id = i.Id;
+
+    INSERT INTO dbo.NhatKyHeThong (
+        TenBang,
+        MaBanGhi,
+        HanhDong,
+        GiaTriCu,
+        GiaTriMoi,
+        MaNguoiThucHienId
+    )
+    SELECT
+        'NhanVien',
+        d.Id,
+        N'DELETE',
+        (
+            SELECT *
+            FROM deleted x
+            WHERE x.Id = d.Id
+            FOR JSON PATH, WITHOUT_ARRAY_WRAPPER
+        ),
+        NULL,
+        1
+    FROM deleted d
+    WHERE NOT EXISTS (SELECT 1 FROM inserted i WHERE i.Id = d.Id);
+END;
+GO
+
+CREATE OR ALTER TRIGGER dbo.trg_Audit_DonNghiPhep
+ON dbo.DonNghiPhep
+AFTER INSERT, UPDATE, DELETE
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    INSERT INTO dbo.NhatKyHeThong (
+        TenBang,
+        MaBanGhi,
+        HanhDong,
+        GiaTriCu,
+        GiaTriMoi,
+        MaNguoiThucHienId
+    )
+    SELECT
+        'DonNghiPhep',
+        i.Id,
+        N'INSERT',
+        NULL,
+        (
+            SELECT *
+            FROM inserted x
+            WHERE x.Id = i.Id
+            FOR JSON PATH, WITHOUT_ARRAY_WRAPPER
+        ),
+        1
+    FROM inserted i
+    WHERE NOT EXISTS (SELECT 1 FROM deleted d WHERE d.Id = i.Id);
+
+    INSERT INTO dbo.NhatKyHeThong (
+        TenBang,
+        MaBanGhi,
+        HanhDong,
+        GiaTriCu,
+        GiaTriMoi,
+        MaNguoiThucHienId
+    )
+    SELECT
+        'DonNghiPhep',
+        i.Id,
+        N'UPDATE',
+        (
+            SELECT *
+            FROM deleted x
+            WHERE x.Id = d.Id
+            FOR JSON PATH, WITHOUT_ARRAY_WRAPPER
+        ),
+        (
+            SELECT *
+            FROM inserted x
+            WHERE x.Id = i.Id
+            FOR JSON PATH, WITHOUT_ARRAY_WRAPPER
+        ),
+        1
+    FROM inserted i
+    INNER JOIN deleted d ON d.Id = i.Id;
+
+    INSERT INTO dbo.NhatKyHeThong (
+        TenBang,
+        MaBanGhi,
+        HanhDong,
+        GiaTriCu,
+        GiaTriMoi,
+        MaNguoiThucHienId
+    )
+    SELECT
+        'DonNghiPhep',
+        d.Id,
+        N'DELETE',
+        (
+            SELECT *
+            FROM deleted x
+            WHERE x.Id = d.Id
+            FOR JSON PATH, WITHOUT_ARRAY_WRAPPER
+        ),
+        NULL,
+        1
+    FROM deleted d
+    WHERE NOT EXISTS (SELECT 1 FROM inserted i WHERE i.Id = d.Id);
+END;
+GO
+
+CREATE OR ALTER TRIGGER dbo.trg_Audit_PhieuLuong
+ON dbo.PhieuLuong
+AFTER INSERT, UPDATE, DELETE
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    INSERT INTO dbo.NhatKyHeThong (
+        TenBang,
+        MaBanGhi,
+        HanhDong,
+        GiaTriCu,
+        GiaTriMoi,
+        MaNguoiThucHienId
+    )
+    SELECT
+        'PhieuLuong',
+        i.Id,
+        N'INSERT',
+        NULL,
+        (
+            SELECT *
+            FROM inserted x
+            WHERE x.Id = i.Id
+            FOR JSON PATH, WITHOUT_ARRAY_WRAPPER
+        ),
+        1
+    FROM inserted i
+    WHERE NOT EXISTS (SELECT 1 FROM deleted d WHERE d.Id = i.Id);
+
+    INSERT INTO dbo.NhatKyHeThong (
+        TenBang,
+        MaBanGhi,
+        HanhDong,
+        GiaTriCu,
+        GiaTriMoi,
+        MaNguoiThucHienId
+    )
+    SELECT
+        'PhieuLuong',
+        i.Id,
+        N'UPDATE',
+        (
+            SELECT *
+            FROM deleted x
+            WHERE x.Id = d.Id
+            FOR JSON PATH, WITHOUT_ARRAY_WRAPPER
+        ),
+        (
+            SELECT *
+            FROM inserted x
+            WHERE x.Id = i.Id
+            FOR JSON PATH, WITHOUT_ARRAY_WRAPPER
+        ),
+        1
+    FROM inserted i
+    INNER JOIN deleted d ON d.Id = i.Id;
+
+    INSERT INTO dbo.NhatKyHeThong (
+        TenBang,
+        MaBanGhi,
+        HanhDong,
+        GiaTriCu,
+        GiaTriMoi,
+        MaNguoiThucHienId
+    )
+    SELECT
+        'PhieuLuong',
+        d.Id,
+        N'DELETE',
+        (
+            SELECT *
+            FROM deleted x
+            WHERE x.Id = d.Id
+            FOR JSON PATH, WITHOUT_ARRAY_WRAPPER
+        ),
+        NULL,
+        1
+    FROM deleted d
+    WHERE NOT EXISTS (SELECT 1 FROM inserted i WHERE i.Id = d.Id);
+END;
+GO
+
+-- =============================================
+-- 6. VIEWS
 -- =============================================
 CREATE OR ALTER VIEW dbo.vw_OrgChart
 AS
@@ -681,7 +939,7 @@ SELECT * FROM OrgCTE;
 GO
 
 -- =============================================
--- 6. STORED PROCEDURES
+-- 7. STORED PROCEDURES
 -- =============================================
 CREATE OR ALTER PROCEDURE dbo.sp_CalculatePayroll
     @Month INT,
