@@ -88,12 +88,18 @@ export class LeaveService {
         throw new BadRequestException('Invalid request');
       }
 
+      const ngayBatDau = new Date(request.NgayBatDau);
+      if (Number.isNaN(ngayBatDau.getTime())) {
+        throw new BadRequestException('NgayBatDau của đơn nghỉ phép không hợp lệ');
+      }
+      const nam = ngayBatDau.getFullYear();
+
       // Update balance
       const balance = await queryRunner.manager.findOne(SoDuPhep, {
         where: {
           MaNhanVienId: request.MaNhanVienId,
           MaLoaiPhepId: request.MaLoaiPhepId,
-          Nam: request.NgayBatDau.getFullYear(),
+          Nam: nam,
         },
       });
 
