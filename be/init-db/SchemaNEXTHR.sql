@@ -696,7 +696,30 @@ BEGIN
         N'INSERT',
         NULL,
         (
-            SELECT *
+            SELECT
+                x.Id,
+                x.MaNhanVien,
+                x.HoTen,
+                x.Email,
+                N'***MASKED***' AS MatKhauHash,
+                x.SoDienThoai,
+                x.GioiTinh,
+                x.NgaySinh,
+                x.SoCCCD,
+                x.DiaChi,
+                x.MaSoThue,
+                x.SoNguoiPhuThuoc,
+                x.SoTaiKhoan,
+                x.TenNganHang,
+                x.ChiNhanhNganHang,
+                x.MaPhongId,
+                x.MaChucVuId,
+                x.MaVaiTroId,
+                x.NgayVaoLam,
+                x.NgayNghiViec,
+                x.TrangThai,
+                x.NgayTao,
+                x.NgayCapNhat
             FROM inserted x
             WHERE x.Id = i.Id
             FOR JSON PATH, WITHOUT_ARRAY_WRAPPER
@@ -718,13 +741,59 @@ BEGIN
         i.Id,
         N'UPDATE',
         (
-            SELECT *
+            SELECT
+                x.Id,
+                x.MaNhanVien,
+                x.HoTen,
+                x.Email,
+                N'***MASKED***' AS MatKhauHash,
+                x.SoDienThoai,
+                x.GioiTinh,
+                x.NgaySinh,
+                x.SoCCCD,
+                x.DiaChi,
+                x.MaSoThue,
+                x.SoNguoiPhuThuoc,
+                x.SoTaiKhoan,
+                x.TenNganHang,
+                x.ChiNhanhNganHang,
+                x.MaPhongId,
+                x.MaChucVuId,
+                x.MaVaiTroId,
+                x.NgayVaoLam,
+                x.NgayNghiViec,
+                x.TrangThai,
+                x.NgayTao,
+                x.NgayCapNhat
             FROM deleted x
             WHERE x.Id = d.Id
             FOR JSON PATH, WITHOUT_ARRAY_WRAPPER
         ),
         (
-            SELECT *
+            SELECT
+                x.Id,
+                x.MaNhanVien,
+                x.HoTen,
+                x.Email,
+                N'***MASKED***' AS MatKhauHash,
+                x.SoDienThoai,
+                x.GioiTinh,
+                x.NgaySinh,
+                x.SoCCCD,
+                x.DiaChi,
+                x.MaSoThue,
+                x.SoNguoiPhuThuoc,
+                x.SoTaiKhoan,
+                x.TenNganHang,
+                x.ChiNhanhNganHang,
+                x.MaPhongId,
+                x.MaChucVuId,
+                x.MaVaiTroId,
+                x.NgayVaoLam,
+                x.NgayNghiViec,
+                x.TrangThai,
+                x.NgayTao,
+                x.NgayCapNhat
             FROM inserted x
             WHERE x.Id = i.Id
             FOR JSON PATH, WITHOUT_ARRAY_WRAPPER
@@ -746,7 +815,30 @@ BEGIN
         d.Id,
         N'DELETE',
         (
-            SELECT *
+            SELECT
+                x.Id,
+                x.MaNhanVien,
+                x.HoTen,
+                x.Email,
+                N'***MASKED***' AS MatKhauHash,
+                x.SoDienThoai,
+                x.GioiTinh,
+                x.NgaySinh,
+                x.SoCCCD,
+                x.DiaChi,
+                x.MaSoThue,
+                x.SoNguoiPhuThuoc,
+                x.SoTaiKhoan,
+                x.TenNganHang,
+                x.ChiNhanhNganHang,
+                x.MaPhongId,
+                x.MaChucVuId,
+                x.MaVaiTroId,
+                x.NgayVaoLam,
+                x.NgayNghiViec,
+                x.TrangThai,
+                x.NgayTao,
+                x.NgayCapNhat
             FROM deleted x
             WHERE x.Id = d.Id
             FOR JSON PATH, WITHOUT_ARRAY_WRAPPER
