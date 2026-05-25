@@ -24,7 +24,7 @@ export class PhieuLuong {
   @Column({ type: 'int' })
   Nam: number;
 
-  @Column({ type: 'int' })
+  @Column({ type: 'float' })
   SoNgayCongChuan: number;
 
   @Column({ type: 'float' })

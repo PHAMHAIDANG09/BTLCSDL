@@ -94,15 +94,20 @@ export class LeaveService {
         throw new BadRequestException('Invalid request');
       }
 
-      if (status === 'Approved') {
-        // Update balance
-        const balance = await queryRunner.manager.findOne(SoDuPhep, {
-          where: {
-            MaNhanVienId: request.MaNhanVienId,
-            MaLoaiPhepId: request.MaLoaiPhepId,
-            Nam: new Date(request.NgayBatDau).getFullYear(),
-          },
-        });
+      const ngayBatDau = new Date(request.NgayBatDau);
+      if (Number.isNaN(ngayBatDau.getTime())) {
+        throw new BadRequestException('NgayBatDau của đơn nghỉ phép không hợp lệ');
+      }
+      const nam = ngayBatDau.getFullYear();
+
+      // Update balance
+      const balance = await queryRunner.manager.findOne(SoDuPhep, {
+        where: {
+          MaNhanVienId: request.MaNhanVienId,
+          MaLoaiPhepId: request.MaLoaiPhepId,
+          Nam: nam,
+        },
+      });
 
         if (balance) {
           balance.DaSuDung += request.TongSoNgay;

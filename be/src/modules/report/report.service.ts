@@ -1,6 +1,6 @@
 import { Injectable, StreamableFile } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { And, LessThan, MoreThanOrEqual, Repository } from 'typeorm';
 import * as ExcelJS from 'exceljs';
 import { ChamCong } from '../attendance/entities/cham-cong.entity';
 import { PhieuLuong } from '../payroll/entities/phieu-luong.entity';
@@ -13,6 +13,24 @@ export class ReportService {
     @InjectRepository(PhieuLuong)
     private phieuLuongRepository: Repository<PhieuLuong>,
   ) {}
+
+  private formatDate(value?: Date | string | null) {
+    if (!value) return '';
+
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return '';
+
+    return date.toISOString().split('T')[0];
+  }
+
+  private formatTime(value?: Date | string | null) {
+    if (!value) return '';
+
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return '';
+
+    return date.toLocaleTimeString('vi-VN', { hour12: false });
+  }
 
   async exportAttendance(thang: number, nam: number) {
     const workbook = new ExcelJS.Workbook();
@@ -28,18 +46,23 @@ export class ReportService {
       { header: 'Trạng Thái', key: 'trangThai', width: 15 },
     ];
 
+    const startDate = new Date(nam, thang - 1, 1);
+    const endDate = new Date(nam, thang, 1);
+
     const data = await this.chamCongRepository.find({
+      where: {
+        NgayLamViec: And(MoreThanOrEqual(startDate), LessThan(endDate)),
+      },
       relations: ['nhanVien'],
     });
-    // Filter by thang/nam (simplified)
-
+    
     data.forEach((item) => {
       worksheet.addRow({
         maNv: item.nhanVien?.MaNhanVien,
         hoTen: item.nhanVien?.HoTen,
-        ngay: item.NgayLamViec.toISOString().split('T')[0],
-        gioVao: item.GioVao?.toLocaleTimeString(),
-        gioRa: item.GioRa?.toLocaleTimeString(),
+        ngay: this.formatDate(item.NgayLamViec),
+        gioVao: this.formatTime(item.GioVao),
+        gioRa: this.formatTime(item.GioRa),
         muon: item.SoPhutDiMuon,
         trangThai: item.TrangThai,
       });

@@ -1,8 +1,5 @@
-import {
-  Injectable,
-  BadRequestException,
-  NotFoundException,
-} from '@nestjs/common';
+// code file attendance.service.ts
+import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Between } from 'typeorm';
 import { ChamCong } from './entities/cham-cong.entity';
@@ -112,12 +109,134 @@ export class AttendanceService {
   }
 
   async createOTRequest(userId: number, dto: CreateDonLamThemDto) {
-    const ot = this.donLamThemRepository.create({
-      ...dto,
-      MaNhanVienId: userId,
-      TrangThai: 'Pending',
-    });
-    return this.donLamThemRepository.save(ot);
+    try {
+      // 1. Kiểm tra ngày lễ
+      const holidays = await this.donLamThemRepository.query(
+        `SELECT Id FROM dbo.NgayLe 
+         WHERE (LapLaiHangNam = 1 
+                AND MONTH(NgayLe) = MONTH(CAST(@0 AS DATE)) 
+                AND DAY(NgayLe) = DAY(CAST(@0 AS DATE)))
+            OR (LapLaiHangNam = 0 
+                AND NgayLe = CAST(@0 AS DATE))`,
+        [dto.NgayLamThem],
+      );
+
+      let calculatedLoaiOT: string;
+
+      if (holidays && holidays.length > 0) {
+        calculatedLoaiOT = 'NgayLe';
+      } else {
+        // 2. Xác định thứ trong tuần: Chủ nhật = 8, Thứ 2 = 2, ..., Thứ 7 = 7
+        const parts = dto.NgayLamThem.split('-');
+        const year = parseInt(parts[0], 10);
+        const month = parseInt(parts[1], 10) - 1;
+        const day = parseInt(parts[2], 10);
+
+        const dateObj = new Date(year, month, day);
+        const jsDay = dateObj.getDay(); // 0 = Chủ nhật, 1 = Thứ 2, ..., 6 = Thứ 7
+        const thuTrongTuan = jsDay === 0 ? 8 : jsDay + 1;
+
+        const workSchedule = await this.donLamThemRepository.query(
+          `SELECT LaNgayLamViec 
+           FROM dbo.CauHinhLichLamViec 
+           WHERE ThuTrongTuan = @0`,
+          [thuTrongTuan],
+        );
+
+        const isWorkingDay =
+          workSchedule &&
+          workSchedule.length > 0 &&
+          (workSchedule[0].LaNgayLamViec === true ||
+            workSchedule[0].LaNgayLamViec === 1);
+
+        calculatedLoaiOT = isWorkingDay ? 'NgayThuong' : 'CuoiTuan';
+      }
+
+      // 3. Lấy hệ số OT từ bảng CauHinhOT
+      const otConfig = await this.donLamThemRepository.query(
+        `
+  SELECT TOP 1 
+    CAST(HeSoOT AS FLOAT) AS heSoOT
+  FROM dbo.CauHinhOT
+  WHERE LoaiOT = @0
+    AND DangHieuLuc = 1
+  ORDER BY Id ASC
+  `,
+        [calculatedLoaiOT],
+      );
+
+      if (!otConfig || otConfig.length === 0) {
+        throw new BadRequestException(
+          `Không tìm thấy cấu hình hệ số OT cho loại: ${calculatedLoaiOT}`,
+        );
+      }
+
+      const heSoOT = Number(otConfig[0].heSoOT);
+
+      console.log('[OT DEBUG]', {
+        ngayLamThem: dto.NgayLamThem,
+        calculatedLoaiOT,
+        otConfig,
+        heSoOT,
+      });
+
+      if (Number.isNaN(heSoOT)) {
+        throw new BadRequestException(
+          `Hệ số OT không hợp lệ cho loại: ${calculatedLoaiOT}`,
+        );
+      }
+
+      console.log('[OT DEBUG]', {
+        ngayLamThem: dto.NgayLamThem,
+        calculatedLoaiOT,
+        otConfig,
+        heSoOT,
+      });
+
+      // 4. Tạo đơn OT, không dùng LoaiOT do user gửi lên
+      const ot = this.donLamThemRepository.create({
+        MaNhanVienId: userId,
+        NgayLamThem: new Date(dto.NgayLamThem),
+        GioBatDau: dto.GioBatDau,
+        GioKetThuc: dto.GioKetThuc,
+        TongSoGio: dto.TongSoGio,
+        LyDo: dto.LyDo,
+        LoaiOT: calculatedLoaiOT,
+        HeSoOT: heSoOT,
+        TrangThai: 'Pending',
+      });
+
+      const savedOT = await this.donLamThemRepository.save(ot);
+
+      const result = await this.donLamThemRepository.query(
+        `
+  SELECT TOP 1
+    Id,
+    MaNhanVienId,
+    NgayLamThem,
+    CONVERT(VARCHAR(5), GioBatDau, 108) AS GioBatDau,
+    CONVERT(VARCHAR(5), GioKetThuc, 108) AS GioKetThuc,
+    TongSoGio,
+    LoaiOT,
+    CAST(HeSoOT AS FLOAT) AS HeSoOT,
+    LyDo,
+    TrangThai,
+    NguoiDuyetId,
+    NgayTao
+  FROM dbo.DonLamThem
+  WHERE Id = @0
+  `,
+        [savedOT.Id],
+      );
+
+      return result[0];
+    } catch (error) {
+      if (error instanceof BadRequestException) throw error;
+
+      throw new BadRequestException(
+        `Lỗi khi tạo đơn làm thêm: ${error.message || 'Không xác định'}`,
+      );
+    }
   }
 
   async getHistory(employeeId: number, startDate?: Date, endDate?: Date) {
