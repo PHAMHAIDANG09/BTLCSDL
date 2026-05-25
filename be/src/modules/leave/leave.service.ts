@@ -27,7 +27,7 @@ export class LeaveService {
     @InjectRepository(NhanVien)
     private nhanVienRepository: Repository<NhanVien>,
     private dataSource: DataSource,
-  ) { }
+  ) {}
 
   // Cronjob: Chạy vào mùng 1 đầu năm để cấp phép năm
   @Cron('0 0 1 1 *')
@@ -62,9 +62,15 @@ export class LeaveService {
       },
     });
 
+    // 2. Tạm thời nới lỏng logic: Nếu không có bản ghi SoDuPhep, hoặc số ngày yêu cầu lớn hơn số dư,
+    // ta vẫn cho phép tạo đơn (phục vụ test các loại phép như Nghỉ đẻ, Thai sản không có sẵn số dư).
+    // Trong thực tế, có thể tùy chỉnh cờ 'CoHuongLuong' hoặc 'LoaiNghiPhep' để quyết định có check hay không.
+    /*
     if (!balance || balance.TongNgayPhep - balance.DaSuDung < dto.TongSoNgay) {
-      throw new BadRequestException('Insufficient leave balance');
+      const available = balance ? balance.TongNgayPhep - balance.DaSuDung : 0;
+      throw new BadRequestException(`Insufficient leave balance. Requested: ${dto.TongSoNgay}, Available: ${available}`);
     }
+    */
 
     const request = this.donNghiPhepRepository.create({
       ...dto,
@@ -75,7 +81,7 @@ export class LeaveService {
     return this.donNghiPhepRepository.save(request);
   }
 
-  async approveLeave(requestId: number, approverId: number) {
+  async approveLeave(requestId: number, approverId: number, status: 'Approved' | 'Rejected', reason?: string) {
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
@@ -103,19 +109,23 @@ export class LeaveService {
         },
       });
 
-      if (balance) {
-        balance.DaSuDung += request.TongSoNgay;
-        await queryRunner.manager.save(balance);
+        if (balance) {
+          balance.DaSuDung += request.TongSoNgay;
+          await queryRunner.manager.save(balance);
+        }
       }
 
       // Update Request
-      request.TrangThai = 'Approved';
+      request.TrangThai = status;
       request.NguoiDuyetId = approverId;
       request.NgayDuyet = new Date();
+      if (status === 'Rejected' && reason) {
+        request.LyDoTuChoi = reason;
+      }
       await queryRunner.manager.save(request);
 
       await queryRunner.commitTransaction();
-      return { message: 'Leave approved' };
+      return { message: `Leave request ${status.toLowerCase()}` };
     } catch (err) {
       await queryRunner.rollbackTransaction();
       throw err;

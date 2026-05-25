@@ -13,7 +13,7 @@ export class AttendanceService {
     private chamCongRepository: Repository<ChamCong>,
     @InjectRepository(DonLamThem)
     private donLamThemRepository: Repository<DonLamThem>,
-  ) { }
+  ) {}
 
   async checkInOut(userId: number) {
     try {
@@ -23,12 +23,16 @@ export class AttendanceService {
       console.log(`[ATTENDANCE DEBUG] UserId: ${userId}, Date: ${dateStr}`);
 
       // Tìm bản ghi hôm nay - Dùng CAST để đảm bảo so sánh chính xác trên SQL Server
-      let attendance = await this.chamCongRepository.createQueryBuilder('cc')
+      let attendance = await this.chamCongRepository
+        .createQueryBuilder('cc')
         .where('cc.MaNhanVienId = :userId', { userId })
         .andWhere('CAST(cc.NgayLamViec AS DATE) = :date', { date: dateStr })
         .getOne();
 
-      console.log(`[ATTENDANCE DEBUG] Found Record:`, attendance ? 'Yes, ID: ' + attendance.Id : 'No');
+      console.log(
+        `[ATTENDANCE DEBUG] Found Record:`,
+        attendance ? 'Yes, ID: ' + attendance.Id : 'No',
+      );
 
       if (!attendance) {
         console.log('[ATTENDANCE DEBUG] Action: Create New');
@@ -38,7 +42,7 @@ export class AttendanceService {
           GioVao: now,
           TrangThai: 'CoMat',
           NguonChamCong: 'Manual',
-          SoPhutDiMuon: 0
+          SoPhutDiMuon: 0,
         });
 
         // Tính phút đi muộn (Giả định 8:30 AM là mốc)
@@ -53,7 +57,9 @@ export class AttendanceService {
       } else {
         console.log('[ATTENDANCE DEBUG] Action: Update Check-out');
         if (attendance.GioRa) {
-          throw new BadRequestException('Bạn đã điểm danh ra cho ngày hôm nay rồi!');
+          throw new BadRequestException(
+            'Bạn đã điểm danh ra cho ngày hôm nay rồi!',
+          );
         }
 
         attendance.GioRa = now;
@@ -74,13 +80,16 @@ export class AttendanceService {
     } catch (error) {
       console.error('[ATTENDANCE FATAL ERROR]', error);
       if (error instanceof BadRequestException) throw error;
-      throw new BadRequestException(`Lỗi: ${error.message || 'Không xác định'}`);
+      throw new BadRequestException(
+        `Lỗi: ${error.message || 'Không xác định'}`,
+      );
     }
   }
 
   async getTodayAttendance(userId: number) {
     const dateStr = new Date().toLocaleDateString('sv-SE');
-    return this.chamCongRepository.createQueryBuilder('cc')
+    return this.chamCongRepository
+      .createQueryBuilder('cc')
       .where('cc.MaNhanVienId = :userId', { userId })
       .andWhere('CAST(cc.NgayLamViec AS DATE) = :date', { date: dateStr })
       .getOne();
@@ -242,10 +251,14 @@ export class AttendanceService {
   }
 
   async getAllHistory(startDate: Date, endDate: Date) {
-    return this.chamCongRepository.createQueryBuilder('cc')
+    return this.chamCongRepository
+      .createQueryBuilder('cc')
       .leftJoinAndSelect('cc.nhanVien', 'nv')
       .leftJoinAndSelect('nv.phongBan', 'pb')
-      .where('cc.NgayLamViec BETWEEN :start AND :end', { start: startDate, end: endDate })
+      .where('cc.NgayLamViec BETWEEN :start AND :end', {
+        start: startDate,
+        end: endDate,
+      })
       .orderBy('cc.NgayLamViec', 'DESC')
       .getMany();
   }
@@ -257,6 +270,13 @@ export class AttendanceService {
     return this.donLamThemRepository.find({
       where,
       relations: ['nhanVien'],
+      order: { NgayTao: 'DESC' },
+    });
+  }
+
+  async getOTHistory(employeeId: number) {
+    return this.donLamThemRepository.find({
+      where: { MaNhanVienId: employeeId },
       order: { NgayTao: 'DESC' },
     });
   }
@@ -278,7 +298,8 @@ export class AttendanceService {
 
     // Recalculate hours
     if (record.GioVao && record.GioRa) {
-      const diffHours = (record.GioRa.getTime() - record.GioVao.getTime()) / 3600000;
+      const diffHours =
+        (record.GioRa.getTime() - record.GioVao.getTime()) / 3600000;
       record.SoGioLam = parseFloat(diffHours.toFixed(2));
     }
 
@@ -308,7 +329,7 @@ export class AttendanceService {
 
     const summaryMap = new Map();
 
-    records.forEach(record => {
+    records.forEach((record) => {
       const empId = record.MaNhanVienId;
       if (!summaryMap.has(empId)) {
         summaryMap.set(empId, {
@@ -320,7 +341,7 @@ export class AttendanceService {
           totalLateMinutes: 0,
           lateDays: 0,
           earlyLeaveDays: 0,
-          totalDays: 0
+          totalDays: 0,
         });
       }
 

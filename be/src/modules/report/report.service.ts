@@ -105,7 +105,10 @@ export class ReportService {
         lcb: p.LuongCoBan,
         pc: p.PhuCap,
         ot: p.TienLamThem,
-        bh: Number(p.BaoHiemXaHoi) + Number(p.BaoHiemYTe) + Number(p.BaoHiemThatNghiep),
+        bh:
+          Number(p.BaoHiemXaHoi) +
+          Number(p.BaoHiemYTe) +
+          Number(p.BaoHiemThatNghiep),
         thue: p.ThueTNCN,
         net: p.LuongThucNhan,
       });

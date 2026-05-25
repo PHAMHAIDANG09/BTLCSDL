@@ -1,4 +1,8 @@
-import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  BadRequestException,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource, Between } from 'typeorm';
 import { NhanVien } from '../auth/entities/nhan-vien.entity';
@@ -46,21 +50,23 @@ export class EmployeeService {
 
     try {
       console.log('Đang thực hiện xóa nhân viên (SQL RAW) ID:', id);
-      
+
       // Chạy lệnh SQL trực tiếp
       const result = await queryRunner.manager.query(
         `UPDATE NhanVien SET TrangThai = 'Inactive' WHERE Id = @0`,
-        [id]
+        [id],
       );
-      
+
       console.log('Kết quả SQL:', result);
-      
+
       await queryRunner.commitTransaction();
       return { message: 'Xóa thành công' };
     } catch (error) {
       await queryRunner.rollbackTransaction();
       console.error('Lỗi SQL khi xóa:', error);
-      throw new BadRequestException('Không thể xóa nhân viên này. Lỗi hệ thống.');
+      throw new BadRequestException(
+        'Không thể xóa nhân viên này. Lỗi hệ thống.',
+      );
     } finally {
       await queryRunner.release();
     }
@@ -68,7 +74,9 @@ export class EmployeeService {
 
   async createEmployee(dto: CreateNhanVienDto) {
     // 1. Check duplicate Email
-    const existingUser = await this.nhanVienRepository.findOne({ where: { Email: dto.Email } });
+    const existingUser = await this.nhanVienRepository.findOne({
+      where: { Email: dto.Email },
+    });
     if (existingUser) {
       throw new BadRequestException('Email đã tồn tại trong hệ thống');
     }
@@ -101,7 +109,9 @@ export class EmployeeService {
       return safeEmployee;
     } catch (error) {
       console.error('Lỗi khi lưu nhân viên:', error);
-      throw new BadRequestException('Không thể lưu nhân viên. Vui lòng kiểm tra lại dữ liệu.');
+      throw new BadRequestException(
+        'Không thể lưu nhân viên. Vui lòng kiểm tra lại dữ liệu.',
+      );
     }
   }
 
@@ -121,7 +131,9 @@ export class EmployeeService {
     await queryRunner.startTransaction();
 
     try {
-      const nv = await queryRunner.manager.findOne(NhanVien, { where: { Id: id } });
+      const nv = await queryRunner.manager.findOne(NhanVien, {
+        where: { Id: id },
+      });
       if (!nv) throw new BadRequestException('Employee not found');
 
       // Save History
@@ -171,7 +183,7 @@ export class EmployeeService {
       const nextId = lastHD.length > 0 ? lastHD[0].Id + 1 : 1;
       dto.MaHopDong = `HDLD-${year}-${nextId.toString().padStart(3, '0')}`;
     }
-    
+
     const hd = this.hopDongRepository.create(dto);
     return this.hopDongRepository.save(hd);
   }

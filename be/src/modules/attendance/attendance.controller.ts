@@ -24,7 +24,7 @@ import { UpdateOTStatusDto } from './dto/update-ot.dto';
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('cham-cong')
 export class AttendanceController {
-  constructor(private readonly attendanceService: AttendanceService) { }
+  constructor(private readonly attendanceService: AttendanceService) {}
 
   @Post('diem-danh')
   @ApiOperation({ summary: 'Điểm danh vào/ra hằng ngày' })
@@ -86,6 +86,12 @@ export class AttendanceController {
   @ApiOperation({ summary: 'Lấy tất cả yêu cầu làm thêm (Admin/Manager)' })
   getAllOT(@Query('status') status?: string) {
     return this.attendanceService.getAllOTRequests(status);
+  }
+
+  @Get('ot/history')
+  @ApiOperation({ summary: 'Lấy lịch sử yêu cầu làm thêm cá nhân' })
+  getOTHistory(@Request() req: any) {
+    return this.attendanceService.getOTHistory(req.user.Id);
   }
 
   @Delete(':id')

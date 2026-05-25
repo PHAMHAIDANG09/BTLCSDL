@@ -12,7 +12,7 @@ import { HttpAdapterHost } from '@nestjs/core';
 export class AllExceptionsFilter implements ExceptionFilter {
   private readonly logger = new Logger(AllExceptionsFilter.name);
 
-  constructor(private readonly httpAdapterHost: HttpAdapterHost) { }
+  constructor(private readonly httpAdapterHost: HttpAdapterHost) {}
 
   catch(exception: unknown, host: ArgumentsHost): void {
     // In certain situations `httpAdapter` might not be available in the
@@ -39,7 +39,8 @@ export class AllExceptionsFilter implements ExceptionFilter {
     };
 
     this.logger.error(
-      `Exception: ${JSON.stringify(responseBody)} | Error: ${exception instanceof Error ? exception.stack : exception
+      `Exception: ${JSON.stringify(responseBody)} | Error: ${
+        exception instanceof Error ? exception.stack : exception
       }`,
     );
 

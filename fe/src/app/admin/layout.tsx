@@ -25,17 +25,12 @@ export default function AdminRootLayout({
     loadFromStorage();
   }, [loadFromStorage]);
 
-  // Guard: redirect về login nếu chưa xác thực
+  // Guard: redirect nếu không phải Admin/Manager → redirect về staff
   useEffect(() => {
-    if (!isAuthenticated || !user) {
-      router.replace('/login');
-      return;
+    if (isAuthenticated && user && !ADMIN_ROLES.includes(user.role)) {
+      router.replace('/staff/trang-chu');
     }
-    // Guard: nếu không phải Admin/Manager → redirect về staff
-    if (!ADMIN_ROLES.includes(user.role)) {
-      router.replace('/staff/home');
-    }
-  }, [isAuthenticated, user]); // Stabilize dependency array
+  }, [isAuthenticated, user, router]);
 
   const handleLogout = () => {
     logout();

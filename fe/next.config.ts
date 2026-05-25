@@ -23,7 +23,6 @@ const nextConfig: NextConfig = {
       
       // Staff Routes
       { source: "/staff/trang-chu", destination: "/staff/home" },
-      { source: "/staff/nghi-phep", destination: "/staff/leave" },
       { source: "/staff/phieu-luong", destination: "/staff/payslip" },
       { source: "/staff/ho-so", destination: "/staff/profile" },
       { source: "/staff/thong-bao", destination: "/staff/notifications" },

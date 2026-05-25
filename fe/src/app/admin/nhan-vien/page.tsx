@@ -21,12 +21,12 @@ import {
 } from "@/services/employee.service";
 
 // Module Components
-import EmployeeTable from "@/app/admin/employee/_components/EmployeeTable";
-import SearchFilter from "@/app/admin/employee/_components/SearchFilter";
-import BulkActions from "@/app/admin/employee/_components/BulkActions";
-import DeleteConfirm from "@/app/admin/employee/_components/DeleteConfirm";
-import EmployeeForm from "@/app/admin/employee/_components/EmployeeForm";
-import EmployeeDetail from "@/app/admin/employee/_components/EmployeeDetail";
+import EmployeeTable from "@/app/admin/nhan-vien/_components/EmployeeTable";
+import SearchFilter from "@/app/admin/nhan-vien/_components/SearchFilter";
+import BulkActions from "@/app/admin/nhan-vien/_components/BulkActions";
+import DeleteConfirm from "@/app/admin/nhan-vien/_components/DeleteConfirm";
+import EmployeeForm from "@/app/admin/nhan-vien/_components/EmployeeForm";
+import EmployeeDetail from "@/app/admin/nhan-vien/_components/EmployeeDetail";
 
 export default function EmployeePage() {
   const [employees, setEmployees] = useState<Employee[]>([]);
@@ -178,8 +178,8 @@ export default function EmployeePage() {
       </div>
 
       <SearchFilter 
-        onSearch={(v) => console.log('Search:', v)}
-        onFilterChange={(n, v) => console.log('Filter:', n, v)}
+        onSearch={(v: string) => console.log('Search:', v)}
+        onFilterChange={(n: string, v: string) => console.log('Filter:', n, v)}
       />
 
       <div className="h-4" />
@@ -191,7 +191,7 @@ export default function EmployeePage() {
           onEdit={handleEdit}
           onDelete={handleDelete}
           onView={handleView}
-          onSelectionChange={(keys) => setSelectedRowKeys(keys)}
+          onSelectionChange={(keys: React.Key[]) => setSelectedRowKeys(keys as any[])}
         />
       </div>
 

@@ -1,10 +1,24 @@
-import { Controller, Post, Body, UseGuards, Request, Param, Put, Get, Delete, Query } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Body,
+  UseGuards,
+  Request,
+  Param,
+  Put,
+  Get,
+  Delete,
+  Query,
+} from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { LeaveService } from './leave.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
-import { CreateLoaiNghiPhepDto, UpdateLoaiNghiPhepDto } from './dto/loai-nghi-phep.dto';
+import {
+  CreateLoaiNghiPhepDto,
+  UpdateLoaiNghiPhepDto,
+} from './dto/loai-nghi-phep.dto';
 import { CreateDonNghiPhepDto } from './dto/don-nghi-phep.dto';
 
 @ApiTags('Leave Management')
@@ -22,9 +36,14 @@ export class LeaveController {
 
   @Put(':id/approve')
   @Roles('Admin', 'Manager')
-  @ApiOperation({ summary: 'Phê duyệt đơn nghỉ phép và trừ số dư phép' })
-  approveLeave(@Param('id') id: string, @Request() req: any) {
-    return this.leaveService.approveLeave(+id, req.user.Id);
+  @ApiOperation({ summary: 'Phê duyệt hoặc từ chối đơn nghỉ phép' })
+  approveLeave(
+    @Param('id') id: string, 
+    @Body('status') status: 'Approved' | 'Rejected',
+    @Body('reason') reason: string,
+    @Request() req: any
+  ) {
+    return this.leaveService.approveLeave(+id, req.user.Id, status, reason);
   }
 
   @Get('balances')
