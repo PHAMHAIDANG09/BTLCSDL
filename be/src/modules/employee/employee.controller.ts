@@ -23,20 +23,13 @@ import { Roles } from '../auth/decorators/roles.decorator';
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('nhan-vien')
 export class EmployeeController {
-  constructor(private readonly employeeService: EmployeeService) { }
+  constructor(private readonly employeeService: EmployeeService) {}
 
   @Get()
   @Roles('Admin', 'Manager')
   @ApiOperation({ summary: 'Lấy danh sách tất cả nhân viên' })
   findAll() {
     return this.employeeService.findAll();
-  }
-
-  @Get(':id')
-  @Roles('Admin', 'Manager')
-  @ApiOperation({ summary: 'Lấy thông tin chi tiết nhân viên' })
-  findOne(@Param('id') id: string) {
-    return this.employeeService.findOne(+id);
   }
 
   @Post()
@@ -46,38 +39,9 @@ export class EmployeeController {
     return this.employeeService.createEmployee(dto);
   }
 
-  @Put(':id')
-  @Roles('Admin', 'Manager')
-  @ApiOperation({ summary: 'Cập nhật thông tin nhân viên' })
-  update(@Param('id') id: string, @Body() dto: UpdateNhanVienDto) {
-    return this.employeeService.updateEmployee(+id, dto);
-  }
-
-  @Delete(':id')
-  @Roles('Admin')
-  @ApiOperation({ summary: 'Xóa nhân viên (Soft delete)' })
-  remove(@Param('id') id: string) {
-    return this.employeeService.deleteEmployee(+id);
-  }
-
-  @Post(':id/transfer')
-  @Roles('Admin')
-  @ApiOperation({ summary: 'Điều chuyển công tác nhân viên' })
-  transfer(
-    @Param('id') id: string,
-    @Body() data: TransferEmployeeDto,
-    @Request() req: any,
-  ) {
-    return this.employeeService.transferEmployee(+id, {
-      ...data,
-      NgayHieuLuc: new Date(data.NgayHieuLuc),
-      NguoiDuyetId: req.user.Id,
-    });
-  }
-
   @Get('hop-dong/het-han')
   @Roles('Admin', 'Manager')
-  @ApiOperation({ summary: 'Lấy các hợp đồng sắp hết hạn (trong 30 ngày)' })
+  @ApiOperation({ summary: 'Lấy các hợp đồng sắp hết hạn trong 30 ngày' })
   getExpiring() {
     return this.employeeService.getExpiringContracts();
   }
@@ -87,14 +51,6 @@ export class EmployeeController {
   @ApiOperation({ summary: 'Lấy danh sách tất cả hợp đồng' })
   findAllContracts() {
     return this.employeeService.findAllContracts();
-  }
-
-  // --- Contract Endpoints ---
-  @Get(':employeeId/hop-dong')
-  @Roles('Admin', 'Manager')
-  @ApiOperation({ summary: 'Lấy danh sách hợp đồng của nhân viên' })
-  findContractsByEmployee(@Param('employeeId') employeeId: string) {
-    return this.employeeService.findContractsByEmployee(+employeeId);
   }
 
   @Get('hop-dong/:id')
@@ -123,5 +79,48 @@ export class EmployeeController {
   @ApiOperation({ summary: 'Xóa hợp đồng' })
   deleteContract(@Param('id') id: string) {
     return this.employeeService.deleteContract(+id);
+  }
+
+  @Get(':employeeId/hop-dong')
+  @Roles('Admin', 'Manager')
+  @ApiOperation({ summary: 'Lấy danh sách hợp đồng của nhân viên' })
+  findContractsByEmployee(@Param('employeeId') employeeId: string) {
+    return this.employeeService.findContractsByEmployee(+employeeId);
+  }
+
+  @Get(':id')
+  @Roles('Admin', 'Manager')
+  @ApiOperation({ summary: 'Lấy thông tin chi tiết nhân viên' })
+  findOne(@Param('id') id: string) {
+    return this.employeeService.findOne(+id);
+  }
+
+  @Put(':id')
+  @Roles('Admin', 'Manager')
+  @ApiOperation({ summary: 'Cập nhật thông tin nhân viên' })
+  update(@Param('id') id: string, @Body() dto: UpdateNhanVienDto) {
+    return this.employeeService.updateEmployee(+id, dto);
+  }
+
+  @Delete(':id')
+  @Roles('Admin')
+  @ApiOperation({ summary: 'Xóa nhân viên bằng soft delete' })
+  remove(@Param('id') id: string) {
+    return this.employeeService.deleteEmployee(+id);
+  }
+
+  @Post(':id/transfer')
+  @Roles('Admin')
+  @ApiOperation({ summary: 'Điều chuyển công tác nhân viên' })
+  transfer(
+    @Param('id') id: string,
+    @Body() data: TransferEmployeeDto,
+    @Request() req: any,
+  ) {
+    return this.employeeService.transferEmployee(+id, {
+      ...data,
+      NgayHieuLuc: new Date(data.NgayHieuLuc),
+      NguoiDuyetId: req.user.Id,
+    });
   }
 }
