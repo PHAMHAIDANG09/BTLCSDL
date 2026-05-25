@@ -14,11 +14,27 @@ export class ReportService {
     private phieuLuongRepository: Repository<PhieuLuong>,
   ) {}
 
+  private formatDate(value?: Date | string | null) {
+    if (!value) return '';
+
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return '';
+
+    return date.toISOString().split('T')[0];
+  }
+
+  private formatTime(value?: Date | string | null) {
+    if (!value) return '';
+
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return '';
+
+    return date.toLocaleTimeString('vi-VN', { hour12: false });
+  }
+
   async exportAttendance(thang: number, nam: number) {
     const workbook = new ExcelJS.Workbook();
     const worksheet = workbook.addWorksheet('Bang Cong');
-    const formatDate = (value?: Date | string | null) =>
-      value ? new Date(value).toISOString().split('T')[0] : '';
 
     worksheet.columns = [
       { header: 'Mã NV', key: 'maNv', width: 15 },
@@ -44,9 +60,9 @@ export class ReportService {
       worksheet.addRow({
         maNv: item.nhanVien?.MaNhanVien,
         hoTen: item.nhanVien?.HoTen,
-        ngay: formatDate(item.NgayLamViec),
-        gioVao: item.GioVao?.toLocaleTimeString(),
-        gioRa: item.GioRa?.toLocaleTimeString(),
+        ngay: this.formatDate(item.NgayLamViec),
+        gioVao: this.formatTime(item.GioVao),
+        gioRa: this.formatTime(item.GioRa),
         muon: item.SoPhutDiMuon,
         trangThai: item.TrangThai,
       });
