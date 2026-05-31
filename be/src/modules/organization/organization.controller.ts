@@ -19,7 +19,7 @@ import { Roles } from '../auth/decorators/roles.decorator';
 @ApiTags('Organization')
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard, RolesGuard)
-@Controller('organization')
+@Controller('co-cau-to-chuc')
 export class OrganizationController {
   constructor(private readonly orgService: OrganizationService) {}
 

@@ -20,11 +20,11 @@ import { UpdateSalaryDto, CalculatePayrollDto, UpdatePaySlipStatusDto } from './
 @ApiTags('Payroll')
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard, RolesGuard)
-@Controller('payroll')
+@Controller('luong')
 export class PayrollController {
   constructor(private readonly payrollService: PayrollService) {}
 
-  @Post('update-salary')
+  @Post('cap-nhat-luong')
   @Roles('Admin')
   @ApiOperation({ summary: 'Cập nhật mức lương nhân viên (SCD Loại 2)' })
   updateSalary(@Body() data: UpdateSalaryDto, @Request() req: any) {
@@ -34,7 +34,7 @@ export class PayrollController {
     });
   }
 
-  @Post('calculate')
+  @Post('tinh-luong')
   @Roles('Admin')
   @ApiOperation({ summary: 'Kích hoạt tính toán bảng lương thủ công' })
   calculate(@Body() data: CalculatePayrollDto, @Request() req: any) {
@@ -45,19 +45,19 @@ export class PayrollController {
     );
   }
 
-  @Get('my-payslips')
+  @Get('phieu-luong-cua-toi')
   @ApiOperation({ summary: 'Lấy danh sách phiếu lương cá nhân' })
   getMyPaySlips(@Request() req: any) {
     return this.payrollService.getMyPaySlips(req.user.Id);
   }
 
-  @Get('my-salary-history')
+  @Get('lich-su-luong-cua-toi')
   @ApiOperation({ summary: 'Lấy lịch sử thay đổi lương cá nhân' })
   getMySalaryHistory(@Request() req: any) {
     return this.payrollService.getSalaryHistory(req.user.Id);
   }
 
-  @Get('all-payslips')
+  @Get('tat-ca-phieu-luong')
   @Roles('Admin', 'Manager')
   @ApiOperation({ summary: 'Lấy toàn bộ phiếu lương (Admin/Manager)' })
   getAllPaySlips(@Query('thang') thang?: string, @Query('nam') nam?: string) {
@@ -67,14 +67,14 @@ export class PayrollController {
     );
   }
 
-  @Get('history/:employeeId')
+  @Get('lich-su/:employeeId')
   @Roles('Admin', 'Manager')
   @ApiOperation({ summary: 'Lấy lịch sử lương của nhân viên cụ thể' })
   getEmployeeSalaryHistory(@Param('employeeId') employeeId: string) {
     return this.payrollService.getSalaryHistory(+employeeId);
   }
 
-  @Get('employee-payslips/:employeeId')
+  @Get('phieu-luong-nhan-vien/:employeeId')
   @Roles('Admin', 'Manager')
   @ApiOperation({ summary: 'Lấy danh sách phiếu lương của nhân viên cụ thể' })
   getEmployeePaySlips(@Param('employeeId') employeeId: string) {
