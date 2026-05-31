@@ -147,4 +147,22 @@ export class PayrollService {
       order: { Nam: 'DESC', Thang: 'DESC' },
     });
   }
+
+  async updatePaySlipStatus(id: number, status: string) {
+    const payslip = await this.phieuLuongRepository.findOne({ where: { Id: id } });
+    if (!payslip) {
+      throw new BadRequestException('Không tìm thấy phiếu lương');
+    }
+    payslip.TrangThai = status;
+    return this.phieuLuongRepository.save(payslip);
+  }
+
+  async deletePaySlip(id: number) {
+    const payslip = await this.phieuLuongRepository.findOne({ where: { Id: id } });
+    if (!payslip) {
+      throw new BadRequestException('Không tìm thấy phiếu lương');
+    }
+    await this.phieuLuongRepository.remove(payslip);
+    return { success: true, message: 'Đã xóa phiếu lương thành công' };
+  }
 }

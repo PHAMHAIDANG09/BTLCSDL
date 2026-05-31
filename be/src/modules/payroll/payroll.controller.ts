@@ -7,13 +7,15 @@ import {
   Get,
   Query,
   Param,
+  Put,
+  Delete,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { PayrollService } from './payroll.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
-import { UpdateSalaryDto, CalculatePayrollDto } from './dto/payroll.dto';
+import { UpdateSalaryDto, CalculatePayrollDto, UpdatePaySlipStatusDto } from './dto/payroll.dto';
 
 @ApiTags('Payroll')
 @ApiBearerAuth()
@@ -77,5 +79,19 @@ export class PayrollController {
   @ApiOperation({ summary: 'Lấy danh sách phiếu lương của nhân viên cụ thể' })
   getEmployeePaySlips(@Param('employeeId') employeeId: string) {
     return this.payrollService.getMyPaySlips(+employeeId);
+  }
+
+  @Put(':id')
+  @Roles('Admin')
+  @ApiOperation({ summary: 'Cập nhật trạng thái phiếu lương' })
+  updateStatus(@Param('id') id: string, @Body() dto: UpdatePaySlipStatusDto) {
+    return this.payrollService.updatePaySlipStatus(+id, dto.TrangThai);
+  }
+
+  @Delete(':id')
+  @Roles('Admin')
+  @ApiOperation({ summary: 'Xóa phiếu lương' })
+  remove(@Param('id') id: string) {
+    return this.payrollService.deletePaySlip(+id);
   }
 }
