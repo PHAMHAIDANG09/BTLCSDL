@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useMemo } from "react";
+import { exportService } from "@/components/shared/utils/export";
 import { 
   Typography, 
   Space, 
@@ -185,6 +186,25 @@ export default function ContractPage() {
     }
   };
 
+  const handleExportExcel = () => {
+    if (!filteredData || filteredData.length === 0) {
+      Toast.warning("Không có dữ liệu hợp đồng để xuất");
+      return;
+    }
+    const exportData = filteredData.map(c => ({
+      "Số Hợp Đồng": c.MaHopDong,
+      "Họ Tên": c.nhanVien?.HoTen || "N/A",
+      "Email": c.nhanVien?.Email || "N/A",
+      "Loại Hợp Đồng": c.LoaiHopDong,
+      "Ngày Ký": dayjs(c.NgayKy).format("DD/MM/YYYY"),
+      "Ngày Bắt Đầu": dayjs(c.NgayBatDau).format("DD/MM/YYYY"),
+      "Ngày Kết Thúc": c.NgayKetThuc ? dayjs(c.NgayKetThuc).format("DD/MM/YYYY") : "Vô thời hạn",
+      "Lương Cơ Bản": c.LuongCoBan,
+      "Trạng Thế": c.TrangThai === "Active" ? "Đang hiệu lực" : c.TrangThai === "Expired" ? "Hết hạn" : "Đã chấm dứt"
+    }));
+    exportService.exportToExcel(exportData, "Danh_Sach_Hop_Dong", "HopDong");
+  };
+
   return (
     <div className="bg-white min-h-screen pt-4">
 
@@ -266,7 +286,7 @@ export default function ContractPage() {
         onInputChange={handleInputChange}
         onSearch={handleSearch}
         onClear={handleClear}
-        onExport={() => Toast.success("Đang xuất file Excel...")}
+        onExport={handleExportExcel}
       />
 
       {/* Main Action Bar */}

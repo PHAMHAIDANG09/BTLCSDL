@@ -16,6 +16,7 @@ import {
   Form,
   Input,
   InputNumber,
+  Popconfirm,
 } from "antd";
 import {
   CalculatorOutlined,
@@ -24,6 +25,8 @@ import {
   ReloadOutlined,
   DollarOutlined,
   SearchOutlined,
+  EditOutlined,
+  DeleteOutlined,
 } from "@ant-design/icons";
 import Table from "@/components/shared/Table/Table";
 import type { TableColumnsType } from "antd";
@@ -52,6 +55,9 @@ export default function AdminPayrollPage() {
   const [selectedYear, setSelectedYear] = useState(dayjs().year());
   const [selectedItem, setSelectedItem] = useState<PhieuLuong | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isEditStatusModalOpen, setIsEditStatusModalOpen] = useState(false);
+  const [editingItem, setEditingItem] = useState<PhieuLuong | null>(null);
+  const [newStatus, setNewStatus] = useState<string>("Draft");
 
   const fetchPaySlips = async () => {
     setLoading(true);
@@ -117,6 +123,35 @@ export default function AdminPayrollPage() {
       message.error(error.message || "Lỗi khi tính lương");
     } finally {
       setCalculating(false);
+    }
+  };
+
+  const handleSaveStatus = async () => {
+    if (!editingItem) return;
+    setLoading(true);
+    try {
+      await payrollService.updatePaySlipStatus(editingItem.Id, newStatus);
+      message.success("Cập nhật trạng thái phiếu lương thành công!");
+      setIsEditStatusModalOpen(false);
+      setEditingItem(null);
+      fetchPaySlips();
+    } catch (error: any) {
+      message.error(error.message || "Lỗi khi cập nhật trạng thái");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDeletePaySlip = async (id: number) => {
+    setLoading(true);
+    try {
+      await payrollService.deletePaySlip(id);
+      message.success("Xóa phiếu lương thành công!");
+      fetchPaySlips();
+    } catch (error: any) {
+      message.error(error.message || "Lỗi khi xóa phiếu lương");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -242,18 +277,50 @@ export default function AdminPayrollPage() {
     {
       title: "Thao tác",
       key: "action",
-      width: 80,
+      width: 140,
       render: (_, r) => (
-        <Tooltip title="Xem chi tiết">
-          <Button
-            type="text"
-            icon={<EyeOutlined />}
-            onClick={() => {
-              setSelectedItem(r);
-              setIsModalOpen(true);
-            }}
-          />
-        </Tooltip>
+        <Space size={0}>
+          <Tooltip title="Xem chi tiết">
+            <Button
+              type="text"
+              size="small"
+              icon={<EyeOutlined />}
+              onClick={() => {
+                setSelectedItem(r);
+                setIsModalOpen(true);
+              }}
+            />
+          </Tooltip>
+          <Tooltip title="Cập nhật trạng thái">
+            <Button
+              type="text"
+              size="small"
+              icon={<EditOutlined />}
+              onClick={() => {
+                setEditingItem(r);
+                setNewStatus(r.TrangThai);
+                setIsEditStatusModalOpen(true);
+              }}
+            />
+          </Tooltip>
+          <Popconfirm
+            title="Xóa phiếu lương"
+            description="Bạn có chắc chắn muốn xóa phiếu lương này?"
+            onConfirm={() => handleDeletePaySlip(r.Id)}
+            okText="Xóa"
+            cancelText="Hủy"
+            okButtonProps={{ danger: true }}
+          >
+            <Tooltip title="Xóa">
+              <Button
+                type="text"
+                size="small"
+                icon={<DeleteOutlined />}
+                danger
+              />
+            </Tooltip>
+          </Popconfirm>
+        </Space>
       ),
     },
   ];
@@ -350,6 +417,40 @@ export default function AdminPayrollPage() {
         onClose={() => setIsModalOpen(false)}
         data={selectedItem}
       />
+
+      <Modal
+        title="Cập nhật trạng thái phiếu lương"
+        open={isEditStatusModalOpen}
+        onCancel={() => {
+          setIsEditStatusModalOpen(false);
+          setEditingItem(null);
+        }}
+        onOk={handleSaveStatus}
+        okText="Cập nhật"
+        cancelText="Hủy"
+        width={400}
+        confirmLoading={loading}
+      >
+        <div style={{ padding: "16px 0" }}>
+          <p style={{ marginBottom: 8 }}>
+            Nhân viên: <b>{editingItem?.nhanVien?.HoTen}</b> ({editingItem?.nhanVien?.MaNhanVien})
+          </p>
+          <p style={{ marginBottom: 16 }}>
+            Thời kỳ: <b>Tháng {editingItem?.Thang}/{editingItem?.Nam}</b>
+          </p>
+          <div>
+            <label style={{ fontWeight: 600, display: "block", marginBottom: 8 }}>Trạng thái thanh toán:</label>
+            <Select
+              value={newStatus}
+              onChange={setNewStatus}
+              style={{ width: "100%" }}
+            >
+              <Option value="Draft">Chờ xử lý</Option>
+              <Option value="Paid">Đã thanh toán</Option>
+            </Select>
+          </div>
+        </div>
+      </Modal>
 
       <Modal
         title="Cập nhật mức lương nhân viên (SCD Loại 2)"

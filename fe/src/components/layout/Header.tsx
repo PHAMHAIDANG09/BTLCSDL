@@ -5,7 +5,7 @@
 
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import {
   Layout,
   Breadcrumb,
@@ -14,8 +14,11 @@ import {
   Space,
   Badge,
   Button,
+  Tag,
   type MenuProps,
 } from "antd";
+import { getProfileApi } from "@/services/auth.service";
+import { getEmployeeByIdApi } from "@/services/employee.service";
 import {
   UserOutlined,
   LogoutOutlined,
@@ -67,6 +70,7 @@ const SEGMENT_MAP: Record<string, string> = {
 
 const getBreadcrumbs = (
   pathname: string,
+  dynamicLabels?: Record<string, string>,
 ): Array<{ title: React.ReactNode; href?: string }> => {
   const segments = pathname.split("/").filter((seg) => seg && seg !== "admin" && seg !== "staff");
   
@@ -87,7 +91,7 @@ const getBreadcrumbs = (
     const isLast = index === segments.length - 1;
     
     // Map segment to Vietnamese label or capitalize if not found
-    const label = SEGMENT_MAP[segment] || (segment.charAt(0).toUpperCase() + segment.slice(1));
+    const label = dynamicLabels?.[segment] || SEGMENT_MAP[segment] || (segment.charAt(0).toUpperCase() + segment.slice(1));
 
     if (!isLast) {
       breadcrumbs.push({
@@ -112,9 +116,44 @@ export const Header: React.FC<HeaderProps> = ({
 }) => {
   const pathname = usePathname();
   const router = useRouter();
+  const [profile, setProfile] = useState<any>(null);
+  const [dynamicLabels, setDynamicLabels] = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const data = await getProfileApi();
+        setProfile(data);
+      } catch (error) {
+        console.error("Failed to fetch profile in Header:", error);
+      }
+    };
+    if (user) {
+      fetchProfile();
+    }
+  }, [user]);
+  useEffect(() => {
+    const match = pathname.match(/\/cham-cong\/(\d+)$/);
+    if (match) {
+      const id = match[1];
+      const fetchEmployeeName = async () => {
+        try {
+          const emp = await getEmployeeByIdApi(parseInt(id));
+          setDynamicLabels(prev => {
+            if (prev[id] === emp.HoTen) return prev;
+            return { ...prev, [id]: emp.HoTen };
+          });
+        } catch (error) {
+          console.error("Failed to fetch employee name for breadcrumb:", error);
+        }
+      };
+      fetchEmployeeName();
+    }
+  }, [pathname]);
+
   const notificationCount = 3;
 
-  const breadcrumbs = getBreadcrumbs(pathname);
+  const breadcrumbs = getBreadcrumbs(pathname, dynamicLabels);
 
   const userMenuItems: MenuProps["items"] = [
     {
@@ -191,17 +230,55 @@ export const Header: React.FC<HeaderProps> = ({
         />
 
         <Dropdown menu={{ items: userMenuItems }} trigger={["click"]}>
-          <div className="flex items-center gap-2 cursor-pointer hover:bg-gray-100 px-3 py-1 rounded" style={{ lineHeight: "normal" }}>
+          <div 
+            className="cursor-pointer hover:bg-gray-50 px-3 py-1 rounded-lg transition-all duration-200" 
+            style={{ 
+              display: "flex", 
+              alignItems: "center", 
+              gap: "12px", 
+              lineHeight: "normal" 
+            }}
+          >
             <Avatar 
-              size={32} 
-              style={{ backgroundColor: "#cb1414" }}
+              size={36} 
+              style={{ backgroundColor: "#cb1414", flexShrink: 0 }}
               src={user?.avatar}
+              className="shadow-sm"
             >
               {user?.name ? user.name.charAt(0).toUpperCase() : <UserOutlined />}
             </Avatar>
-            <span className="text-sm font-semibold text-gray-800">
-              {user?.name || "Admin"}
-            </span>
+            <div 
+              style={{ 
+                display: "flex", 
+                flexDirection: "column", 
+                alignItems: "flex-start", 
+                gap: "2px" 
+              }}
+            >
+              <span 
+                className="text-sm text-gray-800 leading-tight"
+                style={{ fontWeight: 700 }}
+              >
+                {user?.name || "Admin"}
+              </span>
+              {(() => {
+                const displayPosition = profile?.chucVu?.TenChucVu || (user?.role === "Admin" ? "Quản trị viên" : (pathname.startsWith("/staff") ? "Nhân viên" : "Giám đốc"));
+                const normalizedPosition = displayPosition.toLowerCase();
+                let tagColor = "default";
+                if (normalizedPosition.includes("giám đốc") || normalizedPosition === "admin" || normalizedPosition === "manager" || normalizedPosition.includes("quản trị")) {
+                  tagColor = "error";
+                } else if (normalizedPosition.includes("trưởng phòng")) {
+                  tagColor = "processing";
+                } else if (normalizedPosition.includes("nhân viên") || normalizedPosition === "staff") {
+                  tagColor = "success";
+                }
+                return (
+                  <Tag color={tagColor} style={{ margin: 0 }}>
+                    {displayPosition}
+                  </Tag>
+                );
+              })()}
+            </div>
           </div>
         </Dropdown>
       </Space>

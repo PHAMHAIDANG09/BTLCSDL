@@ -1,17 +1,18 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Space } from "antd";
 import { 
   PlusOutlined, 
   FileExcelOutlined 
 } from "@ant-design/icons";
+import dayjs from "dayjs";
+import { exportService } from "@/components/shared/utils/export";
 
 // Shared Components
 import Button from "@/components/shared/Button/Button";
 import Toast from "@/components/shared/Toast/Toast";
 import Modal from "@/components/shared/Modal/Modal";
-import { useEffect } from "react";
 import { 
   getEmployeesApi, 
   createEmployeeApi, 
@@ -48,6 +49,27 @@ export default function EmployeePage() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleExportExcel = () => {
+    if (!employees || employees.length === 0) {
+      Toast.warning("Không có dữ liệu nhân viên để xuất");
+      return;
+    }
+    const exportData = employees.map(emp => ({
+      "Mã Nhân Viên": emp.MaNhanVien,
+      "Họ Tên": emp.HoTen,
+      "Email": emp.Email,
+      "Số Điện Thoại": emp.SoDienThoai || "N/A",
+      "Ngày Sinh": emp.NgaySinh ? dayjs(emp.NgaySinh).format("DD/MM/YYYY") : "N/A",
+      "Giới Tính": emp.GioiTinh || "N/A",
+      "Phòng Ban": emp.phongBan?.TenPhong || "N/A",
+      "Chức Vụ": emp.chucVu?.TenChucVu || "N/A",
+      "Vai Trò": emp.vaiTro?.TenVaiTro || "N/A",
+      "Ngày Vào Làm": dayjs(emp.NgayVaoLam).format("DD/MM/YYYY"),
+      "Trạng Thái": emp.TrangThai === "Active" ? "Đang làm việc" : emp.TrangThai === "Inactive" ? "Tạm nghỉ" : "Nghỉ việc",
+    }));
+    exportService.exportToExcel(exportData, "Danh_Sach_Nhan_Vien", "NhanVien");
   };
 
   useEffect(() => {
@@ -208,7 +230,7 @@ export default function EmployeePage() {
           </p>
         </div>
         <Space size="middle">
-          <Button icon={<FileExcelOutlined />} className="px-4">Xuất dữ liệu</Button>
+          <Button icon={<FileExcelOutlined />} onClick={handleExportExcel} className="px-4">Xuất dữ liệu</Button>
           <Button type="primary" icon={<PlusOutlined />} onClick={handleAdd} className="px-6 h-10 font-bold">
             Thêm nhân viên
           </Button>

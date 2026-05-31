@@ -11,6 +11,7 @@ import Table from "@/components/shared/Table/Table";
 
 interface AttendanceRecord {
   id: string;
+  employeeId?: number;
   employeeName: string;
   employeeCode: string; // Thêm
   date: string;

@@ -21,6 +21,7 @@ import {
   DashboardOutlined,
 } from "@ant-design/icons";
 import dayjs from "dayjs";
+import { exportService } from "@/components/shared/utils/export";
 import AttendanceStats from "./_components/AttendanceStats";
 import AttendanceFilter from "./_components/AttendanceFilter";
 import AttendanceTable from "./_components/AttendanceTable";
@@ -32,6 +33,7 @@ import { AttendanceService } from "@/services/attendance.service";
 
 interface AttendanceRecord {
   id: string;
+  employeeId?: number;
   employeeName: string;
   employeeCode: string; // Thêm
   date: string;
@@ -199,6 +201,7 @@ export default function AttendancePage() {
       
       const mappedData: AttendanceRecord[] = data.map((item: any) => ({
         id: item.Id.toString(),
+        employeeId: item.MaNhanVienId,
         employeeName: item.nhanVien?.HoTen || 'Không xác định',
         employeeCode: item.nhanVien?.MaNhanVien || 'N/A', // Thêm mã nhân viên
         date: item.NgayLamViec,
@@ -270,6 +273,25 @@ export default function AttendancePage() {
   const handleClear = () => {
     fetchAttendance();
     message.info("Đã xóa bộ lọc");
+  };
+
+  const handleExportExcel = () => {
+    if (!filteredData || filteredData.length === 0) {
+      message.warning("Không có dữ liệu chấm công để xuất");
+      return;
+    }
+    const exportData = filteredData.map(a => ({
+      "Mã Nhân Viên": a.employeeCode,
+      "Tên Nhân Viên": a.employeeName,
+      "Phòng Ban": a.department,
+      "Ngày Làm Việc": dayjs(a.date).format("DD/MM/YYYY"),
+      "Giờ Vào": a.checkIn || "-",
+      "Giờ Ra": a.checkOut || "-",
+      "Số Giờ": a.workHours,
+      "Đi Muộn (Phút)": a.lateMinutes,
+      "Trạng Thái": a.status === "on-time" ? "Đúng giờ" : a.status === "late" ? "Đi muộn" : a.status === "absent" ? "Vắng mặt" : "Nghỉ phép",
+    }));
+    exportService.exportToExcel(exportData, "Danh_Sach_Cham_Cong", "ChamCong");
   };
 
   const handleViewRecord = (record: AttendanceRecord) => {
@@ -404,7 +426,7 @@ export default function AttendancePage() {
             label: 'Lịch sử chi tiết',
             children: (
               <div>
-                <AttendanceFilter onFilter={handleFilter} onClear={handleClear} />
+                <AttendanceFilter onFilter={handleFilter} onClear={handleClear} onExport={handleExportExcel} />
                 <AttendanceTable
                   data={filteredData}
                   loading={loading}
@@ -515,7 +537,7 @@ function AttendanceDetailModal({
 
   const handleViewFull = () => {
     onClose();
-    onViewDetail(formData.id);
+    onViewDetail(formData.employeeId ? formData.employeeId.toString() : formData.id);
   };
 
   return (
