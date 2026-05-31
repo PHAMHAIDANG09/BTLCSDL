@@ -74,6 +74,21 @@ export class PayrollService {
   // Nghiệp vụ tính lương (Payroll Calculation)
   async calculatePayroll(thang: number, nam: number, adminId: number) {
     try {
+      // Tự động kiểm tra và khởi tạo LichSuLuong cho các nhân viên có Hợp đồng (HopDong) nhưng chưa có Lịch sử lương (LichSuLuong)
+      await this.dataSource.query(
+        `
+        INSERT INTO dbo.LichSuLuong (MaNhanVienId, LuongCoBan, PhuCap, NgayBatDau, DangHieuLuc, NguoiThayDoiId, GhiChu)
+        SELECT hd.MaNhanVienId, hd.LuongCoBan, 0, hd.NgayBatDau, 1, @0, N'Tự động khởi tạo từ Hợp đồng'
+        FROM dbo.HopDong hd
+        WHERE hd.TrangThai = 'Active'
+          AND NOT EXISTS (
+            SELECT 1 FROM dbo.LichSuLuong lsl 
+            WHERE lsl.MaNhanVienId = hd.MaNhanVienId AND lsl.DangHieuLuc = 1
+          )
+        `,
+        [adminId],
+      );
+
       // Gọi Stored Procedure để tính lương tự động
       // Sử dụng truyền tham số an toàn (@0, @1, @2) để tránh SQL Injection
       await this.dataSource.query(
