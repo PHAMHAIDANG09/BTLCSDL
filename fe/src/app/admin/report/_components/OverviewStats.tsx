@@ -50,7 +50,7 @@ export default function OverviewStats({ latestMonthData }: OverviewStatsProps) {
           size="default"
           subtitle={
             <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
-              Status:{" "}
+              Trạng thái:{" "}
               {latestMonthData.diMuonRate > 10 ? (
                 <Badge status="error" text="Tỷ lệ đi muộn cao" />
               ) : (
