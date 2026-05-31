@@ -30,6 +30,7 @@ import Button from "@/components/shared/Button/Button";
 import { useRouter } from "next/navigation";
 import { CheckInModal } from "@/components/attendance/CheckInModal";
 import { AttendanceService } from "@/services/attendance.service";
+import { reportService } from "@/services/report.service";
 
 interface AttendanceRecord {
   id: string;
@@ -275,23 +276,44 @@ export default function AttendancePage() {
     message.info("Đã xóa bộ lọc");
   };
 
-  const handleExportExcel = () => {
-    if (!filteredData || filteredData.length === 0) {
-      message.warning("Không có dữ liệu chấm công để xuất");
-      return;
+  const handleExportExcel = async () => {
+    // Lấy tháng và năm từ dữ liệu hiện tại để xuất báo cáo từ backend
+    const currentMonth = dayjs().month() + 1;
+    const currentYear = dayjs().year();
+
+    try {
+      message.loading({ content: "Đang xuất báo cáo công từ server...", key: "export", duration: 0 });
+      const blob = await reportService.exportAttendance(currentMonth, currentYear);
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", `Bang_Cong_Thang_${currentMonth}_${currentYear}.xlsx`);
+      document.body.appendChild(link);
+      link.click();
+      link.parentNode?.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      message.success({ content: "Tải báo cáo chấm công thành công!", key: "export", duration: 2 });
+    } catch (error: any) {
+      console.error(error);
+      message.error({ content: "Lỗi khi tải báo cáo từ server. Đang xuất danh sách hiện tại ra Excel...", key: "export", duration: 3 });
+      
+      if (!filteredData || filteredData.length === 0) {
+        message.warning("Không có dữ liệu chấm công để xuất");
+        return;
+      }
+      const exportData = filteredData.map(a => ({
+        "Mã Nhân Viên": a.employeeCode,
+        "Tên Nhân Viên": a.employeeName,
+        "Phòng Ban": a.department,
+        "Ngày Làm Việc": dayjs(a.date).format("DD/MM/YYYY"),
+        "Giờ Vào": a.checkIn || "-",
+        "Giờ Ra": a.checkOut || "-",
+        "Số Giờ": a.workHours,
+        "Đi Muộn (Phút)": a.lateMinutes,
+        "Trạng Thái": a.status === "on-time" ? "Đúng giờ" : a.status === "late" ? "Đi muộn" : a.status === "absent" ? "Vắng mặt" : "Nghỉ phép",
+      }));
+      exportService.exportToExcel(exportData, "Danh_Sach_Cham_Cong", "ChamCong");
     }
-    const exportData = filteredData.map(a => ({
-      "Mã Nhân Viên": a.employeeCode,
-      "Tên Nhân Viên": a.employeeName,
-      "Phòng Ban": a.department,
-      "Ngày Làm Việc": dayjs(a.date).format("DD/MM/YYYY"),
-      "Giờ Vào": a.checkIn || "-",
-      "Giờ Ra": a.checkOut || "-",
-      "Số Giờ": a.workHours,
-      "Đi Muộn (Phút)": a.lateMinutes,
-      "Trạng Thái": a.status === "on-time" ? "Đúng giờ" : a.status === "late" ? "Đi muộn" : a.status === "absent" ? "Vắng mặt" : "Nghỉ phép",
-    }));
-    exportService.exportToExcel(exportData, "Danh_Sach_Cham_Cong", "ChamCong");
   };
 
   const handleViewRecord = (record: AttendanceRecord) => {

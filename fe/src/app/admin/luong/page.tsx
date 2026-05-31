@@ -32,6 +32,7 @@ import Table from "@/components/shared/Table/Table";
 import type { TableColumnsType } from "antd";
 import { PhieuLuong } from "@/types/payroll";
 import payrollService from "@/services/payroll.service";
+import { reportService } from "@/services/report.service";
 import { getEmployeesApi, Employee } from "@/services/employee.service";
 import PayrollDetailModal from "@/components/payroll/PayrollDetailModal";
 import exportService from "@/components/shared/utils/export";
@@ -155,31 +156,46 @@ export default function AdminPayrollPage() {
     }
   };
 
-  const handleExportExcel = () => {
-    if (data.length === 0) {
-      message.warning("Không có dữ liệu để xuất");
-      return;
+  const handleExportExcel = async () => {
+    try {
+      message.loading({ content: "Đang xuất báo cáo lương từ server...", key: "export", duration: 0 });
+      const blob = await reportService.exportPayroll(selectedMonth, selectedYear);
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", `Bang_Luong_Thang_${selectedMonth}_${selectedYear}.xlsx`);
+      document.body.appendChild(link);
+      link.click();
+      link.parentNode?.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      message.success({ content: "Tải báo cáo bảng lương thành công!", key: "export", duration: 2 });
+    } catch (error: any) {
+      console.error(error);
+      message.error({ content: "Lỗi khi tải báo cáo từ server. Đang xuất danh sách hiện tại ra Excel...", key: "export", duration: 3 });
+      
+      if (data.length === 0) {
+        message.warning("Không có dữ liệu để xuất");
+        return;
+      }
+      const exportData = data.map((item) => ({
+        "Mã NV": item.nhanVien?.MaNhanVien,
+        "Họ tên": item.nhanVien?.HoTen,
+        "Tháng": item.Thang,
+        "Năm": item.Nam,
+        "Lương cơ bản": item.LuongCoBan,
+        "Phụ cấp": item.PhuCap,
+        "Tiền OT": item.TienLamThem,
+        "BHXH": item.BaoHiemXaHoi,
+        "BHYT": item.BaoHiemYTe,
+        "BHTN": item.BaoHiemThatNghiep,
+        "Thuế TNCN": item.ThueTNCN,
+        "Khấu trừ khác": item.CacKhoanKhauTruKhac,
+        "Tổng lương gộp": item.TongLuongGop,
+        "Thực lĩnh": item.LuongThucNhan,
+        "Trạng thái": item.TrangThai === "Paid" ? "Đã thanh toán" : "Chờ xử lý",
+      }));
+      exportService.exportToExcel(exportData, `Bang_Luong_${selectedMonth}_${selectedYear}`, "Payroll");
     }
-
-    const exportData = data.map((item) => ({
-      "Mã NV": item.nhanVien?.MaNhanVien,
-      "Họ tên": item.nhanVien?.HoTen,
-      "Tháng": item.Thang,
-      "Năm": item.Nam,
-      "Lương cơ bản": item.LuongCoBan,
-      "Phụ cấp": item.PhuCap,
-      "Tiền OT": item.TienLamThem,
-      "BHXH": item.BaoHiemXaHoi,
-      "BHYT": item.BaoHiemYTe,
-      "BHTN": item.BaoHiemThatNghiep,
-      "Thuế TNCN": item.ThueTNCN,
-      "Khấu trừ khác": item.CacKhoanKhauTruKhac,
-      "Tổng lương gộp": item.TongLuongGop,
-      "Thực lĩnh": item.LuongThucNhan,
-      "Trạng thái": item.TrangThai === "Paid" ? "Đã thanh toán" : "Chờ xử lý",
-    }));
-
-    exportService.exportToExcel(exportData, `Bang_Luong_${selectedMonth}_${selectedYear}`, "Payroll");
   };
 
   const columns: TableColumnsType<PhieuLuong> = [

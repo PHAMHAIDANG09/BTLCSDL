@@ -10,6 +10,7 @@ interface StatsCardProps {
   color: string;
   bg: string;
   size?: "small" | "default";
+  subtitle?: React.ReactNode;
 }
 
 export default function StatsCard({ 
@@ -18,7 +19,8 @@ export default function StatsCard({
   icon, 
   color, 
   bg, 
-  size = "small" 
+  size = "small",
+  subtitle 
 }: StatsCardProps) {
   const isSmall = size === "small";
 
@@ -54,6 +56,11 @@ export default function StatsCard({
           }}
         />
       </div>
+      {subtitle && (
+        <div style={{ marginTop: 8, fontSize: 12, color: '#8c8c8c', lineHeight: 1.5 }}>
+          {subtitle}
+        </div>
+      )}
     </Card>
   );
 }

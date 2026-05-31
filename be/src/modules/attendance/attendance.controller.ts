@@ -64,13 +64,13 @@ export class AttendanceController {
     return this.attendanceService.getAllHistory(new Date(start), new Date(end));
   }
 
-  @Post('ot')
+  @Post('lam-them')
   @ApiOperation({ summary: 'Đăng ký làm thêm giờ (OT)' })
   registerOT(@Body() dto: CreateDonLamThemDto, @Request() req: any) {
     return this.attendanceService.createOTRequest(req.user.Id, dto);
   }
 
-  @Put('ot/:id/approve')
+  @Put('lam-them/:id/duyet')
   @Roles('Admin', 'Manager')
   @ApiOperation({ summary: 'Phê duyệt hoặc từ chối yêu cầu làm thêm' })
   approveOT(
@@ -81,14 +81,14 @@ export class AttendanceController {
     return this.attendanceService.approveOT(+id, req.user.Id, dto.status);
   }
 
-  @Get('ot')
+  @Get('lam-them')
   @Roles('Admin', 'Manager')
   @ApiOperation({ summary: 'Lấy tất cả yêu cầu làm thêm (Admin/Manager)' })
   getAllOT(@Query('status') status?: string) {
     return this.attendanceService.getAllOTRequests(status);
   }
 
-  @Get('ot/history')
+  @Get('lam-them/lich-su')
   @ApiOperation({ summary: 'Lấy lịch sử yêu cầu làm thêm cá nhân' })
   getOTHistory(@Request() req: any) {
     return this.attendanceService.getOTHistory(req.user.Id);
@@ -108,7 +108,7 @@ export class AttendanceController {
     return this.attendanceService.updateAttendance(+id, data);
   }
 
-  @Get('summary')
+  @Get('tong-hop')
   @Roles('Admin')
   @ApiOperation({ summary: 'Lấy báo cáo tổng hợp tháng (Admin)' })
   getSummary(@Query('month') month: number, @Query('year') year: number) {
