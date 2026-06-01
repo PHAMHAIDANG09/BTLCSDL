@@ -52,7 +52,7 @@ export const AttendanceService = {
   },
 
   getMonthlySummary: async (month: number, year: number): Promise<any[]> => {
-    const response = await api.get('/cham-cong/summary', { params: { month, year } });
+    const response = await api.get('/cham-cong/tong-hop', { params: { month, year } });
     return response as any;
   },
 
@@ -65,22 +65,22 @@ export const AttendanceService = {
     LyDo?: string;
     LoaiOT?: string;
   }): Promise<any> => {
-    const response = await api.post('/cham-cong/ot', data);
+    const response = await api.post('/cham-cong/lam-them', data);
     return response;
   },
 
   approveOT: async (id: number, status: 'Approved' | 'Rejected'): Promise<any> => {
-    const response = await api.put(`/cham-cong/ot/${id}/approve`, { status });
+    const response = await api.put(`/cham-cong/lam-them/${id}/duyet`, { status });
     return response;
   },
 
   getAllOTRequests: async (status?: string): Promise<any[]> => {
-    const response = await api.get('/cham-cong/ot', { params: { status } });
+    const response = await api.get('/cham-cong/lam-them', { params: { status } });
     return response as any;
   },
 
   getOTHistory: async (): Promise<any[]> => {
-    const response = await api.get('/cham-cong/ot/history');
+    const response = await api.get('/cham-cong/lam-them/lich-su');
     return response as any;
   },
 };

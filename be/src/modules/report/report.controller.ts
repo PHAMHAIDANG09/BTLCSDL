@@ -35,4 +35,11 @@ export class ReportController {
   exportPayroll(@Query('thang') thang: number, @Query('nam') nam: number) {
     return this.reportService.exportPayroll(thang, nam);
   }
+
+  @Get('thong-ke')
+  @Roles('Admin', 'Manager')
+  @ApiOperation({ summary: 'Lấy dữ liệu thống kê biểu đồ cho Reporting Center' })
+  getChartStats() {
+    return this.reportService.getChartStats();
+  }
 }

@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, MoreThanOrEqual, LessThanOrEqual } from 'typeorm';
+import { And, IsNull, LessThan, LessThanOrEqual, MoreThanOrEqual, Not, Repository } from 'typeorm';
 import { NhanVien } from '../auth/entities/nhan-vien.entity';
 import { ChamCong } from '../attendance/entities/cham-cong.entity';
 import { DonNghiPhep } from '../leave/entities/don-nghi-phep.entity';
@@ -22,21 +22,30 @@ export class DashboardService {
   async getStats() {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
+    const startOfTomorrow = new Date(today);
+    startOfTomorrow.setDate(startOfTomorrow.getDate() + 1);
+    const thirtyDaysFromNow = new Date(today);
+    thirtyDaysFromNow.setDate(thirtyDaysFromNow.getDate() + 30);
 
-    const [totalEmployees, presentToday, pendingLeaves, expiringContracts] =
-      await Promise.all([
-        this.nhanVienRepo.count({ where: { TrangThai: 'Active' } }),
-        this.chamCongRepo.count({ where: { NgayLamViec: today } }),
-        this.nghiPhepRepo.count({ where: { TrangThai: 'Pending' } }),
-        this.hopDongRepo.count({
-          where: {
-            TrangThai: 'Active',
-            NgayKetThuc: LessThanOrEqual(
-              new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
-            ),
-          },
-        }),
-      ]);
+    const [totalEmployees, presentToday, pendingLeaves, expiringContracts] = await Promise.all([
+      this.nhanVienRepo.count({ where: { TrangThai: 'Active' } }),
+      this.chamCongRepo.count({
+        where: {
+          NgayLamViec: And(MoreThanOrEqual(today), LessThan(startOfTomorrow)),
+        },
+      }),
+      this.nghiPhepRepo.count({ where: { TrangThai: 'Pending' } }),
+      this.hopDongRepo.count({
+        where: {
+          TrangThai: 'Active',
+          NgayKetThuc: And(
+            Not(IsNull()),
+            MoreThanOrEqual(today),
+            LessThanOrEqual(thirtyDaysFromNow),
+          ),
+        },
+      }),
+    ]);
 
     return {
       totalEmployees,

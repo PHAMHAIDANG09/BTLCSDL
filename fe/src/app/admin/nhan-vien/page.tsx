@@ -1,28 +1,29 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Space } from "antd";
 import { 
   PlusOutlined, 
   FileExcelOutlined 
 } from "@ant-design/icons";
+import dayjs from "dayjs";
+import { exportService } from "@/components/shared/utils/export";
 
 // Shared Components
 import Button from "@/components/shared/Button/Button";
 import Toast from "@/components/shared/Toast/Toast";
 import Modal from "@/components/shared/Modal/Modal";
-import { useEffect } from "react";
 import { 
   getEmployeesApi, 
   createEmployeeApi, 
   updateEmployeeApi, 
   deleteEmployeeApi,
+  createContractApi,
   Employee 
 } from "@/services/employee.service";
 
 // Module Components
 import EmployeeTable from "@/app/admin/nhan-vien/_components/EmployeeTable";
-import SearchFilter from "@/app/admin/nhan-vien/_components/SearchFilter";
 import BulkActions from "@/app/admin/nhan-vien/_components/BulkActions";
 import DeleteConfirm from "@/app/admin/nhan-vien/_components/DeleteConfirm";
 import EmployeeForm from "@/app/admin/nhan-vien/_components/EmployeeForm";
@@ -48,6 +49,27 @@ export default function EmployeePage() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleExportExcel = () => {
+    if (!employees || employees.length === 0) {
+      Toast.warning("Không có dữ liệu nhân viên để xuất");
+      return;
+    }
+    const exportData = employees.map(emp => ({
+      "Mã Nhân Viên": emp.MaNhanVien,
+      "Họ Tên": emp.HoTen,
+      "Email": emp.Email,
+      "Số Điện Thoại": emp.SoDienThoai || "N/A",
+      "Ngày Sinh": emp.NgaySinh ? dayjs(emp.NgaySinh).format("DD/MM/YYYY") : "N/A",
+      "Giới Tính": emp.GioiTinh || "N/A",
+      "Phòng Ban": emp.phongBan?.TenPhong || "N/A",
+      "Chức Vụ": emp.chucVu?.TenChucVu || "N/A",
+      "Vai Trò": emp.vaiTro?.TenVaiTro || "N/A",
+      "Ngày Vào Làm": dayjs(emp.NgayVaoLam).format("DD/MM/YYYY"),
+      "Trạng Thái": emp.TrangThai === "Active" ? "Đang làm việc" : emp.TrangThai === "Inactive" ? "Tạm nghỉ" : "Nghỉ việc",
+    }));
+    exportService.exportToExcel(exportData, "Danh_Sach_Nhan_Vien", "NhanVien");
   };
 
   useEffect(() => {
@@ -81,8 +103,46 @@ export default function EmployeePage() {
     setLoading(true);
     try {
       if (modalMode === "add") {
-        // Gửi toàn bộ values vì form đã format ngày tháng rồi
-        await createEmployeeApi(values);
+        // Chỉ lấy đúng những trường được phép gửi khi thêm mới để khớp với CreateNhanVienDto
+        const createData = {
+          HoTen: values.HoTen,
+          Email: values.Email,
+          MatKhau: values.MatKhau,
+          MaPhongId: values.MaPhongId,
+          MaChucVuId: values.MaChucVuId,
+          MaVaiTroId: values.MaVaiTroId,
+          NgayVaoLam: values.NgayVaoLam,
+          SoDienThoai: values.SoDienThoai,
+          DiaChi: values.DiaChi,
+          NgaySinh: values.NgaySinh,
+          GioiTinh: values.GioiTinh,
+          SoCCCD: values.SoCCCD,
+          MaSoThue: values.MaSoThue,
+          SoNguoiPhuThuoc: values.SoNguoiPhuThuoc,
+          SoTaiKhoan: values.SoTaiKhoan,
+          TenNganHang: values.TenNganHang,
+          ChiNhanhNganHang: values.ChiNhanhNganHang,
+        };
+        
+        const newEmp = await createEmployeeApi(createData);
+        
+        // Nếu có điền thông tin Lương cơ bản, tự động tạo Hợp đồng lao động ban đầu
+        if (values.baseSalary && newEmp?.Id) {
+          try {
+            await createContractApi({
+              MaNhanVienId: newEmp.Id,
+              LoaiHopDong: values.contractType || "Xác định thời hạn",
+              LuongCoBan: values.baseSalary,
+              NgayKy: values.NgayVaoLam, // mặc định ngày ký là ngày vào làm
+              NgayBatDau: values.NgayVaoLam, // ngày bắt đầu là ngày vào làm
+              TrangThai: "Active",
+            });
+          } catch (contractError) {
+            console.error("Lỗi tự động tạo hợp đồng:", contractError);
+            Toast.warning("Tạo nhân viên thành công nhưng không thể tạo hợp đồng tự động.");
+          }
+        }
+        
         Toast.success("Thêm nhân viên mới thành công");
       } else if (selectedEmployee) {
         // CHỈ LẤY đúng những trường được phép cập nhật để gửi lên Backend
@@ -162,29 +222,22 @@ export default function EmployeePage() {
   return (
     <div className="max-w-[1600px] mx-auto animate-in fade-in duration-500 p-4">
       {/* Header Section */}
-      <div className="mb-6">
-        <h1 className="text-3xl font-black text-gray-900 tracking-tight m-0">Nhân viên</h1>
-        <div className="flex items-center justify-between mt-1">
-          <p className="text-gray-400 font-medium text-sm m-0">
+      <div className="flex items-start justify-between mb-4">
+        <div>
+          <h1 className="text-3xl font-black text-gray-900 tracking-tight m-0" style={{ lineHeight: "1.1" }}>Nhân viên</h1>
+          <p className="text-gray-400 font-medium text-sm m-0 mt-1">
             Quản lý và cập nhật thông tin nhân sự toàn hệ thống
           </p>
-          <Space size="middle">
-            <Button icon={<FileExcelOutlined />} className="px-4">Xuất dữ liệu</Button>
-            <Button type="primary" icon={<PlusOutlined />} onClick={handleAdd} className="px-6 h-10 font-bold">
-              Thêm nhân viên
-            </Button>
-          </Space>
         </div>
+        <Space size="middle">
+          <Button icon={<FileExcelOutlined />} onClick={handleExportExcel} className="px-4">Xuất dữ liệu</Button>
+          <Button type="primary" icon={<PlusOutlined />} onClick={handleAdd} className="px-6 h-10 font-bold">
+            Thêm nhân viên
+          </Button>
+        </Space>
       </div>
 
-      <SearchFilter 
-        onSearch={(v: string) => console.log('Search:', v)}
-        onFilterChange={(n: string, v: string) => console.log('Filter:', n, v)}
-      />
-
-      <div className="h-4" />
-
-      <div style={{ marginTop: '20px' }}>
+      <div style={{ marginTop: '10px' }}>
         <EmployeeTable 
           data={employees}
           loading={loading}
@@ -208,7 +261,7 @@ export default function EmployeePage() {
         open={isModalOpen}
         onCancel={closeModal}
         footer={null}
-        width={modalMode === "view" ? 600 : 800}
+        width={modalMode === "view" ? 1000 : 800}
       >
         {modalMode === "view" ? (
           <EmployeeDetail employee={selectedEmployee} />

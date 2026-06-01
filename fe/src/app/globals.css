@@ -68,6 +68,10 @@
   transition: box-shadow 0.3s ease !important;
 }
 
+.no-hover-shadow.ant-card:hover {
+  box-shadow: none !important;
+}
+
 /* Button animations */
 .ant-btn {
   transition: all 0.3s ease !important;

@@ -11,8 +11,11 @@ import {
   TimePicker,
   Select,
   Input,
+  Popconfirm,
+  Tooltip,
 } from "antd";
 import dayjs from "dayjs";
+import { exportService } from "@/components/shared/utils/export";
 import {
   ArrowLeftOutlined,
   EditOutlined,
@@ -22,12 +25,15 @@ import {
   MinusCircleOutlined,
   FileTextOutlined,
   DashboardOutlined,
+  DeleteOutlined,
 } from "@ant-design/icons";
 import Button from "@/components/shared/Button/Button";
 import Table from "@/components/shared/Table/Table";
 import StatsCard from "@/components/shared/StatsCard/StatsCard";
 import { useRouter, useParams } from "next/navigation";
 import type { TableColumnsType } from "antd";
+import { getEmployeeByIdApi } from "@/services/employee.service";
+import { AttendanceService } from "@/services/attendance.service";
 
 interface EmployeeDetail {
   id: string;
@@ -51,25 +57,6 @@ interface AttendanceDetail {
   notes?: string;
 }
 
-// Mock data
-const MOCK_EMPLOYEE: EmployeeDetail = {
-  id: "1",
-  name: "Nguyễn Văn A",
-  code: "NV001",
-  department: "IT",
-  position: "Senior Developer",
-  email: "a.nguyen@company.com",
-  phone: "0901234567",
-};
-
-const MOCK_ATTENDANCE_HISTORY: AttendanceDetail[] = [
-  { id: "1", date: "2024-04-27", checkInTime: "08:00", checkOutTime: "17:30", workHours: 8.5, lateMinutes: 0, status: "on-time", source: "biometric" },
-  { id: "2", date: "2024-04-26", checkInTime: "08:15", checkOutTime: "17:45", workHours: 8.5, lateMinutes: 15, status: "late", source: "biometric", notes: "Giao thông" },
-  { id: "3", date: "2024-04-25", checkInTime: "08:10", checkOutTime: "17:00", workHours: 8.5, lateMinutes: 10, status: "late", source: "mobile" },
-  { id: "4", date: "2024-04-24", checkInTime: "08:00", checkOutTime: "17:30", workHours: 8.5, lateMinutes: 0, status: "on-time", source: "biometric" },
-  { id: "5", date: "2024-04-23", checkInTime: "-", checkOutTime: "-", workHours: 0, lateMinutes: 0, status: "on-leave", source: "manual", notes: "Nghỉ phép" },
-];
-
 const getStatusColor = (status: string) => {
   const colorMap: Record<string, string> = { "on-time": "green", late: "orange", absent: "red", "on-leave": "blue" };
   return colorMap[status] || "default";
@@ -90,18 +77,110 @@ export default function AttendanceDetailPage() {
   const params = useParams();
   const employeeId = params?.id as string;
 
-  const [employee, setEmployee] = useState<EmployeeDetail>(MOCK_EMPLOYEE);
-  const [history, setHistory] = useState<AttendanceDetail[]>(MOCK_ATTENDANCE_HISTORY);
-  const [loading, setLoading] = useState(false);
+  const [employee, setEmployee] = useState<EmployeeDetail>({
+    id: "",
+    name: "Đang tải...",
+    code: "...",
+    department: "...",
+    position: "...",
+    email: "...",
+    phone: "...",
+  });
+  const [history, setHistory] = useState<AttendanceDetail[]>([]);
+  const [loading, setLoading] = useState(true);
   const [selectedRecord, setSelectedRecord] = useState<AttendanceDetail | null>(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
 
+  const mapBackendStatus = (status: string): any => {
+    switch (status) {
+      case 'CoMat': return 'on-time';
+      case 'DiMuon': return 'late';
+      case 'Vang': return 'absent';
+      case 'NghiPhep': return 'on-leave';
+      case 'VeSom': return 'late';
+      default: return 'on-time';
+    }
+  };
+
+  const mapToBackendStatus = (status: string) => {
+    const map: any = {
+      'on-time': 'CoMat',
+      'late': 'DiMuon',
+      'absent': 'Vang',
+      'on-leave': 'Nghỉ Phep'
+    };
+    return map[status] || 'CoMat';
+  };
+
+  const loadData = async () => {
+    if (!employeeId) return;
+    setLoading(true);
+    try {
+      // 1. Fetch employee details
+      const empData = await getEmployeeByIdApi(parseInt(employeeId));
+      setEmployee({
+        id: empData.Id.toString(),
+        name: empData.HoTen,
+        code: empData.MaNhanVien,
+        department: empData.phongBan?.TenPhong || "N/A",
+        position: empData.chucVu?.TenChucVu || "N/A",
+        email: empData.Email,
+        phone: empData.SoDienThoai || "N/A",
+      });
+
+      // 2. Fetch all history for this employee
+      const today = dayjs();
+      const start = today.subtract(365, 'day').format('YYYY-MM-DD'); // Load up to a year of data
+      const end = today.format('YYYY-MM-DD');
+      
+      const allHistory = await AttendanceService.getAllHistory(start, end);
+      const employeeHistory = allHistory.filter((item: any) => item.MaNhanVienId === parseInt(employeeId));
+      
+      const historyData: AttendanceDetail[] = employeeHistory.map((item: any) => ({
+        id: item.Id.toString(),
+        date: item.NgayLamViec,
+        checkInTime: item.GioVao ? dayjs(item.GioVao).format("HH:mm") : "-",
+        checkOutTime: item.GioRa ? dayjs(item.GioRa).format("HH:mm") : "-",
+        workHours: item.SoGioLam || 0,
+        lateMinutes: item.SoPhutDiMuon || 0,
+        status: mapBackendStatus(item.TrangThai),
+        source: item.NguonChamCong === 'Biometric' ? 'biometric' : (item.NguonChamCong === 'Mobile' ? 'mobile' : 'manual'),
+        notes: item.GhiChu || "",
+      }));
+      setHistory(historyData);
+    } catch (error) {
+      console.error(error);
+      setEmployee({
+        id: "",
+        name: "Không tìm thấy nhân viên",
+        code: "N/A",
+        department: "N/A",
+        position: "N/A",
+        email: "N/A",
+        phone: "N/A",
+      });
+      message.error("Lỗi khi tải dữ liệu chấm công");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadData();
+  }, [employeeId]);
+
   const statsItems = [
-    { label: "Có mặt", value: 2, icon: <CheckCircleOutlined />, color: "var(--success-color)", bg: "#f6ffed" },
-    { label: "Đi muộn", value: 2, icon: <ClockCircleOutlined />, color: "var(--warning-color)", bg: "#fff7e6" },
-    { label: "Vắng mặt", value: 0, icon: <MinusCircleOutlined />, color: "var(--error-color)", bg: "#fff1f0" },
-    { label: "Nghỉ phép", value: 1, icon: <FileTextOutlined />, color: "var(--info-color)", bg: "#e6f7ff" },
-    { label: "Tổng giờ", value: "34 h", icon: <DashboardOutlined />, color: "#262626", bg: "#f5f5f5" },
+    { label: "Có mặt", value: history.filter(h => h.status === "on-time").length, icon: <CheckCircleOutlined />, color: "var(--success-color)", bg: "#f6ffed" },
+    { label: "Đi muộn", value: history.filter(h => h.status === "late").length, icon: <ClockCircleOutlined />, color: "var(--warning-color)", bg: "#fff7e6" },
+    { label: "Vắng mặt", value: history.filter(h => h.status === "absent").length, icon: <MinusCircleOutlined />, color: "var(--error-color)", bg: "#fff1f0" },
+    { label: "Nghỉ phép", value: history.filter(h => h.status === "on-leave").length, icon: <FileTextOutlined />, color: "var(--info-color)", bg: "#e6f7ff" },
+    { 
+      label: "Tổng giờ", 
+      value: `${history.reduce((sum, h) => sum + (h.workHours || 0), 0).toFixed(1)} h`, 
+      icon: <DashboardOutlined />, 
+      color: "#262626", 
+      bg: "#f5f5f5" 
+    },
   ];
 
   const columns: TableColumnsType<AttendanceDetail> = [
@@ -115,7 +194,41 @@ export default function AttendanceDetailPage() {
     },
     { title: "Trạng thái", dataIndex: "status", key: "status", width: 100, render: (status: string) => <Tag color={getStatusColor(status)}>{getStatusLabel(status)}</Tag> },
     { title: "Nguồn", dataIndex: "source", key: "source", width: 120, render: (source: string) => getSourceLabel(source) },
-    { title: "Thao tác", key: "action", width: 80, render: (_, record) => <Button type="text" size="small" icon={<EditOutlined />} onClick={() => openEditModal(record)} /> },
+    { 
+      title: "Thao tác", 
+      key: "action", 
+      width: 120, 
+      align: "center" as const,
+      render: (_, record) => (
+        <Space size={0}>
+          <Tooltip title="Chỉnh sửa">
+            <Button 
+              type="text" 
+              size="small" 
+              icon={<EditOutlined />} 
+              onClick={() => openEditModal(record)} 
+            />
+          </Tooltip>
+          <Popconfirm
+            title="Xóa bản ghi"
+            description="Bạn có chắc chắn muốn xóa bản ghi chấm công này?"
+            onConfirm={() => handleDeleteRecord(record.id)}
+            okText="Xóa"
+            cancelText="Hủy"
+            okButtonProps={{ danger: true }}
+          >
+            <Tooltip title="Xóa">
+              <Button
+                type="text"
+                size="small"
+                icon={<DeleteOutlined />}
+                danger
+              />
+            </Tooltip>
+          </Popconfirm>
+        </Space>
+      )
+    },
   ];
 
   const openEditModal = (record: AttendanceDetail) => {
@@ -128,18 +241,58 @@ export default function AttendanceDetailPage() {
     setSelectedRecord(null);
   };
 
-  const handleSaveRecord = (updatedRecord: AttendanceDetail) => {
+  const handleSaveRecord = async (updatedRecord: AttendanceDetail) => {
     setLoading(true);
-    setTimeout(() => {
-      setHistory(history.map((h) => (h.id === updatedRecord.id ? updatedRecord : h)));
-      setLoading(false);
+    try {
+      const datePart = updatedRecord.date.split('T')[0];
+      const updateData = {
+        GioVao: updatedRecord.checkInTime && updatedRecord.checkInTime !== '-' ? `${datePart}T${updatedRecord.checkInTime}:00` : null,
+        GioRa: updatedRecord.checkOutTime && updatedRecord.checkOutTime !== '-' ? `${datePart}T${updatedRecord.checkOutTime}:00` : null,
+        TrangThai: mapToBackendStatus(updatedRecord.status)
+      };
+
+      await AttendanceService.updateAttendance(updatedRecord.id, updateData);
       message.success("Cập nhật chấm công thành công");
+      loadData();
       closeModal();
-    }, 500);
+    } catch (error) {
+      console.error(error);
+      message.error("Lỗi khi cập nhật bản ghi");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDeleteRecord = async (id: string) => {
+    setLoading(true);
+    try {
+      await AttendanceService.deleteAttendance(id);
+      message.success("Xóa bản ghi chấm công thành công");
+      loadData();
+    } catch (error) {
+      console.error(error);
+      message.error("Lỗi khi xóa bản ghi");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleExport = () => {
-    message.info("Chức năng xuất Excel đang được phát triển");
+    if (!history || history.length === 0) {
+      message.warning("Không có dữ liệu chấm công để xuất");
+      return;
+    }
+    const exportData = history.map(h => ({
+      "Ngày": dayjs(h.date).format("DD/MM/YYYY"),
+      "Giờ Vào": h.checkInTime || "-",
+      "Giờ Ra": h.checkOutTime || "-",
+      "Số Giờ": h.workHours,
+      "Đi Muộn (Phút)": h.lateMinutes,
+      "Trạng Thái": getStatusLabel(h.status),
+      "Nguồn": getSourceLabel(h.source),
+      "Ghi Chú": h.notes || ""
+    }));
+    exportService.exportToExcel(exportData, `Cham_Cong_${employee.name}_NV_${employee.code}`, "ChamCongNhanVien");
   };
 
   return (

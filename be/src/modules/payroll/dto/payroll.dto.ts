@@ -34,3 +34,10 @@ export class CalculatePayrollDto {
   @IsNotEmpty()
   Nam: number;
 }
+
+export class UpdatePaySlipStatusDto {
+  @ApiProperty({ example: 'Paid' })
+  @IsString()
+  @IsNotEmpty()
+  TrangThai: string;
+}

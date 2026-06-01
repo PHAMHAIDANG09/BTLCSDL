@@ -32,12 +32,4 @@ export class CreateDonLamThemDto {
   @IsString()
   @IsOptional()
   LyDo?: string;
-
-  @ApiProperty({
-    example: 'NgayThuong',
-    enum: ['NgayThuong', 'CuoiTuan', 'NgayLe'],
-  })
-  @IsString()
-  @IsOptional()
-  LoaiOT?: string;
 }
