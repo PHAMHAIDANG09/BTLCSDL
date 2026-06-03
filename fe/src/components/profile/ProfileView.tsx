@@ -122,7 +122,7 @@ export default function ProfileView({ data, isAdmin = false, onRefresh }: Profil
       </div>
 
       {/* Overview Card */}
-      <Card style={{ marginBottom: 24 }}>
+      <Card style={{ marginBottom: 24 }} className="no-hover-shadow">
         <div style={{ display: "flex", gap: 20, alignItems: "center" }}>
           <Avatar
             size={88}
@@ -155,6 +155,7 @@ export default function ProfileView({ data, isAdmin = false, onRefresh }: Profil
             title={<span><UserOutlined style={{ marginRight: 8 }} />Thông tin cá nhân</span>}
             size="small"
             extra={<Button type="text" size="small" icon={<EditOutlined />} onClick={() => setIsEditModalOpen(true)}>Sửa</Button>}
+            className="no-hover-shadow"
           >
             <Descriptions column={1} size="small" labelStyle={{ fontWeight: 600, width: 140 }}>
               <Descriptions.Item label={<span><MailOutlined /> Email</span>}>{data.email}</Descriptions.Item>
@@ -175,6 +176,7 @@ export default function ProfileView({ data, isAdmin = false, onRefresh }: Profil
           <Card
             title={<span><BankOutlined style={{ marginRight: 8 }} />Thông tin công tác</span>}
             size="small"
+            className="no-hover-shadow"
           >
             <Descriptions column={1} size="small" labelStyle={{ fontWeight: 600, width: 140 }}>
               <Descriptions.Item label="Mã nhân viên"><Tag color={isAdmin ? "red" : "blue"}>{data.employeeCode}</Tag></Descriptions.Item>
@@ -191,6 +193,7 @@ export default function ProfileView({ data, isAdmin = false, onRefresh }: Profil
           <Card
             title={<span><FileTextOutlined style={{ marginRight: 8 }} />Hợp đồng & Lương (Tham khảo)</span>}
             size="small"
+            className="no-hover-shadow"
           >
             <Descriptions column={{ xs: 1, sm: 2, md: 4 }} size="small" labelStyle={{ fontWeight: 600 }}>
               <Descriptions.Item label="Loại hợp đồng">{data.contractType}</Descriptions.Item>

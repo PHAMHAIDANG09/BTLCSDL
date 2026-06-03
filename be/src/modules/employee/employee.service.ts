@@ -4,7 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, DataSource } from 'typeorm';
+import { Repository, DataSource, Between } from 'typeorm';
 import { NhanVien } from '../auth/entities/nhan-vien.entity';
 import { HopDong } from './entities/hop-dong.entity';
 import { LichSuDieuChuyen } from './entities/lich-su-dieu-chuyen.entity';
@@ -103,7 +103,10 @@ export class EmployeeService {
     });
 
     try {
-      return await this.nhanVienRepository.save(nv);
+      const savedEmployee = await this.nhanVienRepository.save(nv);
+      // MatKhauHash is set on this in-memory entity, so remove it before returning to the client.
+      const { MatKhauHash, ...safeEmployee } = savedEmployee;
+      return safeEmployee;
     } catch (error) {
       console.error('Lỗi khi lưu nhân viên:', error);
       throw new BadRequestException(
@@ -182,7 +185,35 @@ export class EmployeeService {
     }
 
     const hd = this.hopDongRepository.create(dto);
-    return this.hopDongRepository.save(hd);
+    const savedHd = await this.hopDongRepository.save(hd);
+
+    // Tự động khởi tạo hoặc cập nhật lịch sử lương
+    if (savedHd.TrangThai === 'Active') {
+      try {
+        await this.dataSource.query(
+          `
+          -- Vô hiệu hóa mức lương cũ
+          UPDATE dbo.LichSuLuong 
+          SET DangHieuLuc = 0, NgayKetThuc = GETDATE() 
+          WHERE MaNhanVienId = @0 AND DangHieuLuc = 1;
+
+          -- Thêm mức lương mới từ hợp đồng
+          INSERT INTO dbo.LichSuLuong (MaNhanVienId, LuongCoBan, PhuCap, NgayBatDau, DangHieuLuc, NguoiThayDoiId, GhiChu)
+          VALUES (@0, @1, 0, @2, 1, 1, @3);
+          `,
+          [
+            savedHd.MaNhanVienId,
+            savedHd.LuongCoBan,
+            savedHd.NgayBatDau,
+            `Khởi tạo tự động từ hợp đồng ${savedHd.MaHopDong}`
+          ]
+        );
+      } catch (err) {
+        console.error('Lỗi khi tự động đồng bộ sang LichSuLuong:', err);
+      }
+    }
+
+    return savedHd;
   }
 
   async findContractsByEmployee(employeeId: number) {
@@ -204,7 +235,35 @@ export class EmployeeService {
   async updateContract(id: number, dto: UpdateHopDongDto) {
     const hd = await this.findOneContract(id);
     Object.assign(hd, dto);
-    return this.hopDongRepository.save(hd);
+    const savedHd = await this.hopDongRepository.save(hd);
+
+    // Nếu hợp đồng đang hoạt động, đồng bộ lại mức lương
+    if (savedHd.TrangThai === 'Active') {
+      try {
+        await this.dataSource.query(
+          `
+          -- Vô hiệu hóa mức lương cũ
+          UPDATE dbo.LichSuLuong 
+          SET DangHieuLuc = 0, NgayKetThuc = GETDATE() 
+          WHERE MaNhanVienId = @0 AND DangHieuLuc = 1;
+
+          -- Thêm mức lương mới cập nhật từ hợp đồng
+          INSERT INTO dbo.LichSuLuong (MaNhanVienId, LuongCoBan, PhuCap, NgayBatDau, DangHieuLuc, NguoiThayDoiId, GhiChu)
+          VALUES (@0, @1, 0, @2, 1, 1, @3);
+          `,
+          [
+            savedHd.MaNhanVienId,
+            savedHd.LuongCoBan,
+            savedHd.NgayBatDau,
+            `Cập nhật tự động theo hợp đồng ${savedHd.MaHopDong}`
+          ]
+        );
+      } catch (err) {
+        console.error('Lỗi khi tự động đồng bộ lương từ cập nhật hợp đồng:', err);
+      }
+    }
+
+    return savedHd;
   }
 
   async deleteContract(id: number) {
@@ -213,12 +272,16 @@ export class EmployeeService {
   }
 
   async getExpiringContracts() {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
     const thirtyDaysFromNow = new Date();
     thirtyDaysFromNow.setDate(thirtyDaysFromNow.getDate() + 30);
+    thirtyDaysFromNow.setHours(0, 0, 0, 0);
 
     return this.hopDongRepository.find({
       where: {
-        NgayKetThuc: thirtyDaysFromNow, // simplified logic, usually between now and 30 days
+        NgayKetThuc: Between(today, thirtyDaysFromNow),
         TrangThai: 'Active',
       },
       relations: ['nhanVien'],

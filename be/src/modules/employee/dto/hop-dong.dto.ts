@@ -60,6 +60,10 @@ export class CreateHopDongDto {
 }
 
 export class UpdateHopDongDto {
+  @IsNumber()
+  @IsOptional()
+  MaNhanVienId?: number;
+
   @IsString()
   @IsOptional()
   MaHopDong?: string;

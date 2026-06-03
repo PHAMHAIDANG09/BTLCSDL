@@ -166,6 +166,21 @@ const EmployeeForm: React.FC<EmployeeFormProps> = ({
                         </Form.Item>
                       </Col>
                     )}
+                    <Col span={12}>
+                      <Form.Item name="SoCCCD" label="Số CCCD">
+                        <Input placeholder="Nhập số CCCD" />
+                      </Form.Item>
+                    </Col>
+                    <Col span={12}>
+                      <Form.Item name="MaSoThue" label="Mã số thuế (MST)">
+                        <Input placeholder="Nhập mã số thuế" />
+                      </Form.Item>
+                    </Col>
+                    <Col span={12}>
+                      <Form.Item name="SoNguoiPhuThuoc" label="Số người phụ thuộc" initialValue={0}>
+                        <InputNumber className="w-full" min={0} placeholder="Ví dụ: 0, 1, 2" />
+                      </Form.Item>
+                    </Col>
                     <Col span={24}>
                       <Form.Item name="DiaChi" label="Địa chỉ liên hệ">
                         <TextArea rows={2} placeholder="Địa chỉ thường trú..." />
@@ -181,11 +196,13 @@ const EmployeeForm: React.FC<EmployeeFormProps> = ({
               children: (
                 <div className="py-4">
                   <Row gutter={16}>
-                    <Col span={12}>
-                      <Form.Item name="MaNhanVien" label="Mã nhân viên" rules={[CommonRules.required('Mã NV')]}>
-                        <Input disabled={!!initialValues} placeholder="Hệ thống tự tạo nếu để trống" />
-                      </Form.Item>
-                    </Col>
+                    {initialValues && (
+                      <Col span={12}>
+                        <Form.Item name="MaNhanVien" label="Mã nhân viên">
+                          <Input disabled />
+                        </Form.Item>
+                      </Col>
+                    )}
                     <Col span={12}>
                       <Form.Item name="NgayVaoLam" label="Ngày vào làm" rules={[CommonRules.required('Ngày vào')]}>
                         <DatePicker className="w-full" format="DD/MM/YYYY" disabled={!!initialValues} />
@@ -253,6 +270,24 @@ const EmployeeForm: React.FC<EmployeeFormProps> = ({
                           formatter={v => `${v}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
                           placeholder="Nhập số tiền"
                         />
+                      </Form.Item>
+                    </Col>
+                    <Col span={24}>
+                      <Divider orientation={"left" as any} style={{ margin: '12px 0' }}>Thông tin tài khoản ngân hàng</Divider>
+                    </Col>
+                    <Col span={12}>
+                      <Form.Item name="SoTaiKhoan" label="Số tài khoản">
+                        <Input placeholder="Nhập số tài khoản" />
+                      </Form.Item>
+                    </Col>
+                    <Col span={12}>
+                      <Form.Item name="TenNganHang" label="Tên ngân hàng">
+                        <Input placeholder="Ví dụ: Vietcombank, Techcombank" />
+                      </Form.Item>
+                    </Col>
+                    <Col span={24}>
+                      <Form.Item name="ChiNhanhNganHang" label="Chi nhánh ngân hàng">
+                        <Input placeholder="Ví dụ: Chi nhánh Hà Nội" />
                       </Form.Item>
                     </Col>
                   </Row>

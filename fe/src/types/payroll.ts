@@ -31,3 +31,27 @@ export interface CalculatePayrollDto {
   Thang: number;
   Nam: number;
 }
+
+export interface LichSuLuong {
+  Id: number;
+  MaNhanVienId: number;
+  LuongCoBan: number;
+  PhuCap: number;
+  NgayBatDau: string;
+  NgayKetThuc?: string;
+  DangHieuLuc: boolean;
+  NguoiThayDoiId: number;
+  GhiChu?: string;
+  NgayTao: string;
+  nguoiThayDoi?: {
+    MaNhanVien: string;
+    HoTen: string;
+  };
+}
+
+export interface UpdateSalaryDto {
+  MaNhanVienId: number;
+  LuongCoBan: number;
+  PhuCap: number;
+  GhiChu?: string;
+}

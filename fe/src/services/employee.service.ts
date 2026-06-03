@@ -20,6 +20,12 @@ export interface Employee {
   MaChucVuId: number;
   MaVaiTroId: number;
   TrangThai: 'Active' | 'Inactive' | 'Terminated';
+  SoCCCD?: string;
+  MaSoThue?: string;
+  SoNguoiPhuThuoc?: number;
+  SoTaiKhoan?: string;
+  TenNganHang?: string;
+  ChiNhanhNganHang?: string;
   phongBan?: { TenPhong: string };
   chucVu?: { TenChucVu: string };
   vaiTro?: { TenVaiTro: string };

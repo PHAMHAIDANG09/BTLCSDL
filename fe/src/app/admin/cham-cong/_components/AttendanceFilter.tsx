@@ -29,11 +29,13 @@ interface FilterValues {
 interface AttendanceFilterProps {
   onFilter: (values: FilterValues) => void;
   onClear: () => void;
+  onExport: () => void;
 }
 
 export default function AttendanceFilter({
   onFilter,
   onClear,
+  onExport,
 }: AttendanceFilterProps) {
   const [form] = Form.useForm();
 
@@ -57,9 +59,7 @@ export default function AttendanceFilter({
   };
 
   const handleExport = () => {
-    message.info("Chức năng xuất Excel đang được phát triển");
-    // TODO: Implement Excel export functionality
-    // Example: Export current filtered data to Excel file
+    onExport();
   };
 
   const disabledDate: RangePickerProps["disabledDate"] = (current) => {

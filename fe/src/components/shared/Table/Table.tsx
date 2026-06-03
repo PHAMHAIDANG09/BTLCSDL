@@ -30,6 +30,7 @@ export interface TableProps<T extends object = Record<string, unknown>>
   rowKey?: AntTableProps<T>["rowKey"];
   className?: string;
   totalText?: string;
+  noScroll?: boolean;
 }
 
 export const Table = <T extends object = Record<string, unknown>>({
@@ -43,6 +44,7 @@ export const Table = <T extends object = Record<string, unknown>>({
   rowKey = "id",
   className = "",
   totalText = "bản ghi",
+  noScroll = false,
   ...restProps
 }: TableProps<T>) => {
   const [searchText, setSearchText] = useState("");
@@ -103,7 +105,7 @@ export const Table = <T extends object = Record<string, unknown>>({
           rowKey={rowKey}
           pagination={paginationConfig}
           loading={loading}
-          scroll={restProps.scroll || { x: 1300 }}
+          scroll={noScroll ? undefined : (restProps.scroll || { x: 1300 })}
           className="bg-white rounded-lg overflow-hidden shadow-sm"
           {...restProps}
         />
