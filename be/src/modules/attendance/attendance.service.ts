@@ -105,6 +105,7 @@ export class AttendanceService {
 
     ot.TrangThai = status;
     ot.NguoiDuyetId = approverId;
+    ot.NgayDuyet = new Date();
     return this.donLamThemRepository.save(ot);
   }
 

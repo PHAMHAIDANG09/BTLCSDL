@@ -1,10 +1,9 @@
-import { Controller, Get, Post, Body, UseGuards, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, UseGuards, Query, BadRequestException } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { SystemService } from './system.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
-import { NgayLe } from './entities/ngay-le.entity';
 import { CreateNgayLeDto } from './dto/create-ngay-le.dto';
 
 @ApiTags('System')
@@ -12,7 +11,7 @@ import { CreateNgayLeDto } from './dto/create-ngay-le.dto';
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('system')
 export class SystemController {
-  constructor(private readonly systemService: SystemService) {}
+  constructor(private readonly systemService: SystemService) { }
 
   @Get('logs')
   @Roles('Admin')
@@ -30,7 +29,12 @@ export class SystemController {
   @Post('holidays')
   @Roles('Admin')
   @ApiOperation({ summary: 'Tạo mới ngày nghỉ lễ' })
-  createHoliday(@Body() data: CreateNgayLeDto) {
-    return this.systemService.createHoliday(data);
+  async createHoliday(@Body() data: CreateNgayLeDto) {
+    try {
+      return await this.systemService.createHoliday(data);
+    } catch (e: any) {
+      console.error("CREATE HOLIDAY ERROR:", e);
+      throw new BadRequestException(e.message || 'Lỗi thêm ngày lễ');
+    }
   }
 }

@@ -31,12 +31,19 @@ export default function StaffRootLayout({
     setIsLoading(false);
   }, [loadFromStorage]);
 
+  // Nếu đã load xong mà vẫn chưa auth, chuyển hướng về login
+  useEffect(() => {
+    if (!isLoading && (!isAuthenticated || !user)) {
+      router.push("/login");
+    }
+  }, [isLoading, isAuthenticated, user, router]);
+
   const handleLogout = () => {
     logout();
     router.push("/login");
   };
 
-  if (!isAuthenticated || !user) {
+  if (isLoading || !isAuthenticated || !user) {
     return (
       <div className="flex items-center justify-center h-screen">
         <div className="text-center">

@@ -43,6 +43,9 @@ export class DonLamThem {
   @Column({ type: 'int', nullable: true })
   NguoiDuyetId: number;
 
+  @Column({ type: 'datetime', nullable: true })
+  NgayDuyet: Date;
+
   @CreateDateColumn({ type: 'datetime' })
   NgayTao: Date;
 

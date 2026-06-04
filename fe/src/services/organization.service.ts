@@ -9,6 +9,9 @@ export interface Department {
   Id: number;
   TenPhong: string;
   MaPhong: string;
+  MaPhongCha?: number;
+  MaQuanLy?: number;
+  children?: Department[];
 }
 
 export interface Position {
@@ -19,6 +22,11 @@ export interface Position {
 
 export const getDepartmentsApi = async (): Promise<Department[]> => {
   const response = await api.get<Department[]>('/co-cau-to-chuc/phong-ban');
+  return response as unknown as Department[];
+};
+
+export const getOrganizationTreeApi = async (): Promise<Department[]> => {
+  const response = await api.get<Department[]>('/co-cau-to-chuc/phong-ban/tree');
   return response as unknown as Department[];
 };
 

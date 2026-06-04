@@ -12,8 +12,6 @@ import {
   Avatar,
   Dropdown,
   Space,
-  Badge,
-  Button,
   Tag,
   type MenuProps,
 } from "antd";
@@ -22,11 +20,12 @@ import { getEmployeeByIdApi } from "@/services/employee.service";
 import {
   UserOutlined,
   LogoutOutlined,
-  BellOutlined,
   SettingOutlined,
 } from "@ant-design/icons";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import { NotificationBell } from "@/app/staff/notifications/_components/NotificationBell";
+import { useNotificationStore } from "@/store/notificationStore";
 
 const { Header: AntHeader } = Layout;
 
@@ -61,11 +60,13 @@ const SEGMENT_MAP: Record<string, string> = {
   structure: "Cơ cấu",
   contract: "Hợp đồng",
   overtime: "Làm thêm giờ",
+  "lam-them-gio": "Làm thêm giờ",
   holiday: "Ngày lễ",
   log: "Nhật ký",
   home: "Trang chủ",
   payslip: "Phiếu lương",
   "my-requests": "Yêu cầu của tôi",
+  "nghi-phep": "Nghỉ phép",
 };
 
 const getBreadcrumbs = (
@@ -118,6 +119,7 @@ export const Header: React.FC<HeaderProps> = ({
   const router = useRouter();
   const [profile, setProfile] = useState<any>(null);
   const [dynamicLabels, setDynamicLabels] = useState<Record<string, string>>({});
+  const isStaffPage = pathname.startsWith("/staff");
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -132,6 +134,14 @@ export const Header: React.FC<HeaderProps> = ({
       fetchProfile();
     }
   }, [user]);
+
+  // Fetch thông báo khi là Staff
+  const fetchNotifications = useNotificationStore((s) => s.fetchNotifications);
+  useEffect(() => {
+    if (isStaffPage) {
+      fetchNotifications();
+    }
+  }, [isStaffPage]);
   useEffect(() => {
     const match = pathname.match(/\/cham-cong\/(\d+)$/);
     if (match) {
@@ -151,7 +161,7 @@ export const Header: React.FC<HeaderProps> = ({
     }
   }, [pathname]);
 
-  const notificationCount = 3;
+  // notificationCount handled by NotificationBell store
 
   const breadcrumbs = getBreadcrumbs(pathname, dynamicLabels);
 
@@ -217,17 +227,8 @@ export const Header: React.FC<HeaderProps> = ({
 
       {/* Right Side: Notifications + User Menu */}
       <Space size="large">
-        {/* Notifications */}
-        <Button
-          type="text"
-          icon={
-            <Badge count={notificationCount} color="#ff4d4f">
-              <BellOutlined style={{ fontSize: "18px" }} />
-            </Badge>
-          }
-          onClick={() => router.push("/admin/notifications")}
-          className="hover:bg-gray-100"
-        />
+        {/* Notification Bell – chỉ hiện với Staff */}
+        {isStaffPage && <NotificationBell />}
 
         <Dropdown menu={{ items: userMenuItems }} trigger={["click"]}>
           <div 
