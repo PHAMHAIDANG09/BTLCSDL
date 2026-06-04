@@ -75,6 +75,9 @@ export class PhieuLuong {
   @Column({ type: 'datetime', nullable: true })
   NgayThanhToan: Date;
 
+  @CreateDateColumn({ type: 'datetime' })
+  NgayTao: Date;
+
   @Column({ type: 'nvarchar', length: 500, nullable: true })
   GhiChu: string;
 
