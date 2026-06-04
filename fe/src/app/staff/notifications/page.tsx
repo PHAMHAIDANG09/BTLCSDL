@@ -18,9 +18,12 @@ export default function StaffNotificationsPage() {
 
   return (
     <div>
+      {/* ── Heading ── */}
       <div style={{ marginBottom: 24 }}>
-        <Title level={2} style={{ margin: 0 }}>Thông báo</Title>
-        <Text type="secondary">
+        <h1 style={{ fontSize: 32, fontWeight: 900, color: "#1e293b", letterSpacing: "-0.5px", margin: 0 }}>
+          Thông báo
+        </h1>
+        <Text style={{ fontSize: 16, color: "#64748b", marginTop: 8, display: "block" }}>
           {notifications.length === 0
             ? "Chưa có thông báo nào"
             : unreadCount > 0
