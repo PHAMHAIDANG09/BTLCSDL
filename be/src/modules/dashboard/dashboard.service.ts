@@ -17,7 +17,7 @@ export class DashboardService {
     private nghiPhepRepo: Repository<DonNghiPhep>,
     @InjectRepository(HopDong)
     private hopDongRepo: Repository<HopDong>,
-  ) {}
+  ) { }
 
   async getStats() {
     const today = new Date();

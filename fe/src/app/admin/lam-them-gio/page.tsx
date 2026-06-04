@@ -6,11 +6,12 @@ import {
   message, Spin, Popconfirm, Avatar, Segmented, Badge, Tooltip,
 } from "antd";
 import {
-  CheckOutlined, CloseOutlined, UserOutlined, CalendarOutlined,
+  CheckOutlined, CloseOutlined, UserOutlined,
+  CalendarOutlined, HistoryOutlined,
 } from "@ant-design/icons";
 import Table from "@/components/shared/Table/Table";
 import type { TableColumnsType } from "antd";
-import { LeaveService } from "@/services/leave.service";
+import { AttendanceService } from "@/services/attendance.service";
 import dayjs from "dayjs";
 
 const { Title, Text } = Typography;
@@ -28,9 +29,19 @@ const getStatusBadge = (status: string) => {
   }
 };
 
+const getLoaiOTTag = (l: string) => {
+  const map: Record<string, { color: string; label: string }> = {
+    NgayThuong: { color: "default", label: "Ngày thường" },
+    CuoiTuan:   { color: "orange",  label: "Cuối tuần"   },
+    NgayLe:     { color: "red",     label: "Ngày lễ"     },
+  };
+  const cfg = map[l] || { color: "default", label: l };
+  return <Tag color={cfg.color} bordered={false}>{cfg.label}</Tag>;
+};
+
 const employeeRender = (nv: any) => (
   <Space>
-    <Avatar icon={<UserOutlined />} className="bg-blue-100 text-blue-600" />
+    <Avatar icon={<UserOutlined />} className="bg-orange-100 text-orange-600" />
     <div>
       <div className="font-semibold text-gray-800">{nv?.HoTen}</div>
       <div className="text-xs text-gray-400">{nv?.MaNhanVien}</div>
@@ -41,10 +52,10 @@ const employeeRender = (nv: any) => (
 /* ================================================================== */
 /* Page                                                                 */
 /* ================================================================== */
-export default function AdminLeavePage() {
-  const [leaveRequests, setLeaveRequests] = useState<any[]>([]);
-  const [loading, setLoading]             = useState(false);
-  const [viewMode, setViewMode]           = useState<"pending" | "history">("pending");
+export default function AdminOvertimePage() {
+  const [otRequests, setOtRequests] = useState<any[]>([]);
+  const [loading, setLoading]       = useState(false);
+  const [viewMode, setViewMode]     = useState<"pending" | "history">("pending");
 
   // Reject modal
   const [rejectVisible, setRejectVisible] = useState(false);
@@ -57,11 +68,11 @@ export default function AdminLeavePage() {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const leaves = await LeaveService.getAllLeaveRequests();
-      setLeaveRequests(leaves || []);
+      const ots = await AttendanceService.getAllOTRequests();
+      setOtRequests(ots || []);
     } catch (err) {
       console.error(err);
-      message.error("Lỗi khi tải danh sách đơn nghỉ phép");
+      message.error("Lỗi khi tải danh sách đơn làm thêm giờ");
     } finally {
       setLoading(false);
     }
@@ -70,8 +81,8 @@ export default function AdminLeavePage() {
   const handleApprove = async (id: number) => {
     setLoading(true);
     try {
-      await LeaveService.approveLeave(id, "Approved");
-      message.success("Đã phê duyệt đơn nghỉ phép thành công!");
+      await AttendanceService.approveOT(id, "Approved");
+      message.success("Đã phê duyệt đơn OT thành công!");
       fetchData();
     } catch (err) {
       message.error("Lỗi khi duyệt đơn");
@@ -93,8 +104,8 @@ export default function AdminLeavePage() {
     }
     setSubmitting(true);
     try {
-      await LeaveService.approveLeave(rejectId!, "Rejected", rejectReason);
-      message.success("Đã từ chối đơn thành công!");
+      await AttendanceService.approveOT(rejectId!, "Rejected");
+      message.success("Đã từ chối đơn OT thành công!");
       setRejectVisible(false);
       fetchData();
     } catch (err) {
@@ -113,39 +124,55 @@ export default function AdminLeavePage() {
       render: employeeRender,
     },
     {
-      title: "Loại phép",
-      dataIndex: "loaiNghiPhep",
-      key: "type",
+      title: "Ngày làm thêm",
+      key: "NgayLamThem",
       width: 160,
-      render: (item: any) => (
-        <Tag color="blue" bordered={false} className="px-2 py-1">
-          {item?.TenLoaiPhep || "Khác"}
-        </Tag>
-      ),
-    },
-    {
-      title: "Thời gian nghỉ",
-      key: "time",
       render: (_, r) => (
         <Space direction="vertical" size={0}>
-          <Text>
-            <CalendarOutlined style={{ color: "#8c8c8c", marginRight: 4 }} />
-            {dayjs(r.NgayBatDau).format("DD/MM/YYYY")} – {dayjs(r.NgayKetThuc).format("DD/MM/YYYY")}
+          <Text strong>
+            <CalendarOutlined style={{ color: "#8c8c8c", marginRight: 6 }} />
+            {dayjs(r.NgayLamThem).format("DD/MM/YYYY")}
           </Text>
-          <Text style={{ color: "#1890ff", fontSize: 12, fontWeight: 500 }}>
-            Tổng: {r.TongSoNgay} ngày
+          <Text type="secondary" style={{ fontSize: 12 }}>
+            {r.GioBatDau} – {r.GioKetThuc}
+            <Text style={{ color: "#fa8c16", fontWeight: 600, marginLeft: 6 }}>
+              ({r.TongSoGio}h)
+            </Text>
           </Text>
         </Space>
       ),
       sorter: (a: any, b: any) =>
-        new Date(a.NgayBatDau).getTime() - new Date(b.NgayBatDau).getTime(),
+        new Date(a.NgayLamThem).getTime() - new Date(b.NgayLamThem).getTime(),
     },
     {
-      title: "Lý do",
+      title: "Phân loại",
+      dataIndex: "LoaiOT",
+      key: "LoaiOT",
+      width: 130,
+      render: (l: string) => getLoaiOTTag(l),
+      filters: [
+        { text: "Ngày thường", value: "NgayThuong" },
+        { text: "Cuối tuần",   value: "CuoiTuan"   },
+        { text: "Ngày lễ",     value: "NgayLe"     },
+      ],
+      onFilter: (value: any, r: any) => r.LoaiOT === value,
+    },
+    {
+      title: "Hệ số OT",
+      dataIndex: "HeSoOT",
+      key: "HeSoOT",
+      width: 90,
+      align: "center" as const,
+      render: (h: number) => (
+        <Text style={{ color: "#fa8c16", fontWeight: 700 }}>×{h}</Text>
+      ),
+    },
+    {
+      title: "Công việc",
       dataIndex: "LyDo",
-      key: "reason",
+      key: "LyDo",
       render: (text: string) => (
-        <Text className="italic text-gray-600">{text}</Text>
+        <Text className="italic text-gray-600">{text || "—"}</Text>
       ),
     },
     {
@@ -165,7 +192,6 @@ export default function AdminLeavePage() {
         ) : "—",
       sorter: (a: any, b: any) =>
         new Date(a.NgayTao).getTime() - new Date(b.NgayTao).getTime(),
-      defaultSortOrder: "descend" as const,
     },
   ];
 
@@ -181,7 +207,7 @@ export default function AdminLeavePage() {
           render: (_, record) => (
             <Space size="small">
               <Popconfirm
-                title="Bạn có chắc chắn muốn duyệt đơn này?"
+                title="Xác nhận duyệt đơn OT này?"
                 onConfirm={() => handleApprove(record.Id)}
                 okText="Duyệt"
                 cancelText="Hủy"
@@ -213,23 +239,8 @@ export default function AdminLeavePage() {
       {
         title: "Trạng thái",
         key: "status",
-        width: 200,
-        render: (_, record) => (
-          <div>
-            {getStatusBadge(record.TrangThai)}
-            {record.TrangThai === "Rejected" && record.LyDoTuChoi && (
-              <div
-                className="text-xs text-red-500 mt-1 truncate max-w-[140px]"
-                title={record.LyDoTuChoi}
-              >
-                Lý do: {record.LyDoTuChoi}
-              </div>
-            )}
-            <div className="text-xs text-gray-400 mt-1">
-              Duyệt: {record.NgayDuyet ? dayjs(record.NgayDuyet).format("DD/MM HH:mm") : "—"}
-            </div>
-          </div>
-        ),
+        width: 150,
+        render: (_, r) => getStatusBadge(r.TrangThai),
         filters: [
           { text: "Đã duyệt", value: "Approved" },
           { text: "Từ chối",  value: "Rejected" },
@@ -239,9 +250,9 @@ export default function AdminLeavePage() {
     ];
   };
 
-  const pendingLeaves = leaveRequests.filter((r) => r.TrangThai === "Pending");
-  const historyLeaves = leaveRequests.filter((r) => r.TrangThai !== "Pending");
-  const displayData   = viewMode === "pending" ? pendingLeaves : historyLeaves;
+  const pendingOTs = otRequests.filter((r) => r.TrangThai === "Pending");
+  const historyOTs = otRequests.filter((r) => r.TrangThai !== "Pending");
+  const displayData = viewMode === "pending" ? pendingOTs : historyOTs;
 
   /* ─────────── RENDER ─────────── */
   return (
@@ -249,11 +260,11 @@ export default function AdminLeavePage() {
       {/* Header */}
       <div className="flex justify-between items-center mb-6">
         <div>
-          <Title level={2} style={{ margin: 0 }} >
-            Quản Lý Nghỉ Phép
+          <Title level={2} style={{ margin: 0 }}>
+            Quản Lý Làm Thêm Giờ
           </Title>
           <Text type="secondary">
-            Xem xét và phê duyệt các đơn xin nghỉ phép của nhân viên
+            Xem xét và phê duyệt đơn đăng ký làm thêm giờ của nhân viên
           </Text>
         </div>
         <Segmented
@@ -262,11 +273,11 @@ export default function AdminLeavePage() {
               label: (
                 <span>
                   Chờ xử lý
-                  {pendingLeaves.length > 0 && (
+                  {pendingOTs.length > 0 && (
                     <Badge
-                      count={pendingLeaves.length}
+                      count={pendingOTs.length}
                       style={{ marginLeft: 6 }}
-                      color="#f5222d"
+                      color="#fa8c16"
                     />
                   )}
                 </span>
@@ -290,12 +301,12 @@ export default function AdminLeavePage() {
             dataSource={displayData}
             rowKey="Id"
             searchable={true}
-            totalText="đơn"
+            totalText="đơn OT"
             locale={{
               emptyText:
                 viewMode === "pending"
-                  ? "Không có đơn nghỉ phép nào đang chờ duyệt 🎉"
-                  : "Chưa có lịch sử duyệt đơn",
+                  ? "Không có đơn OT nào đang chờ duyệt 🎉"
+                  : "Chưa có lịch sử duyệt đơn OT",
             }}
           />
         </Spin>
@@ -305,7 +316,7 @@ export default function AdminLeavePage() {
       <Modal
         title={
           <div className="flex items-center text-red-500">
-            <CloseOutlined className="mr-2" /> Xác nhận từ chối đơn
+            <CloseOutlined className="mr-2" /> Xác nhận từ chối đơn OT
           </div>
         }
         open={rejectVisible}
@@ -325,7 +336,7 @@ export default function AdminLeavePage() {
             rows={4}
             value={rejectReason}
             onChange={(e) => setRejectReason(e.target.value)}
-            placeholder="Nhập lý do từ chối (VD: Do dự án đang gấp...)"
+            placeholder="Nhập lý do từ chối..."
             className="rounded-md"
           />
         </div>

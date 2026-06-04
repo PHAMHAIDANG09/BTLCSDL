@@ -12,7 +12,7 @@ export class SystemService {
     private logRepository: Repository<NhatKyHeThong>,
     @InjectRepository(NgayLe)
     private ngayLeRepository: Repository<NgayLe>,
-  ) {}
+  ) { }
 
   async getLogs(limit: number = 100) {
     return this.logRepository.find({

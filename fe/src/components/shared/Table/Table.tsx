@@ -18,7 +18,7 @@ export interface PaginationConfig {
   onChange?: (page: number, pageSize: number) => void;
 }
 
-export interface TableProps<T extends object = Record<string, unknown>> 
+export interface TableProps<T extends object = Record<string, unknown>>
   extends Omit<AntTableProps<T>, "pagination" | "columns" | "dataSource" | "rowKey"> {
   columns: AntTableProps<T>["columns"];
   dataSource: T[];
@@ -35,7 +35,7 @@ export interface TableProps<T extends object = Record<string, unknown>>
 
 export const Table = <T extends object = Record<string, unknown>>({
   columns,
-  dataSource,
+  dataSource = [],
   loading = false,
   pagination,
   searchable = true,
