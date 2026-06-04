@@ -3,20 +3,24 @@ services:
     image: mcr.microsoft.com/mssql/server:2022-latest
     container_name: nexthr-db
     ports:
-      - "1435:1433"
+      - '1435:1433'
     environment:
       - ACCEPT_EULA=Y
       - MSSQL_SA_PASSWORD=Dang@12345
-      - TZ=Asia/Ha_Noi
-      - MSSQL_AGENT_ENABLED=True  #lập lịch sao lưu
-    # volumes:
-    #   - sqlserver_data:/var/opt/mssql
-    #   - ./init-db:/init-db:ro
-    #   - "U:/Hoàng Quốc Việt năm 3/Năm 3 kỳ 2/Hệ quản trị CSDL/Backup:/backup" #thay đổi theo máy
+      - TZ=Asia/Ho_Chi_Minh
+      - MSSQL_AGENT_ENABLED=True # THÊM/SỬA: bật SQL Server Agent nếu cần
+    # volumes: # THÊM
+    #   - sqlserver_data_v2:/var/opt/mssql # THÊM: lưu dữ liệu SQL Server
+    #   - ./init-db:/init-db:ro # THÊM: thư mục chứa file init DB
+    #   - 'U:/Hoàng Quốc Việt năm 3/Năm 3 kỳ 2/Hệ quản trị CSDL/Backup:/backup' # THÊM: nơi lưu file backup
     networks:
       - app-network
     healthcheck:
-      test: [ "CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P \"$$MSSQL_SA_PASSWORD\" -C -Q 'SELECT 1' || exit 1" ]
+      test:
+        [
+          'CMD-SHELL',
+          '/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "$$MSSQL_SA_PASSWORD" -C -Q ''SELECT 1'' || exit 1',
+        ]
       interval: 10s
       timeout: 5s
       retries: 20
@@ -31,29 +35,46 @@ services:
     volumes:
       - ./init-db:/init-db:ro
     entrypoint: >
-      /bin/bash -c " /opt/mssql-tools18/bin/sqlcmd -S sqlserver -U sa -P 'Dang@12345' -C -i /init-db/SchemaNEXTHR.sql"
+      /bin/bash -c "
+      /opt/mssql-tools18/bin/sqlcmd -S sqlserver -U sa -P 'Dang@12345' -C -i /init-db/SchemaNEXTHR.sql
+      "
     networks:
       - app-network
     restart: 'no'
+
+  # backup-scheduler: # THÊM: service tự động tạo backup - DISABLED TEMPORARILY
+  # build:
+  #   context: .
+  #   dockerfile: Dockerfile.backup
+  # container_name: nexthr-backup-scheduler # THÊM
+  # user: root
+  # depends_on: # THÊM
+  #   sqlserver: # THÊM
+  #     condition: service_healthy # THÊM
+  # volumes: # THÊM
+  #   - 'U:/Hoàng Quốc Việt năm 3/Năm 3 kỳ 2/Hệ quản trị CSDL/Backup:/backup' # THÊM
+  # networks: # THÊM
+  #   - app-network # THÊM
+  # restart: always # THÊM
 
   redis:
     image: redis:alpine
     container_name: nexthr-redis
     ports:
-      - "6380:6379"
+      - '6380:6379'
     networks:
       - app-network
     healthcheck:
-      test: [ "CMD", "redis-cli", "ping" ]
+      test: ['CMD', 'redis-cli', 'ping']
       interval: 30s
       timeout: 10s
       retries: 5
 
-  # backup-cleanup:
+  # backup-cleanup: # DISABLED TEMPORARILY
   #   image: alpine
   #   container_name: nexthr-backup-cleanup
   #   volumes:
-  #     - "U:/Hoàng Quốc Việt năm 3/Năm 3 kỳ 2/Hệ quản trị CSDL/Backup:/backup"
+  #     - 'U:/Hoàng Quốc Việt năm 3/Năm 3 kỳ 2/Hệ quản trị CSDL/Backup:/backup'
   #   restart: always
   #   entrypoint: >
   #     sh -c "
