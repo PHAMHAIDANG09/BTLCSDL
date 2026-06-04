@@ -70,11 +70,21 @@ export const useAuthStore = create<AuthState>()(
             document.cookie = `auth_token=${token}; path=/; max-age=86400; SameSite=Lax`;
             document.cookie = `user_role=${user.role}; path=/; max-age=86400; SameSite=Lax`;
             set({ token, user, isAuthenticated: true });
+          } else {
+            // Nếu thiếu một trong hai, coi như chưa login và xóa sạch dấu vết để tránh loop
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            document.cookie = 'auth_token=; path=/; max-age=0';
+            document.cookie = 'user_role=; path=/; max-age=0';
+            set({ token: null, user: null, isAuthenticated: false });
           }
         } catch (error) {
           console.error('Failed to load auth from storage:', error);
           localStorage.removeItem('token');
           localStorage.removeItem('user');
+          document.cookie = 'auth_token=; path=/; max-age=0';
+          document.cookie = 'user_role=; path=/; max-age=0';
+          set({ token: null, user: null, isAuthenticated: false });
         }
       },
     }),

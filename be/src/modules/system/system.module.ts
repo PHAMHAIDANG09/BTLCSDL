@@ -12,4 +12,6 @@ import { SystemController } from './system.controller';
   providers: [SystemService],
   exports: [TypeOrmModule, SystemService],
 })
-export class SystemModule {}
+export class SystemModule { }
+
+

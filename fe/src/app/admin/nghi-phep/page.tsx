@@ -1,74 +1,98 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Typography, Tabs, Button, Tag, Space, Modal, Input, message, Spin, Popconfirm, Avatar, Segmented, Badge } from "antd";
-import { CheckOutlined, CloseOutlined, UserOutlined, ClockCircleOutlined, CalendarOutlined } from "@ant-design/icons";
+import {
+  Typography, Button, Tag, Space, Input,
+  message, Spin, Popconfirm, Avatar, Tabs, Badge, Tooltip,
+  theme,
+} from "antd";
+import {
+  CheckOutlined, CloseOutlined, UserOutlined, CalendarOutlined,
+  SearchOutlined, EyeOutlined,
+} from "@ant-design/icons";
+import Modal from "@/components/shared/Modal/Modal";
 import Table from "@/components/shared/Table/Table";
 import type { TableColumnsType } from "antd";
 import { LeaveService } from "@/services/leave.service";
-import { AttendanceService } from "@/services/attendance.service";
 import dayjs from "dayjs";
 
 const { Title, Text } = Typography;
 const { TextArea } = Input;
 
-export default function ApprovalPage() {
+/* ------------------------------------------------------------------ */
+/* Helpers                                                              */
+/* ------------------------------------------------------------------ */
+const getStatusBadge = (status: string) => {
+  switch (status) {
+    case "Pending":
+      return <Tag color="warning" style={{ margin: 0, fontWeight: 600 }}>Chờ duyệt</Tag>;
+    case "Approved":
+      return <Tag color="success" style={{ margin: 0, fontWeight: 600 }}>Đã duyệt</Tag>;
+    case "Rejected":
+      return <Tag color="error" style={{ margin: 0, fontWeight: 600 }}>Từ chối</Tag>;
+    default:
+      return <Tag color="default" style={{ margin: 0, fontWeight: 600 }}>{status}</Tag>;
+  }
+};
+
+const employeeRender = (nv: any) => (
+  <Space>
+    <Avatar icon={<UserOutlined />} className="bg-blue-100 text-blue-600" />
+    <span className="font-semibold text-gray-800">{nv?.HoTen}</span>
+  </Space>
+);
+
+/* ================================================================== */
+/* Page                                                                 */
+/* ================================================================== */
+export default function AdminLeavePage() {
+  const { token } = theme.useToken();
   const [leaveRequests, setLeaveRequests] = useState<any[]>([]);
-  const [otRequests, setOtRequests] = useState<any[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [viewMode, setViewMode] = useState<"pending" | "history">("pending");
+  const [loading, setLoading]             = useState(false);
+  const [viewMode, setViewMode]           = useState<"pending" | "history">("pending");
 
-  // Modal từ chối
-  const [rejectModalVisible, setRejectModalVisible] = useState(false);
-  const [rejectType, setRejectType] = useState<"leave" | "ot" | null>(null);
-  const [rejectId, setRejectId] = useState<number | null>(null);
-  const [rejectReason, setRejectReason] = useState("");
-  const [submitting, setSubmitting] = useState(false);
+  // Reject modal
+  const [rejectVisible, setRejectVisible] = useState(false);
+  const [rejectId, setRejectId]           = useState<number | null>(null);
+  const [rejectReason, setRejectReason]   = useState("");
+  const [submitting, setSubmitting]       = useState(false);
 
-  useEffect(() => {
-    fetchAllRequests();
-  }, []);
+  // Detail modal
+  const [detailVisible, setDetailVisible] = useState(false);
+  const [selectedLeave, setSelectedLeave] = useState<any>(null);
 
-  const fetchAllRequests = async () => {
+  useEffect(() => { fetchData(); }, []);
+
+  const fetchData = async () => {
     setLoading(true);
     try {
-      const [leaves, ots] = await Promise.all([
-        LeaveService.getAllLeaveRequests(),
-        AttendanceService.getAllOTRequests()
-      ]);
+      const leaves = await LeaveService.getAllLeaveRequests();
       setLeaveRequests(leaves || []);
-      setOtRequests(ots || []);
-    } catch (error) {
-      console.error(error);
-      message.error("Lỗi khi tải danh sách đơn từ");
+    } catch (err) {
+      console.error(err);
+      message.error("Lỗi khi tải danh sách đơn nghỉ phép");
     } finally {
       setLoading(false);
     }
   };
 
-  const handleApprove = async (type: "leave" | "ot", id: number) => {
+  const handleApprove = async (id: number) => {
     setLoading(true);
     try {
-      if (type === "leave") {
-        await LeaveService.approveLeave(id, "Approved");
-      } else {
-        await AttendanceService.approveOT(id, "Approved");
-      }
-      message.success("Đã phê duyệt đơn thành công!");
-      fetchAllRequests();
-    } catch (error) {
-      console.error(error);
+      await LeaveService.approveLeave(id, "Approved");
+      message.success("Đã phê duyệt đơn nghỉ phép thành công!");
+      fetchData();
+    } catch (err) {
       message.error("Lỗi khi duyệt đơn");
     } finally {
       setLoading(false);
     }
   };
 
-  const openRejectModal = (type: "leave" | "ot", id: number) => {
-    setRejectType(type);
+  const openRejectModal = (id: number) => {
     setRejectId(id);
     setRejectReason("");
-    setRejectModalVisible(true);
+    setRejectVisible(true);
   };
 
   const handleRejectConfirm = async () => {
@@ -76,307 +100,288 @@ export default function ApprovalPage() {
       message.warning("Vui lòng nhập lý do từ chối");
       return;
     }
-    
     setSubmitting(true);
     try {
-      if (rejectType === "leave") {
-        await LeaveService.approveLeave(rejectId!, "Rejected", rejectReason);
-      } else {
-        await AttendanceService.approveOT(rejectId!, "Rejected");
-      }
+      await LeaveService.approveLeave(rejectId!, "Rejected", rejectReason);
       message.success("Đã từ chối đơn thành công!");
-      setRejectModalVisible(false);
-      fetchAllRequests();
-    } catch (error) {
-      console.error(error);
+      setRejectVisible(false);
+      fetchData();
+    } catch (err) {
       message.error("Lỗi khi từ chối đơn");
     } finally {
       setSubmitting(false);
     }
   };
 
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case "Pending":
-        return <Badge status="warning" text={<Text type="warning" strong>Chờ duyệt</Text>} />;
-      case "Approved":
-        return <Badge status="success" text={<Text type="success" strong>Đã duyệt</Text>} />;
-      case "Rejected":
-        return <Badge status="error" text={<Text type="danger" strong>Từ chối</Text>} />;
-      default:
-        return <Badge status="default" text={status} />;
-    }
-  };
-
-  const employeeRender = (nv: any) => (
-    <Space>
-      <Avatar icon={<UserOutlined />} className="bg-blue-100 text-blue-600" />
-      <div>
-        <div className="font-semibold text-gray-800">{nv?.HoTen}</div>
-        <div className="text-xs text-gray-400">{nv?.MaNhanVien}</div>
+  /* ---------- Search filter helper ---------- */
+  const getColumnSearchProps = (dataIndex: string, placeholder: string) => ({
+    filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters }: any) => (
+      <div style={{ padding: 8 }} onKeyDown={(e) => e.stopPropagation()}>
+        <Input
+          placeholder={placeholder}
+          value={selectedKeys[0]}
+          onChange={(e) => setSelectedKeys(e.target.value ? [e.target.value] : [])}
+          onPressEnter={() => confirm()}
+          style={{ marginBottom: 8, display: 'block' }}
+        />
+        <Space>
+          <Button
+            type="primary"
+            onClick={() => confirm()}
+            icon={<SearchOutlined />}
+            size="small"
+            style={{ width: 90 }}
+          >
+            Tìm
+          </Button>
+          <Button
+            onClick={() => {
+              clearFilters?.();
+              confirm();
+            }}
+            size="small"
+            style={{ width: 90 }}
+          >
+            Reset
+          </Button>
+        </Space>
       </div>
-    </Space>
-  );
+    ),
+    filterIcon: (filtered: boolean) => (
+      <SearchOutlined style={{ color: filtered ? token.colorPrimary : undefined }} />
+    ),
+    onFilter: (value: any, record: any) => {
+      const searchVal = String(value).toLowerCase();
+      if (dataIndex === 'employee_name') {
+        return record.nhanVien?.HoTen?.toLowerCase().includes(searchVal);
+      }
+      if (dataIndex === 'employee_code') {
+        return record.nhanVien?.MaNhanVien?.toLowerCase().includes(searchVal);
+      }
+      return false;
+    },
+  });
 
-  const leaveColumns: TableColumnsType<any> = [
-    { 
-      title: "Nhân viên", 
-      dataIndex: "nhanVien", 
-      key: "employee", 
-      render: employeeRender
+  /* ---------- Columns ---------- */
+  const baseColumns: TableColumnsType<any> = [
+    {
+      title: "Nhân viên",
+      dataIndex: "nhanVien",
+      key: "employee",
+      width: 170,
+      ...getColumnSearchProps('employee_name', 'Tìm tên...'),
+      render: employeeRender,
     },
-    { 
-      title: "Loại phép", 
-      dataIndex: "loaiNghiPhep", 
-      key: "type", 
-      render: (item) => <Tag color="blue" bordered={false} className="px-2 py-1">{item?.TenLoaiPhep || "Khác"}</Tag>
+    {
+      title: "Mã nhân viên",
+      dataIndex: "nhanVien",
+      key: "employeeCode",
+      width: 130,
+      ...getColumnSearchProps('employee_code', 'Tìm mã...'),
+      render: (nv: any) => <Text className="font-mono text-gray-600">{nv?.MaNhanVien}</Text>,
     },
-    { 
-      title: "Thời gian nghỉ", 
-      key: "time", 
-      render: (_, r) => (
-        <Space direction="vertical" size={0}>
-          <Text>
-            <CalendarOutlined style={{ color: '#8c8c8c', marginRight: 4 }} /> 
-            {dayjs(r.NgayBatDau).format("DD/MM/YYYY")} - {dayjs(r.NgayKetThuc).format("DD/MM/YYYY")}
-          </Text>
-          <Text style={{ color: '#1890ff', fontSize: 12, fontWeight: 500 }}>
-            Tổng: {r.TongSoNgay} ngày
-          </Text>
-        </Space>
-      )
-    },
-    { 
-      title: "Lý do", 
-      dataIndex: "LyDo", 
-      key: "reason",
-      render: (text) => <Text className="italic text-gray-600">{text}</Text>
-    },
-  ];
-
-  const otColumns: TableColumnsType<any> = [
-    { 
-      title: "Nhân viên", 
-      dataIndex: "nhanVien", 
-      key: "employee", 
-      render: employeeRender
-    },
-    { 
-      title: "Thời gian làm thêm", 
-      key: "time", 
-      render: (_, r) => (
-        <Space direction="vertical" size={0}>
-          <Text strong>
-            <CalendarOutlined style={{ color: '#8c8c8c', marginRight: 4 }} />
-            {dayjs(r.NgayLamThem).format("DD/MM/YYYY")}
-          </Text>
-          <Text type="secondary" style={{ fontSize: 12 }}>
-            <ClockCircleOutlined style={{ marginRight: 4 }} />
-            {r.GioBatDau} - {r.GioKetThuc} <Text style={{ color: '#fa8c16', fontWeight: 500, marginLeft: 4 }}>({r.TongSoGio} giờ)</Text>
-          </Text>
-        </Space>
-      )
-    },
-    { 
-      title: "Phân loại", 
-      dataIndex: "LoaiOT", 
-      key: "LoaiOT", 
-      render: (l: string) => (
-        <Tag color={l === 'NgayThuong' ? 'default' : l === 'CuoiTuan' ? 'orange' : 'red'} bordered={false}>
-          {l === 'NgayThuong' ? 'Ngày thường' : l === 'CuoiTuan' ? 'Cuối tuần' : 'Ngày lễ'}
+    {
+      title: "Loại phép",
+      dataIndex: "loaiNghiPhep",
+      key: "type",
+      width: 140,
+      render: (item: any) => (
+        <Tag color="blue" bordered={false} className="px-2 py-1">
+          {item?.TenLoaiPhep || "Khác"}
         </Tag>
-      )
+      ),
     },
-    { 
-      title: "Công việc", 
-      dataIndex: "LyDo", 
-      key: "LyDo",
-      render: (text) => <Text className="italic text-gray-600">{text}</Text>
+    {
+      title: "Số ngày nghỉ",
+      dataIndex: "TongSoNgay",
+      key: "TongSoNgay",
+      width: 110,
+      align: "center" as const,
+      render: (days: number) => (
+        <Tag color="blue" bordered={false} style={{ fontWeight: 600 }}>
+          {days} ngày
+        </Tag>
+      ),
+    },
+    {
+      title: "Lý do",
+      dataIndex: "LyDo",
+      key: "reason",
+      width: 220,
+      render: (text: string) => (
+        <div className="whitespace-normal break-words">
+          <Text className="italic text-gray-600">{text}</Text>
+        </div>
+      ),
     },
   ];
 
-  // Thêm cột thao tác/trạng thái tùy theo viewMode
-  const getDynamicLeaveColumns = () => {
-    const cols = [...leaveColumns];
+  const getColumns = (): TableColumnsType<any> => {
     if (viewMode === "pending") {
-      cols.push({
-        title: "Thao tác",
-        key: "action",
-        width: 180,
-        render: (_, record) => (
-          <Space size="small">
-            <Popconfirm
-              title="Bạn có chắc chắn muốn duyệt đơn này?"
-              onConfirm={() => handleApprove("leave", record.Id)}
-              okText="Duyệt"
-              cancelText="Hủy"
-            >
-              <Button type="primary" size="small" icon={<CheckOutlined />} className="bg-green-600 hover:bg-green-500 border-none shadow-sm">Duyệt</Button>
-            </Popconfirm>
-            <Button danger size="small" icon={<CloseOutlined />} onClick={() => openRejectModal("leave", record.Id)} className="shadow-sm">Từ chối</Button>
-          </Space>
-        ),
-      });
-    } else {
-      cols.push({
+      return [
+        ...baseColumns,
+        {
+          title: "Thao tác",
+          key: "action",
+          width: 230,
+          render: (_, record) => (
+            <Space size="small">
+              <Button
+                type="default"
+                size="small"
+                icon={<EyeOutlined />}
+                onClick={() => {
+                  setSelectedLeave(record);
+                  setDetailVisible(true);
+                }}
+              >
+                Xem
+              </Button>
+              <Popconfirm
+                title="Bạn có chắc chắn muốn duyệt đơn này?"
+                onConfirm={() => handleApprove(record.Id)}
+                okText="Duyệt"
+                cancelText="Hủy"
+              >
+                <Button
+                  type="primary"
+                  size="small"
+                  icon={<CheckOutlined />}
+                  style={{ background: token.colorSuccess, borderColor: token.colorSuccess }}
+                >
+                  Duyệt
+                </Button>
+              </Popconfirm>
+              <Button
+                danger
+                size="small"
+                icon={<CloseOutlined />}
+                onClick={() => openRejectModal(record.Id)}
+              >
+                Từ chối
+              </Button>
+            </Space>
+          ),
+        },
+      ];
+    }
+    return [
+      ...baseColumns,
+      {
         title: "Trạng thái",
         key: "status",
-        width: 150,
-        render: (_, record) => (
-          <div>
-            {getStatusBadge(record.TrangThai)}
-            {record.TrangThai === "Rejected" && record.LyDoTuChoi && (
-              <div className="text-xs text-red-500 mt-1 truncate max-w-[120px]" title={record.LyDoTuChoi}>
-                Lý do: {record.LyDoTuChoi}
-              </div>
-            )}
-            <div className="text-xs text-gray-400 mt-1">
-              Duyệt: {record.NgayDuyet ? dayjs(record.NgayDuyet).format("DD/MM HH:mm") : "-"}
-            </div>
-          </div>
-        )
-      });
-    }
-    return cols;
+        width: 160,
+        render: (_, record) => getStatusBadge(record.TrangThai),
+        filters: [
+          { text: "Đã duyệt", value: "Approved" },
+          { text: "Từ chối",  value: "Rejected" },
+        ],
+        onFilter: (value: any, r: any) => r.TrangThai === value,
+      },
+    ];
   };
 
-  const getDynamicOTColumns = () => {
-    const cols = [...otColumns];
-    if (viewMode === "pending") {
-      cols.push({
-        title: "Thao tác",
-        key: "action",
-        width: 180,
-        render: (_, record) => (
-          <Space size="small">
-            <Popconfirm
-              title="Bạn có chắc chắn muốn duyệt đơn này?"
-              onConfirm={() => handleApprove("ot", record.Id)}
-              okText="Duyệt"
-              cancelText="Hủy"
-            >
-              <Button type="primary" size="small" icon={<CheckOutlined />} className="bg-green-600 hover:bg-green-500 border-none shadow-sm">Duyệt</Button>
-            </Popconfirm>
-            <Button danger size="small" icon={<CloseOutlined />} onClick={() => openRejectModal("ot", record.Id)} className="shadow-sm">Từ chối</Button>
-          </Space>
-        ),
-      });
-    } else {
-      cols.push({
-        title: "Trạng thái",
-        key: "status",
-        width: 150,
-        render: (_, record) => (
-          <div>
-            {getStatusBadge(record.TrangThai)}
-          </div>
-        )
-      });
-    }
-    return cols;
-  };
+  const pendingLeaves = leaveRequests.filter((r) => r.TrangThai === "Pending");
+  const historyLeaves = leaveRequests.filter((r) => r.TrangThai !== "Pending");
+  const displayData   = viewMode === "pending" ? pendingLeaves : historyLeaves;
 
-  const pendingLeaves = leaveRequests.filter(r => r.TrangThai === "Pending");
-  const historyLeaves = leaveRequests.filter(r => r.TrangThai !== "Pending");
-  
-  const pendingOTs = otRequests.filter(r => r.TrangThai === "Pending");
-  const historyOTs = otRequests.filter(r => r.TrangThai !== "Pending");
+  const tabItems = [
+    {
+      key: "pending",
+      label: (
+        <span>
+          Chờ xử lý
+          {pendingLeaves.length > 0 && (
+            <Badge
+              count={pendingLeaves.length}
+              style={{ marginLeft: 6 }}
+              color={token.colorError}
+            />
+          )}
+        </span>
+      ),
+    },
+    {
+      key: "history",
+      label: "Lịch sử duyệt",
+    },
+  ];
 
+  /* ─────────── RENDER ─────────── */
   return (
     <div>
-      <div className="flex justify-between items-center mb-6">
+      {/* Header */}
+      <div className="flex justify-between items-center mb-10">
         <div>
-          <Title level={2} style={{ margin: 0 }}>Quản Lý Đơn Từ</Title>
-          <Text type="secondary">Xem xét và phê duyệt các yêu cầu xin nghỉ phép, làm thêm giờ của nhân viên</Text>
+          <Title level={2} style={{ margin: 0 }} >
+            Quản Lý Nghỉ Phép
+          </Title>
+          <Text type="secondary">
+            Xem xét và phê duyệt các đơn xin nghỉ phép của nhân viên
+          </Text>
         </div>
-        <Segmented 
-          options={[
-            { label: 'Chờ xử lý', value: 'pending' },
-            { label: 'Lịch sử duyệt', value: 'history' },
-          ]} 
-          value={viewMode}
-          onChange={(val) => setViewMode(val as any)}
-          size="large"
-          className="shadow-sm"
-        />
       </div>
 
+      {/* Bảng */}
       <div className="bg-white p-5 rounded-xl shadow-sm">
+        <Tabs
+          activeKey={viewMode}
+          onChange={(val) => setViewMode(val as any)}
+          items={tabItems}
+          className="mb-4"
+        />
         <Spin spinning={loading}>
-          <Tabs 
-            defaultActiveKey="1" 
-            size="large"
-            items={[
-              {
-                key: '1',
-                label: (
-                  <span className="px-2">
-                    Đơn Nghỉ Phép 
-                    {viewMode === "pending" && pendingLeaves.length > 0 && (
-                      <Badge count={pendingLeaves.length} className="ml-2" color="#f5222d" />
-                    )}
-                  </span>
-                ),
-                children: (
-                  <div className="mt-2">
-                    <Table
-                      columns={getDynamicLeaveColumns()}
-                      dataSource={viewMode === "pending" ? pendingLeaves : historyLeaves}
-                      rowKey="Id"
-                      searchable={true}
-                      totalText="đơn"
-                      locale={{ emptyText: viewMode === "pending" ? "Không có đơn nghỉ phép nào đang chờ duyệt" : "Chưa có lịch sử duyệt đơn" }}
-                    />
-                  </div>
-                )
-              },
-              {
-                key: '2',
-                label: (
-                  <span className="px-2">
-                    Đơn Làm Thêm Giờ 
-                    {viewMode === "pending" && pendingOTs.length > 0 && (
-                      <Badge count={pendingOTs.length} className="ml-2" color="#faad14" />
-                    )}
-                  </span>
-                ),
-                children: (
-                  <div className="mt-2">
-                    <Table
-                      columns={getDynamicOTColumns()}
-                      dataSource={viewMode === "pending" ? pendingOTs : historyOTs}
-                      rowKey="Id"
-                      searchable={true}
-                      totalText="đơn"
-                      locale={{ emptyText: viewMode === "pending" ? "Không có đơn làm thêm nào đang chờ duyệt" : "Chưa có lịch sử duyệt đơn" }}
-                    />
-                  </div>
-                )
+          <Table
+            columns={getColumns()}
+            dataSource={displayData}
+            rowKey="Id"
+            searchable={false}
+            noScroll={true}
+            totalText="đơn"
+            locale={{
+              emptyText:
+                viewMode === "pending"
+                  ? "Không có đơn nghỉ phép nào đang chờ duyệt 🎉"
+                  : "Chưa có lịch sử duyệt đơn",
+            }}
+            onRow={(record) => {
+              if (viewMode === "history") {
+                return {
+                  onClick: () => {
+                    setSelectedLeave(record);
+                    setDetailVisible(true);
+                  },
+                  style: { cursor: "pointer" },
+                };
               }
-            ]} 
+              return {};
+            }}
           />
         </Spin>
       </div>
 
+      {/* Modal từ chối */}
       <Modal
         title={
           <div className="flex items-center text-red-500">
             <CloseOutlined className="mr-2" /> Xác nhận từ chối đơn
           </div>
         }
-        open={rejectModalVisible}
+        open={rejectVisible}
         onOk={handleRejectConfirm}
-        onCancel={() => setRejectModalVisible(false)}
+        onCancel={() => setRejectVisible(false)}
         confirmLoading={submitting}
         okText="Xác nhận từ chối"
-        okButtonProps={{ danger: true, className: "bg-red-500" }}
+        okButtonProps={{ danger: true }}
         cancelText="Hủy"
         centered
       >
         <div className="my-4">
-          <Text className="mb-2 block">Vui lòng nhập lý do từ chối để nhân viên biết:</Text>
-          <TextArea 
-            rows={4} 
+          <Text className="mb-2 block">
+            Vui lòng nhập lý do từ chối để nhân viên biết:
+          </Text>
+          <TextArea
+            rows={4}
             value={rejectReason}
             onChange={(e) => setRejectReason(e.target.value)}
             placeholder="Nhập lý do từ chối (VD: Do dự án đang gấp...)"
@@ -384,6 +389,104 @@ export default function ApprovalPage() {
           />
         </div>
       </Modal>
+
+      {/* Modal xem chi tiết */}
+      {selectedLeave && (
+        <Modal
+          title={
+            <div style={{ display: "flex", alignItems: "center", gap: 8, color: token.colorPrimary }}>
+              <CalendarOutlined />
+              <span>Chi Tiết Đơn Nghỉ Phép</span>
+            </div>
+          }
+          open={detailVisible}
+          onCancel={() => {
+            setDetailVisible(false);
+            setSelectedLeave(null);
+          }}
+          width={600}
+          footer={[
+            <Button
+              key="close"
+              type="primary"
+              onClick={() => {
+                setDetailVisible(false);
+                setSelectedLeave(null);
+              }}
+            >
+              Đóng
+            </Button>
+          ]}
+        >
+          <div style={{ padding: "12px 0" }}>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px 24px", marginBottom: 20 }}>
+              <div>
+                <span style={{ display: "block", color: "#8c8c8c", fontSize: 12, fontWeight: 600, textTransform: "uppercase" }}>Nhân viên</span>
+                <span style={{ fontWeight: 600, fontSize: 14 }}>{selectedLeave.nhanVien?.HoTen}</span>
+              </div>
+              <div>
+                <span style={{ display: "block", color: "#8c8c8c", fontSize: 12, fontWeight: 600, textTransform: "uppercase" }}>Mã nhân viên</span>
+                <span style={{ fontFamily: "monospace", fontSize: 14 }}>{selectedLeave.nhanVien?.MaNhanVien}</span>
+              </div>
+              <div>
+                <span style={{ display: "block", color: "#8c8c8c", fontSize: 12, fontWeight: 600, textTransform: "uppercase" }}>Phòng ban</span>
+                <span>{selectedLeave.nhanVien?.phongBan?.TenPhong || "N/A"}</span>
+              </div>
+              <div>
+                <span style={{ display: "block", color: "#8c8c8c", fontSize: 12, fontWeight: 600, textTransform: "uppercase" }}>Loại phép</span>
+                <Tag color="blue" style={{ margin: 0 }}>{selectedLeave.loaiNghiPhep?.TenLoaiPhep || "Khác"}</Tag>
+              </div>
+              <div>
+                <span style={{ display: "block", color: "#8c8c8c", fontSize: 12, fontWeight: 600, textTransform: "uppercase" }}>Thời gian nghỉ</span>
+                <span>
+                  {dayjs(selectedLeave.NgayBatDau).format("DD/MM/YYYY")} – {dayjs(selectedLeave.NgayKetThuc).format("DD/MM/YYYY")}
+                </span>
+              </div>
+              <div>
+                <span style={{ display: "block", color: "#8c8c8c", fontSize: 12, fontWeight: 600, textTransform: "uppercase" }}>Số ngày nghỉ</span>
+                <span style={{ fontWeight: 600 }}>{selectedLeave.TongSoNgay} ngày</span>
+              </div>
+              <div>
+                <span style={{ display: "block", color: "#8c8c8c", fontSize: 12, fontWeight: 600, textTransform: "uppercase" }}>Ngày tạo đơn</span>
+                <span>{selectedLeave.NgayTao ? dayjs(selectedLeave.NgayTao).format("DD/MM/YYYY HH:mm") : "—"}</span>
+              </div>
+              <div>
+                <span style={{ display: "block", color: "#8c8c8c", fontSize: 12, fontWeight: 600, textTransform: "uppercase" }}>Trạng thái</span>
+                <div>{getStatusBadge(selectedLeave.TrangThai)}</div>
+              </div>
+            </div>
+
+            <div style={{ marginBottom: 20 }}>
+              <span style={{ display: "block", color: "#8c8c8c", fontSize: 12, fontWeight: 600, textTransform: "uppercase", marginBottom: 4 }}>Lý do nghỉ</span>
+              <div style={{ background: "#f8f9fa", padding: "10px 14px", borderRadius: 8, border: "1px solid #f0f0f0", fontStyle: "italic" }}>
+                {selectedLeave.LyDo || "Không có lý do"}
+              </div>
+            </div>
+
+            {(selectedLeave.TrangThai === "Approved" || selectedLeave.TrangThai === "Rejected") && (
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px 24px", marginTop: 20, paddingTop: 16, borderTop: "1px dashed #f0f0f0" }}>
+                <div>
+                  <span style={{ display: "block", color: "#8c8c8c", fontSize: 12, fontWeight: 600, textTransform: "uppercase" }}>Người duyệt</span>
+                  <span>{selectedLeave.nguoiDuyet?.HoTen || `Quản lý (ID: ${selectedLeave.MaNguoiDuyetId || "—"})`}</span>
+                </div>
+                <div>
+                  <span style={{ display: "block", color: "#8c8c8c", fontSize: 12, fontWeight: 600, textTransform: "uppercase" }}>Thời gian duyệt</span>
+                  <span>{selectedLeave.NgayDuyet ? dayjs(selectedLeave.NgayDuyet).format("DD/MM/YYYY HH:mm") : "—"}</span>
+                </div>
+              </div>
+            )}
+
+            {selectedLeave.TrangThai === "Rejected" && selectedLeave.LyDoTuChoi && (
+              <div style={{ marginTop: 20 }}>
+                <span style={{ display: "block", color: "var(--error-color)", fontSize: 12, fontWeight: 600, textTransform: "uppercase", marginBottom: 4 }}>Lý do từ chối</span>
+                <div style={{ background: "#fff1f0", padding: "10px 14px", borderRadius: 8, border: "1px solid #ffccc7", color: "var(--error-color)" }}>
+                  {selectedLeave.LyDoTuChoi}
+                </div>
+              </div>
+            )}
+          </div>
+        </Modal>
+      )}
     </div>
   );
 }

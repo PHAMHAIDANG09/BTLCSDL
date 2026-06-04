@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Modal, Form, Input, Button, DatePicker, Select, Space, message, Tabs, InputNumber, Row, Col } from "antd";
+import { Modal, Form, Input, Button, DatePicker, Select, Space, message, Tabs, InputNumber, Row, Col, theme } from "antd";
 import { LeaveService } from "@/services/leave.service";
 import { AttendanceService } from "@/services/attendance.service";
 import dayjs from "dayjs";
@@ -18,6 +18,7 @@ interface CreateRequestModalProps {
 }
 
 export default function CreateRequestModal({ open, onCancel, onSuccess, defaultTab = '1' }: CreateRequestModalProps) {
+  const { token } = theme.useToken();
   const [leaveForm] = Form.useForm();
   const [otForm] = Form.useForm();
   const [loading, setLoading] = useState(false);
@@ -72,10 +73,10 @@ export default function CreateRequestModal({ open, onCancel, onSuccess, defaultT
     try {
       const payload = {
         NgayLamThem: values.NgayLamThem.format("YYYY-MM-DD"),
-        GioBatDau: values.GioBatDau.format("HH:mm:00"),
-        GioKetThuc: values.GioKetThuc.format("HH:mm:00"),
+        GioBatDau: values.GioBatDau.format("HH:mm"),   // BE expect "HH:mm"
+        GioKetThuc: values.GioKetThuc.format("HH:mm"),  // BE expect "HH:mm"
         TongSoGio: values.TongSoGio,
-        LoaiOT: values.LoaiOT,
+        // LoaiOT KHÔNG gửi lên — backend tự tính từ ngày (NgayThuong/CuoiTuan/NgayLe)
         LyDo: values.LyDo
       };
       
@@ -89,6 +90,7 @@ export default function CreateRequestModal({ open, onCancel, onSuccess, defaultT
       setLoading(false);
     }
   };
+
 
   const handleDateRangeChange = (dates: any) => {
     if (dates && dates.length === 2) {
@@ -192,19 +194,13 @@ export default function CreateRequestModal({ open, onCancel, onSuccess, defaultT
         </Col>
 
         <Col xs={24} md={12}>
-          <Form.Item
-            name="LoaiOT"
-            label="Loại làm thêm"
-            rules={[{ required: true, message: "Vui lòng chọn loại làm thêm" }]}
-            initialValue="NgayThuong"
-          >
-            <Select placeholder="Chọn loại OT">
-              <Select.Option value="NgayThuong">Ngày thường</Select.Option>
-              <Select.Option value="CuoiTuan">Cuối tuần</Select.Option>
-              <Select.Option value="NgayLe">Ngày lễ</Select.Option>
-            </Select>
+          <Form.Item label="Loại OT">
+            <span style={{ color: token.colorTextDescription, fontSize: 13 }}>
+              🤖 Hệ thống tự xác định (Ngày thường / Cuối tuần / Ngày lễ)
+            </span>
           </Form.Item>
         </Col>
+
 
         <Col xs={24} md={8}>
           <Form.Item

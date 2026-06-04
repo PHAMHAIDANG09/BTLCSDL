@@ -129,10 +129,10 @@ export class PayrollService {
     });
   }
 
-  async getSalaryHistory(employeeId: number) {
+  async getSalaryHistory(employeeId?: number) {
     return this.lichSuLuongRepository.find({
-      where: { MaNhanVienId: employeeId },
-      relations: ['nguoiThayDoi'],
+      where: employeeId ? { MaNhanVienId: employeeId } : undefined,
+      relations: ['nhanVien', 'nguoiThayDoi'],
       order: { NgayBatDau: 'DESC' },
     });
   }

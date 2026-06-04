@@ -64,6 +64,11 @@ const adminMenuItems = [
         icon: <UserOutlined />,
         label: <Link href="/admin/ho-so">Hồ sơ cá nhân</Link>,
       },
+      {
+        key: "notifications",
+        icon: <BellOutlined />,
+        label: <Link href="/admin/notifications">Thông báo</Link>,
+      },
     ],
   },
   {
@@ -192,6 +197,11 @@ const staffMenuItems = [
         icon: <CalendarOutlined />,
         label: <Link href="/staff/nghi-phep">Nghỉ phép</Link>,
       },
+      {
+        key: "lam-them-gio",
+        icon: <HistoryOutlined />,
+        label: <Link href="/staff/lam-them-gio">Làm thêm giờ</Link>,
+      },
     ],
   },
   {
@@ -260,7 +270,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         }}
       >
         {!collapsed ? (
-          <Space direction="vertical" align="center" size={0}>
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
             <Title level={4} style={{ margin: 0, fontWeight: 900, letterSpacing: "-1px" }}>
               NEXHR
             </Title>
@@ -274,7 +284,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             >
               {isAdmin ? "QUẢN TRỊ HỆ THỐNG" : "CỔNG NHÂN VIÊN"}
             </Text>
-          </Space>
+          </div>
         ) : (
           <Button
             type="primary"

@@ -20,7 +20,7 @@ export class EmployeeService {
     @InjectRepository(HopDong)
     private hopDongRepository: Repository<HopDong>,
     private dataSource: DataSource,
-  ) {}
+  ) { }
 
   async findAll() {
     return this.nhanVienRepository.find({

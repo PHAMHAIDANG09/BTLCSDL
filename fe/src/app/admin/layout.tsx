@@ -19,18 +19,24 @@ export default function AdminRootLayout({
 }) {
   const router = useRouter();
   const { user, isAuthenticated, logout, loadFromStorage } = useAuthStore();
+  const [isLoading, setIsLoading] = React.useState(true);
 
   // Đồng bộ từ localStorage khi hydrate (xử lý SSR)
   useEffect(() => {
     loadFromStorage();
+    setIsLoading(false);
   }, [loadFromStorage]);
 
-  // Guard: redirect nếu không phải Admin/Manager → redirect về staff
+  // Guard: redirect nếu không auth
   useEffect(() => {
-    if (isAuthenticated && user && !ADMIN_ROLES.includes(user.role)) {
-      router.replace('/staff/trang-chu');
+    if (!isLoading) {
+      if (!isAuthenticated || !user) {
+        router.push('/login');
+      } else if (!ADMIN_ROLES.includes(user.role)) {
+        router.replace('/staff/trang-chu');
+      }
     }
-  }, [isAuthenticated, user, router]);
+  }, [isLoading, isAuthenticated, user, router]);
 
   const handleLogout = () => {
     logout();
@@ -38,7 +44,7 @@ export default function AdminRootLayout({
   };
 
   // Hiển thị loading trong khi kiểm tra auth
-  if (!isAuthenticated || !user) {
+  if (isLoading || !isAuthenticated || !user) {
     return (
       <div className="flex items-center justify-center h-screen">
         <div className="text-center">

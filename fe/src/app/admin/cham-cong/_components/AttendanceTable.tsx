@@ -1,11 +1,9 @@
 "use client";
 
-import React from "react";
-
-import { Tag, Space, Tooltip, Popconfirm } from "antd";
-import { EditOutlined, EyeOutlined, DeleteOutlined } from "@ant-design/icons";
+import React, { useState } from "react";
+import { Tag, Space, Tooltip, Popconfirm, theme, Input } from "antd";
+import { EditOutlined, EyeOutlined, DeleteOutlined, SearchOutlined } from "@ant-design/icons";
 import type { TableColumnsType } from "antd";
-import { useState } from "react";
 import Button from "@/components/shared/Button/Button";
 import Table from "@/components/shared/Table/Table";
 
@@ -72,7 +70,57 @@ export default function AttendanceTable({
   rowSelection: externalRowSelection,
   onSelectionChange,
 }: AttendanceTableProps) {
+  const { token } = theme.useToken();
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
+
+  const getColumnSearchProps = (dataIndex: keyof AttendanceRecord, placeholder: string) => ({
+    filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters }: any) => (
+      <div style={{ padding: 8 }} onKeyDown={(e) => e.stopPropagation()}>
+        <Input
+          placeholder={placeholder}
+          value={selectedKeys[0]}
+          onChange={(e) => setSelectedKeys(e.target.value ? [e.target.value] : [])}
+          onPressEnter={() => confirm()}
+          style={{ marginBottom: 8, display: 'block' }}
+        />
+        <Space>
+          <Button
+            type="primary"
+            onClick={() => confirm()}
+            icon={<SearchOutlined />}
+            size="small"
+            style={{ width: 90 }}
+          >
+            Tìm
+          </Button>
+          <Button
+            onClick={() => {
+              clearFilters?.();
+              confirm();
+            }}
+            size="small"
+            style={{ width: 90 }}
+          >
+            Reset
+          </Button>
+        </Space>
+      </div>
+    ),
+    filterIcon: (filtered: boolean) => (
+      <SearchOutlined style={{ color: filtered ? token.colorPrimary : undefined }} />
+    ),
+    onFilter: (value: any, record: AttendanceRecord) => {
+      if (dataIndex === 'employeeName') {
+        const searchVal = String(value).toLowerCase();
+        return (
+          record.employeeName.toLowerCase().includes(searchVal) ||
+          record.employeeCode.toLowerCase().includes(searchVal)
+        );
+      }
+      const val = record[dataIndex];
+      return val ? String(val).toLowerCase().includes(String(value).toLowerCase()) : false;
+    },
+  });
 
   const onSelectChange = (newSelectedRowKeys: React.Key[]) => {
     setSelectedRowKeys(newSelectedRowKeys);
@@ -91,6 +139,7 @@ export default function AttendanceTable({
       width: 200,
       fixed: "left" as const,
       sorter: (a, b) => a.employeeName.localeCompare(b.employeeName),
+      ...getColumnSearchProps("employeeName", "Tìm tên hoặc mã..."),
       render: (_, record) => (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
           <span style={{ fontWeight: 600, fontSize: '14px' }}>{record.employeeName}</span>
@@ -106,6 +155,7 @@ export default function AttendanceTable({
       key: "department",
       width: 150,
       sorter: (a, b) => a.department.localeCompare(b.department),
+      ...getColumnSearchProps("department", "Tìm phòng ban..."),
     },
     {
       title: "Ngày",
@@ -154,6 +204,13 @@ export default function AttendanceTable({
       dataIndex: "status",
       key: "status",
       width: 120,
+      filters: [
+        { text: "Đúng giờ", value: "on-time" },
+        { text: "Đi muộn", value: "late" },
+        { text: "Vắng mặt", value: "absent" },
+        { text: "Nghỉ phép", value: "on-leave" },
+      ],
+      onFilter: (value, record) => record.status === value,
       render: (status: string) => (
         <Tag color={getStatusColor(status)}>{getStatusLabel(status)}</Tag>
       ),

@@ -12,8 +12,6 @@ import {
   Avatar,
   Dropdown,
   Space,
-  Badge,
-  Button,
   Tag,
   type MenuProps,
 } from "antd";
@@ -22,11 +20,14 @@ import { getEmployeeByIdApi } from "@/services/employee.service";
 import {
   UserOutlined,
   LogoutOutlined,
-  BellOutlined,
   SettingOutlined,
+  DashboardOutlined,
 } from "@ant-design/icons";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import { NotificationBell } from "@/app/staff/notifications/_components/NotificationBell";
+import { useNotificationStore } from "@/store/notificationStore";
+import { ADMIN_ROLES } from "@/constants/role";
 
 const { Header: AntHeader } = Layout;
 
@@ -61,11 +62,13 @@ const SEGMENT_MAP: Record<string, string> = {
   structure: "Cơ cấu",
   contract: "Hợp đồng",
   overtime: "Làm thêm giờ",
+  "lam-them-gio": "Làm thêm giờ",
   holiday: "Ngày lễ",
   log: "Nhật ký",
   home: "Trang chủ",
   payslip: "Phiếu lương",
   "my-requests": "Yêu cầu của tôi",
+  "nghi-phep": "Nghỉ phép",
 };
 
 const getBreadcrumbs = (
@@ -88,6 +91,12 @@ const getBreadcrumbs = (
   let path = isStaff ? "/staff" : "/admin";
   segments.forEach((segment, index) => {
     path += `/${segment}`;
+    
+    // Skip duplicate root segments (e.g. "Trang chủ / Trang chủ")
+    if ((isStaff && segment === "trang-chu") || (!isStaff && segment === "bang-dieu-khien")) {
+      return;
+    }
+
     const isLast = index === segments.length - 1;
     
     // Map segment to Vietnamese label or capitalize if not found
@@ -118,6 +127,7 @@ export const Header: React.FC<HeaderProps> = ({
   const router = useRouter();
   const [profile, setProfile] = useState<any>(null);
   const [dynamicLabels, setDynamicLabels] = useState<Record<string, string>>({});
+  const isStaffPage = pathname.startsWith("/staff");
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -132,6 +142,12 @@ export const Header: React.FC<HeaderProps> = ({
       fetchProfile();
     }
   }, [user]);
+
+  // Fetch thông báo khi mount
+  const fetchNotifications = useNotificationStore((s) => s.fetchNotifications);
+  useEffect(() => {
+    fetchNotifications();
+  }, []);
   useEffect(() => {
     const match = pathname.match(/\/cham-cong\/(\d+)$/);
     if (match) {
@@ -151,11 +167,30 @@ export const Header: React.FC<HeaderProps> = ({
     }
   }, [pathname]);
 
-  const notificationCount = 3;
+  // notificationCount handled by NotificationBell store
 
   const breadcrumbs = getBreadcrumbs(pathname, dynamicLabels);
 
+  const isAdminOrManager = user?.role && ADMIN_ROLES.includes(user.role);
+
   const userMenuItems: MenuProps["items"] = [
+    ...(isAdminOrManager ? [
+      {
+        key: "switch-portal",
+        icon: isStaffPage ? <DashboardOutlined /> : <UserOutlined />,
+        label: isStaffPage ? "Vào trang quản trị" : "Vào cổng nhân viên",
+        onClick: () => {
+          if (isStaffPage) {
+            router.push("/admin/bang-dieu-khien");
+          } else {
+            router.push("/staff/trang-chu");
+          }
+        },
+      },
+      {
+        type: "divider" as const,
+      }
+    ] : []),
     {
       key: "profile",
       icon: <UserOutlined />,
@@ -217,17 +252,8 @@ export const Header: React.FC<HeaderProps> = ({
 
       {/* Right Side: Notifications + User Menu */}
       <Space size="large">
-        {/* Notifications */}
-        <Button
-          type="text"
-          icon={
-            <Badge count={notificationCount} color="#ff4d4f">
-              <BellOutlined style={{ fontSize: "18px" }} />
-            </Badge>
-          }
-          onClick={() => router.push("/admin/notifications")}
-          className="hover:bg-gray-100"
-        />
+        {/* Notification Bell – hiển thị cho tất cả vai trò */}
+        <NotificationBell />
 
         <Dropdown menu={{ items: userMenuItems }} trigger={["click"]}>
           <div 
