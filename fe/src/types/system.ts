@@ -11,6 +11,12 @@ export interface CreateNgayLeDto {
   LapLaiHangNam: boolean;
 }
 
+export interface NguoiThucHien {
+  Id: number;
+  MaNhanVien: string;
+  HoTen: string;
+}
+
 export interface NhatKyHeThong {
   Id: number;
   TenBang: string;
@@ -20,4 +26,5 @@ export interface NhatKyHeThong {
   GiaTriMoi: string | null;
   MaNguoiThucHienId: number;
   NgayThucHien: string;
+  nguoiThucHien?: NguoiThucHien;
 }

@@ -170,10 +170,10 @@ export const NotificationBell: React.FC = () => {
     }
   };
 
-  const handleItemClick = (id: string, link: string) => {
+  const handleItemClick = (id: string, _link: string) => {
     markAsRead(id);
     setOpen(false);
-    router.push(link);
+    router.push(allNotificationsLink);
   };
 
   // Hiển thị tối đa 5 thông báo trong dropdown

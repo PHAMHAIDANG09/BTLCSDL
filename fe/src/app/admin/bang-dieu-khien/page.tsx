@@ -10,6 +10,7 @@ import {
 } from "@ant-design/icons";
 import dashboardService, { type DashboardStats } from "@/services/dashboard.service";
 import { AttendanceService } from "@/services/attendance.service";
+import StatsCard from "@/components/shared/StatsCard/StatsCard";
 import EmployeeChart from "./_components/EmployeeChart";
 import PayrollChart from "./_components/PayrollChart";
 
@@ -19,38 +20,30 @@ const STAT_CARDS = [
   {
     key: "totalEmployees",
     title: "Tổng số",
-    suffix: "nhân viên",
-    icon: <TeamOutlined style={{ fontSize: 18 }} />,
-    color: "#dc2626",
-    bg: "#fef2f2",
-    border: "#fecaca",
+    icon: <TeamOutlined />,
+    color: "var(--primary-color)",
+    bg: "var(--primary-bg)",
   },
   {
     key: "presentToday",
     title: "Có mặt hôm nay",
-    suffix: "người",
-    icon: <ClockCircleOutlined style={{ fontSize: 18 }} />,
-    color: "#16a34a",
-    bg: "#f0fdf4",
-    border: "#bbf7d0",
+    icon: <ClockCircleOutlined />,
+    color: "var(--success-color)",
+    bg: "#f6ffed",
   },
   {
     key: "pendingLeaves",
     title: "Đơn chờ duyệt",
-    suffix: "đơn",
-    icon: <FileTextOutlined style={{ fontSize: 18 }} />,
-    color: "#d97706",
-    bg: "#fffbeb",
-    border: "#fde68a",
+    icon: <FileTextOutlined />,
+    color: "var(--warning-color)",
+    bg: "#fff7e6",
   },
   {
     key: "expiringContracts",
     title: "HĐ sắp hết hạn",
-    suffix: "hợp đồng",
-    icon: <WarningOutlined style={{ fontSize: 18 }} />,
-    color: "#0284c7",
-    bg: "#f0f9ff",
-    border: "#bae6fd",
+    icon: <WarningOutlined />,
+    color: "var(--info-color)",
+    bg: "#e6f7ff",
   },
 ];
 
@@ -103,55 +96,13 @@ export default function DashboardPage() {
 
           return (
             <Col key={card.key} xs={24} sm={12} xl={6}>
-              <Card
-                bordered={false}
-                style={{
-                  background: card.bg,
-                  border: `1px solid ${card.border}`,
-                  borderRadius: 12,
-                  height: "100%",
-                  cursor: "default",
-                }}
-                styles={{ body: { padding: "18px 20px" } }}
-              >
-                {/* Icon + label row */}
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 8,
-                    marginBottom: 10,
-                  }}
-                >
-                  <span style={{ color: card.color }}>{card.icon}</span>
-                  <Text
-                    style={{
-                      color: card.color,
-                      fontWeight: 600,
-                      fontSize: 13,
-                    }}
-                  >
-                    {card.title}
-                  </Text>
-                </div>
-
-                {/* Số lớn */}
-                {loading ? (
-                  <Skeleton.Input active size="large" style={{ width: 80, height: 40 }} />
-                ) : (
-                  <div
-                    style={{
-                      fontSize: 40,
-                      fontWeight: 900,
-                      color: card.color,
-                      lineHeight: 1,
-                      fontVariantNumeric: "tabular-nums",
-                    }}
-                  >
-                    {(value ?? 0).toLocaleString("vi-VN")}
-                  </div>
-                )}
-              </Card>
+              <StatsCard
+                label={card.title}
+                value={loading ? "..." : (value ?? 0).toLocaleString("vi-VN")}
+                color={card.color}
+                bg={card.bg}
+                icon={card.icon}
+              />
             </Col>
           );
         })}
