@@ -6,7 +6,6 @@ const nextConfig: NextConfig = {
       // Admin Routes
       { source: "/admin/bang-dieu-khien", destination: "/admin/dashboard" },
       { source: "/admin/nhan-vien", destination: "/admin/employee" },
-      { source: "/admin/co-cau-to-chuc", destination: "/admin/structure" },
       { source: "/admin/hop-dong", destination: "/admin/contract" },
       { source: "/admin/nghi-phep", destination: "/admin/leave" },
       { source: "/admin/nghi-phep/:path*", destination: "/admin/leave/:path*" },

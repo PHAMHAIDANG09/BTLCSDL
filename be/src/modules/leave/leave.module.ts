@@ -15,4 +15,4 @@ import { LeaveController } from './leave.controller';
   providers: [LeaveService],
   exports: [LeaveService],
 })
-export class LeaveModule {}
+export class LeaveModule { }

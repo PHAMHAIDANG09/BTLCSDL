@@ -67,6 +67,13 @@ export class PayrollController {
     );
   }
 
+  @Get('lich-su-tat-ca')
+  @Roles('Admin', 'Manager')
+  @ApiOperation({ summary: 'Lấy toàn bộ lịch sử lương tất cả nhân viên (Admin/Manager)' })
+  getAllSalaryHistory() {
+    return this.payrollService.getSalaryHistory(); // không truyền arg → lấy tất cả
+  }
+
   @Get('lich-su/:employeeId')
   @Roles('Admin', 'Manager')
   @ApiOperation({ summary: 'Lấy lịch sử lương của nhân viên cụ thể' })
