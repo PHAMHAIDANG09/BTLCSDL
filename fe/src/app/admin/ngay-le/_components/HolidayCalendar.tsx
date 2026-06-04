@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import dayjs, { Dayjs } from "dayjs";
 import { NgayLe } from "@/types/system";
 import "dayjs/locale/vi";
+import { theme } from "antd";
 
 dayjs.locale("vi");
 
@@ -14,6 +15,7 @@ interface HolidayCalendarProps {
 const WEEKDAYS = ["T2", "T3", "T4", "T5", "T6", "T7", "CN"];
 
 export default function HolidayCalendar({ holidays = [] }: HolidayCalendarProps) {
+  const { token } = theme.useToken();
   const [currentMonth, setCurrentMonth] = useState(() => dayjs().startOf("month"));
 
   const prevMonth = () => setCurrentMonth((m) => m.subtract(1, "month"));
@@ -31,8 +33,7 @@ export default function HolidayCalendar({ holidays = [] }: HolidayCalendarProps)
   /** Build 6-row × 7-col grid of cells */
   const buildCells = (): (Dayjs | null)[] => {
     const firstDay = currentMonth.startOf("month");
-    let offset = firstDay.day(); // 0=Sun
-    offset = offset === 0 ? 6 : offset - 1; // shift so Mon=0
+    const offset = firstDay.day() === 0 ? 6 : firstDay.day() - 1; // shift so Mon=0
     const daysInMonth = currentMonth.daysInMonth();
     const cells: (Dayjs | null)[] = [];
     for (let i = 0; i < offset; i++) cells.push(null);
@@ -157,9 +158,9 @@ export default function HolidayCalendar({ holidays = [] }: HolidayCalendarProps)
           gap: 10px;
         }
         .gcal-today-btn {
-          border: 1.5px solid #d32f2f;
+          border: 1.5px solid ${token.colorPrimary};
           background: #fff;
-          color: #d32f2f;
+          color: ${token.colorPrimary};
           border-radius: 20px;
           padding: 5px 18px;
           font-size: 13px;
@@ -168,7 +169,7 @@ export default function HolidayCalendar({ holidays = [] }: HolidayCalendarProps)
           transition: all 0.18s;
           margin-right: 4px;
         }
-        .gcal-today-btn:hover { background: #d32f2f; color: #fff; }
+        .gcal-today-btn:hover { background: ${token.colorPrimary}; color: #fff; }
         .gcal-nav {
           background: none;
           border: none;
@@ -184,7 +185,7 @@ export default function HolidayCalendar({ holidays = [] }: HolidayCalendarProps)
           transition: background 0.15s;
           line-height: 1;
         }
-        .gcal-nav:hover { background: #f5f5f5; color: #d32f2f; }
+        .gcal-nav:hover { background: #f5f5f5; color: ${token.colorPrimary}; }
         .gcal-title {
           font-size: 20px;
           font-weight: 700;
@@ -202,7 +203,7 @@ export default function HolidayCalendar({ holidays = [] }: HolidayCalendarProps)
           width: 12px;
           height: 12px;
           border-radius: 50%;
-          background: #d32f2f;
+          background: ${token.colorPrimary};
           display: inline-block;
         }
 
@@ -231,7 +232,7 @@ export default function HolidayCalendar({ holidays = [] }: HolidayCalendarProps)
           letter-spacing: 0.06em;
           text-transform: uppercase;
         }
-        .gcal-sun { color: #d32f2f; }
+        .gcal-sun { color: ${token.colorPrimary}; }
 
         /* Body = 6-row grid */
         .gcal-body {
@@ -264,15 +265,15 @@ export default function HolidayCalendar({ holidays = [] }: HolidayCalendarProps)
 
         /* Holiday cell: subtle red tint */
         .gcal-cell-holiday {
-          background: #fff5f5;
+          background: ${token.colorPrimary}0A;
         }
-        .gcal-cell-holiday:hover { background: #ffebeb; }
+        .gcal-cell-holiday:hover { background: ${token.colorPrimary}1A; }
 
         /* Today cell */
         .gcal-cell-today {
-          background: #e8f4fd !important;
+          background: ${token.colorInfo}1A !important;
         }
-        .gcal-cell-today:hover { background: #d6ecf9 !important; }
+        .gcal-cell-today:hover { background: ${token.colorInfo}33 !important; }
 
         /* Day number */
         .gcal-daynum {
@@ -289,17 +290,17 @@ export default function HolidayCalendar({ holidays = [] }: HolidayCalendarProps)
           align-self: flex-start;
         }
         .gcal-daynum-today {
-          background: #1a73e8;
+          background: ${token.colorInfo};
           color: #fff !important;
           font-weight: 700;
         }
         .gcal-daynum-holiday {
-          background: #d32f2f;
+          background: ${token.colorPrimary};
           color: #fff !important;
           font-weight: 700;
-          box-shadow: 0 2px 8px rgba(211,47,47,0.35);
+          box-shadow: 0 2px 8px ${token.colorPrimary}59;
         }
-        .gcal-daynum-sun { color: #d32f2f; }
+        .gcal-daynum-sun { color: ${token.colorPrimary}; }
 
         /* Event pill (holiday label inside cell) */
         .gcal-events {
@@ -321,13 +322,13 @@ export default function HolidayCalendar({ holidays = [] }: HolidayCalendarProps)
           width: 7px;
           height: 7px;
           border-radius: 50%;
-          background: #d32f2f;
+          background: ${token.colorPrimary};
           flex-shrink: 0;
         }
         .gcal-event-name {
           font-size: 11px;
           font-weight: 400;
-          color: #c62828;
+          color: ${token.colorPrimary};
           white-space: nowrap;
           overflow: hidden;
           text-overflow: ellipsis;

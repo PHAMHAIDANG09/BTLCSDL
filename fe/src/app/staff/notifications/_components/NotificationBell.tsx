@@ -10,7 +10,7 @@
  */
 
 import React, { useEffect, useRef, useState } from "react";
-import { Badge, Button, Dropdown, Empty, Spin, Tag } from "antd";
+import { Badge, Button, Dropdown, Empty, Spin, Tag, theme, Flex, Space, Card, Typography } from "antd";
 import {
   BellOutlined,
   CheckOutlined,
@@ -20,51 +20,52 @@ import {
   ReloadOutlined,
 } from "@ant-design/icons";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { useNotificationStore } from "@/store/notificationStore";
 import { relativeTime } from "@/services/notification.service";
 import type { AppNotification, NotificationType } from "@/types/notification";
 
+const { Text } = Typography;
+
 /* ------------------------------------------------------------------ */
 /* Icon & màu theo loại thông báo                                       */
 /* ------------------------------------------------------------------ */
-const typeConfig: Record<
-  NotificationType,
-  { icon: React.ReactNode; color: string; tagColor: string }
-> = {
-  leave_approved: {
-    icon: <CalendarOutlined />,
-    color: "#52c41a",
-    tagColor: "success",
-  },
-  leave_rejected: {
-    icon: <CalendarOutlined />,
-    color: "#ff4d4f",
-    tagColor: "error",
-  },
-  ot_approved: {
-    icon: <ClockCircleOutlined />,
-    color: "#1677ff",
-    tagColor: "processing",
-  },
-  ot_rejected: {
-    icon: <ClockCircleOutlined />,
-    color: "#ff4d4f",
-    tagColor: "error",
-  },
-  payslip: {
-    icon: <DollarOutlined />,
-    color: "#faad14",
-    tagColor: "warning",
-  },
+const getTypeLabel = (type: NotificationType) => {
+  const map: Record<NotificationType, string> = {
+    leave_approved: "Nghỉ phép",
+    leave_rejected: "Nghỉ phép",
+    ot_approved: "Làm thêm",
+    ot_rejected: "Làm thêm",
+    payslip: "Lương",
+  };
+  return map[type] || "Thông báo";
 };
 
-const typeLabel: Record<NotificationType, string> = {
-  leave_approved: "Nghỉ phép",
-  leave_rejected: "Nghỉ phép",
-  ot_approved: "Làm thêm",
-  ot_rejected: "Làm thêm",
-  payslip: "Lương",
+const getTypeTagColor = (type: NotificationType) => {
+  const map: Record<NotificationType, string> = {
+    leave_approved: "success",
+    leave_rejected: "error",
+    ot_approved: "processing",
+    ot_rejected: "error",
+    payslip: "warning",
+  };
+  return map[type] || "default";
+};
+
+const getTypeColor = (type: NotificationType, token: any) => {
+  switch (type) {
+    case "leave_approved":
+      return token.colorSuccess;
+    case "leave_rejected":
+    case "ot_rejected":
+      return token.colorError;
+    case "ot_approved":
+      return token.colorInfo;
+    case "payslip":
+      return token.colorWarning;
+    default:
+      return token.colorPrimary;
+  }
 };
 
 /* ------------------------------------------------------------------ */
@@ -76,94 +77,67 @@ interface NotificationItemProps {
 }
 
 const NotificationItem: React.FC<NotificationItemProps> = ({ item, onRead }) => {
-  const cfg = typeConfig[item.type];
+  const { token } = theme.useToken();
+  const color = getTypeColor(item.type, token);
+  const tagColor = getTypeTagColor(item.type);
+  const label = getTypeLabel(item.type);
+
   return (
-    <div
-      onClick={() => onRead(item.id, item.link)}
-      style={{
-        display: "flex",
-        gap: 12,
-        padding: "12px 16px",
-        cursor: "pointer",
-        background: item.read ? "transparent" : "#f0f7ff",
-        borderLeft: item.read ? "3px solid transparent" : `3px solid ${cfg.color}`,
-        transition: "background 0.2s",
-      }}
-      className="hover:bg-gray-50"
-    >
-      {/* Icon vòng tròn */}
-      <div
+    <div onClick={() => onRead(item.id, item.link)} style={{ cursor: "pointer" }}>
+      <Flex
+        gap={12}
+        align="start"
         style={{
-          width: 36,
-          height: 36,
-          borderRadius: "50%",
-          background: `${cfg.color}18`,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          color: cfg.color,
-          fontSize: 16,
-          flexShrink: 0,
+          padding: "12px 16px",
+          background: item.read ? "transparent" : token.colorInfoBg,
+          borderBottom: `1px solid ${token.colorBorderSecondary}`,
+          transition: "background 0.2s",
         }}
       >
-        {cfg.icon}
-      </div>
+        {/* Nội dung */}
+        <Flex vertical style={{ flex: 1, minWidth: 0 }}>
+          <Text
+            style={{
+              fontWeight: item.read ? 400 : 600,
+              fontSize: 13,
+              color: token.colorText,
+              lineHeight: 1.4,
+              marginBottom: 2,
+            }}
+          >
+            {item.title}
+          </Text>
+          <Text
+            style={{
+              fontSize: 12,
+              color: token.colorTextDescription,
+              lineHeight: 1.4,
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap",
+            }}
+          >
+            {item.description}
+          </Text>
+          <Flex align="center" gap={6} style={{ marginTop: 4 }}>
+            <Tag color={tagColor} style={{ margin: 0, fontSize: 10 }}>
+              {label}
+            </Tag>
+            <Text type="secondary" style={{ fontSize: 11 }}>
+              {relativeTime(item.time)}
+            </Text>
+          </Flex>
+        </Flex>
 
-      {/* Nội dung */}
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <div
-          style={{
-            fontWeight: item.read ? 400 : 600,
-            fontSize: 13,
-            color: "#1a1a2e",
-            lineHeight: 1.4,
-            marginBottom: 2,
-          }}
-        >
-          {item.title}
-        </div>
-        <div
-          style={{
-            fontSize: 12,
-            color: "#666",
-            lineHeight: 1.4,
-            overflow: "hidden",
-            textOverflow: "ellipsis",
-            whiteSpace: "nowrap",
-          }}
-        >
-          {item.description}
-        </div>
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 6,
-            marginTop: 4,
-          }}
-        >
-          <Tag color={cfg.tagColor} style={{ margin: 0, fontSize: 10 }}>
-            {typeLabel[item.type]}
-          </Tag>
-          <span style={{ fontSize: 11, color: "#999" }}>
-            {relativeTime(item.time)}
-          </span>
-        </div>
-      </div>
-
-      {/* Dot chưa đọc */}
-      {!item.read && (
-        <div
-          style={{
-            width: 8,
-            height: 8,
-            borderRadius: "50%",
-            background: cfg.color,
-            flexShrink: 0,
-            marginTop: 4,
-          }}
-        />
-      )}
+        {/* Dot chưa đọc */}
+        {!item.read && (
+          <Badge
+            status="processing"
+            color={color}
+            style={{ flexShrink: 0, marginTop: 4 }}
+          />
+        )}
+      </Flex>
     </div>
   );
 };
@@ -172,7 +146,11 @@ const NotificationItem: React.FC<NotificationItemProps> = ({ item, onRead }) => 
 /* NotificationBell (main export)                                       */
 /* ------------------------------------------------------------------ */
 export const NotificationBell: React.FC = () => {
+  const { token } = theme.useToken();
   const router = useRouter();
+  const pathname = usePathname();
+  const isAdmin = pathname.startsWith("/admin");
+  const allNotificationsLink = isAdmin ? "/admin/notifications" : "/staff/notifications";
   const [open, setOpen] = useState(false);
   const { notifications, unreadCount, isLoading, fetchNotifications, markAsRead, markAllAsRead } =
     useNotificationStore();
@@ -202,48 +180,40 @@ export const NotificationBell: React.FC = () => {
   const preview = notifications.slice(0, 5);
 
   const dropdownContent = (
-    <div
+    <Card
       style={{
         width: 360,
-        background: "#fff",
-        borderRadius: 12,
         boxShadow: "0 8px 32px rgba(0,0,0,0.12)",
         overflow: "hidden",
-        border: "1px solid #f0f0f0",
+        border: `1px solid ${token.colorBorderSecondary}`,
+        borderRadius: 12,
       }}
+      styles={{ body: { padding: 0 } }}
     >
       {/* Header dropdown */}
-      <div
+      <Flex
+        align="center"
+        justify="space-between"
         style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
           padding: "14px 16px",
-          borderBottom: "1px solid #f5f5f5",
+          borderBottom: `1px solid ${token.colorBorderSecondary}`,
           background: "linear-gradient(135deg, #667eea08 0%, #764ba208 100%)",
         }}
       >
-        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <BellOutlined style={{ color: "#1677ff", fontSize: 16 }} />
-          <span style={{ fontWeight: 700, fontSize: 15, color: "#1a1a2e" }}>
+        <Flex align="center" gap={8}>
+          <BellOutlined style={{ color: token.colorPrimary, fontSize: 16 }} />
+          <Text style={{ fontWeight: 700, fontSize: 15, color: token.colorText }}>
             Thông báo
-          </span>
+          </Text>
           {unreadCount > 0 && (
-            <span
-              style={{
-                background: "#ff4d4f",
-                color: "#fff",
-                borderRadius: 10,
-                padding: "1px 7px",
-                fontSize: 11,
-                fontWeight: 700,
-              }}
-            >
-              {unreadCount}
-            </span>
+            <Badge
+              count={unreadCount}
+              color={token.colorError}
+              style={{ fontSize: 11 }}
+            />
           )}
-        </div>
-        <div style={{ display: "flex", gap: 4 }}>
+        </Flex>
+        <Space size={4}>
           {unreadCount > 0 && (
             <Button
               type="text"
@@ -253,7 +223,7 @@ export const NotificationBell: React.FC = () => {
                 e.stopPropagation();
                 markAllAsRead();
               }}
-              style={{ fontSize: 12, color: "#1677ff" }}
+              style={{ fontSize: 12, color: token.colorPrimary }}
             >
               Đọc tất cả
             </Button>
@@ -268,67 +238,71 @@ export const NotificationBell: React.FC = () => {
               useNotificationStore.setState({ lastFetchedAt: null });
               fetchNotifications();
             }}
-            style={{ color: "#999" }}
+            style={{ color: token.colorTextDescription }}
           />
-        </div>
-      </div>
+        </Space>
+      </Flex>
 
       {/* Danh sách */}
       <div style={{ maxHeight: 360, overflowY: "auto" }}>
         {isLoading && notifications.length === 0 ? (
-          <div style={{ padding: "32px 0", textAlign: "center" }}>
+          <Flex vertical align="center" justify="center" style={{ padding: "32px 0" }}>
             <Spin size="default" />
-            <div style={{ marginTop: 8, color: "#999", fontSize: 13 }}>
+            <Text style={{ marginTop: 8, color: token.colorTextDescription, fontSize: 13 }}>
               Đang tải thông báo...
-            </div>
-          </div>
+            </Text>
+          </Flex>
         ) : preview.length === 0 ? (
           <div style={{ padding: "32px 16px" }}>
             <Empty
               image={Empty.PRESENTED_IMAGE_SIMPLE}
               description={
-                <span style={{ color: "#999", fontSize: 13 }}>
+                <Text style={{ color: token.colorTextDescription, fontSize: 13 }}>
                   Chưa có thông báo nào
-                </span>
+                </Text>
               }
             />
           </div>
         ) : (
-          <div>
+          <Flex vertical>
             {preview.map((item, idx) => (
               <div key={item.id}>
                 <NotificationItem item={item} onRead={handleItemClick} />
                 {idx < preview.length - 1 && (
-                  <div style={{ borderBottom: "1px solid #f5f5f5" }} />
+                  <div style={{ borderBottom: `1px solid ${token.colorBorderSecondary}` }} />
                 )}
               </div>
             ))}
-          </div>
+          </Flex>
         )}
       </div>
 
       {/* Footer */}
-      <div
+      <Flex
+        justify="center"
+        align="center"
         style={{
-          borderTop: "1px solid #f5f5f5",
+          borderTop: `1px solid ${token.colorBorderSecondary}`,
           padding: "10px 16px",
-          textAlign: "center",
         }}
       >
-        <Link
-          href="/staff/notifications"
-          onClick={() => setOpen(false)}
+        <Button
+          type="link"
+          onClick={() => {
+            setOpen(false);
+            router.push(allNotificationsLink);
+          }}
           style={{
             fontSize: 13,
-            color: "#1677ff",
             fontWeight: 500,
-            textDecoration: "none",
+            padding: 0,
+            height: "auto",
           }}
         >
           Xem tất cả thông báo →
-        </Link>
-      </div>
-    </div>
+        </Button>
+      </Flex>
+    </Card>
   );
 
   return (
@@ -342,7 +316,7 @@ export const NotificationBell: React.FC = () => {
       <Badge
         count={unreadCount}
         size="small"
-        color="#ff4d4f"
+        color={token.colorError}
         overflowCount={99}
         style={{ cursor: "pointer" }}
       >
@@ -352,7 +326,7 @@ export const NotificationBell: React.FC = () => {
             <BellOutlined
               style={{
                 fontSize: 18,
-                color: unreadCount > 0 ? "#1677ff" : "#595959",
+                color: unreadCount > 0 ? token.colorPrimary : token.colorTextDescription,
                 transition: "color 0.2s",
               }}
             />

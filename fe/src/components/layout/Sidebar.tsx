@@ -64,6 +64,11 @@ const adminMenuItems = [
         icon: <UserOutlined />,
         label: <Link href="/admin/ho-so">Hồ sơ cá nhân</Link>,
       },
+      {
+        key: "notifications",
+        icon: <BellOutlined />,
+        label: <Link href="/admin/notifications">Thông báo</Link>,
+      },
     ],
   },
   {

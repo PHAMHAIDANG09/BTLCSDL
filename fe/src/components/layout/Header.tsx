@@ -21,11 +21,13 @@ import {
   UserOutlined,
   LogoutOutlined,
   SettingOutlined,
+  DashboardOutlined,
 } from "@ant-design/icons";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { NotificationBell } from "@/app/staff/notifications/_components/NotificationBell";
 import { useNotificationStore } from "@/store/notificationStore";
+import { ADMIN_ROLES } from "@/constants/role";
 
 const { Header: AntHeader } = Layout;
 
@@ -135,13 +137,11 @@ export const Header: React.FC<HeaderProps> = ({
     }
   }, [user]);
 
-  // Fetch thông báo khi là Staff
+  // Fetch thông báo khi mount
   const fetchNotifications = useNotificationStore((s) => s.fetchNotifications);
   useEffect(() => {
-    if (isStaffPage) {
-      fetchNotifications();
-    }
-  }, [isStaffPage]);
+    fetchNotifications();
+  }, []);
   useEffect(() => {
     const match = pathname.match(/\/cham-cong\/(\d+)$/);
     if (match) {
@@ -165,7 +165,26 @@ export const Header: React.FC<HeaderProps> = ({
 
   const breadcrumbs = getBreadcrumbs(pathname, dynamicLabels);
 
+  const isAdminOrManager = user?.role && ADMIN_ROLES.includes(user.role);
+
   const userMenuItems: MenuProps["items"] = [
+    ...(isAdminOrManager ? [
+      {
+        key: "switch-portal",
+        icon: isStaffPage ? <DashboardOutlined /> : <UserOutlined />,
+        label: isStaffPage ? "Vào trang quản trị" : "Vào cổng nhân viên",
+        onClick: () => {
+          if (isStaffPage) {
+            router.push("/admin/bang-dieu-khien");
+          } else {
+            router.push("/staff/trang-chu");
+          }
+        },
+      },
+      {
+        type: "divider" as const,
+      }
+    ] : []),
     {
       key: "profile",
       icon: <UserOutlined />,
@@ -227,8 +246,8 @@ export const Header: React.FC<HeaderProps> = ({
 
       {/* Right Side: Notifications + User Menu */}
       <Space size="large">
-        {/* Notification Bell – chỉ hiện với Staff */}
-        {isStaffPage && <NotificationBell />}
+        {/* Notification Bell – hiển thị cho tất cả vai trò */}
+        <NotificationBell />
 
         <Dropdown menu={{ items: userMenuItems }} trigger={["click"]}>
           <div 

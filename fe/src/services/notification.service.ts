@@ -83,8 +83,8 @@ export const NotificationService = {
             type,
             title:
               status === 'Approved'
-                ? '✅ Đơn nghỉ phép được duyệt'
-                : '❌ Đơn nghỉ phép bị từ chối',
+                ? 'Đơn nghỉ phép được duyệt'
+                : 'Đơn nghỉ phép bị từ chối',
             description:
               status === 'Approved'
                 ? `${tenLoaiPhep} từ ${from} đến ${to} đã được phê duyệt.`
@@ -118,8 +118,8 @@ export const NotificationService = {
             type,
             title:
               status === 'Approved'
-                ? '✅ Đơn làm thêm giờ được duyệt'
-                : '❌ Đơn làm thêm giờ bị từ chối',
+                ? 'Đơn làm thêm giờ được duyệt'
+                : 'Đơn làm thêm giờ bị từ chối',
             description:
               status === 'Approved'
                 ? `OT ngày ${ngay} (${ot.TongSoGio}h) đã được phê duyệt.`
@@ -152,7 +152,7 @@ export const NotificationService = {
           notifications.push({
             id,
             type: 'payslip',
-            title: '💰 Phiếu lương đã sẵn sàng',
+            title: 'Phiếu lương đã sẵn sàng',
             description: `Phiếu lương tháng ${slip.Thang}/${slip.Nam} — Thực nhận: ${soTien}đ`,
             time,
             link: '/staff/phieu-luong',

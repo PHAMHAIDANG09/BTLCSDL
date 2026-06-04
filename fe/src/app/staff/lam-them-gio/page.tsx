@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import {
   Typography, Tag, Button, message, Spin, Badge, Space,
   Modal, Form, DatePicker, Input, InputNumber, Row, Col, Tooltip,
+  theme,
 } from "antd";
 import {
   PlusOutlined,
@@ -52,6 +53,7 @@ const getLoaiOTTag = (loai: string) => {
 /* Page                                                                 */
 /* ================================================================== */
 export default function StaffOvertimePage() {
+  const { token } = theme.useToken();
   const [otForm] = Form.useForm();
   const [otRequests, setOtRequests] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
@@ -117,7 +119,7 @@ export default function StaffOvertimePage() {
       render: (_, r) => (
         <Space direction="vertical" size={0}>
           <Text strong>
-            <CalendarOutlined style={{ color: "#8c8c8c", marginRight: 6 }} />
+            <CalendarOutlined style={{ color: token.colorTextDescription, marginRight: 6 }} />
             {dayjs(r.NgayLamThem).format("DD/MM/YYYY")}
           </Text>
           <Text type="secondary" style={{ fontSize: 12 }}>
@@ -155,7 +157,7 @@ export default function StaffOvertimePage() {
       width: 100,
       align: "center" as const,
       render: (h: number) => (
-        <Text style={{ color: "#fa8c16", fontWeight: 600 }}>×{h}</Text>
+        <Text style={{ color: token.colorWarning, fontWeight: 600 }}>×{h}</Text>
       ),
     },
     {
@@ -180,7 +182,7 @@ export default function StaffOvertimePage() {
             <Text type="secondary" style={{ fontSize: 12 }}>
               {dayjs(d).format("DD/MM/YYYY")}
               <br />
-              <span style={{ color: "#1677ff" }}>{dayjs(d).format("HH:mm")}</span>
+              <span style={{ color: token.colorInfo }}>{dayjs(d).format("HH:mm")}</span>
             </Text>
           </Tooltip>
         ) : "—",
@@ -220,7 +222,7 @@ export default function StaffOvertimePage() {
           icon={<PlusOutlined />}
           className="shadow-sm"
           onClick={() => setModalOpen(true)}
-          style={{ background: "#fa8c16", borderColor: "#fa8c16" }}
+          style={{ background: token.colorWarning, borderColor: token.colorWarning }}
         >
           Đăng ký OT
         </Button>
@@ -245,7 +247,7 @@ export default function StaffOvertimePage() {
       <Modal
         title={
           <span style={{ fontWeight: 700, fontSize: 18 }}>
-            <HistoryOutlined style={{ marginRight: 8, color: "#fa8c16" }} />
+            <HistoryOutlined style={{ marginRight: 8, color: token.colorWarning }} />
             Đăng Ký Làm Thêm Giờ
           </span>
         }
@@ -277,7 +279,7 @@ export default function StaffOvertimePage() {
             {/* Loại OT - tự động */}
             <Col xs={24} md={12}>
               <Form.Item label="Phân loại OT">
-                <span style={{ color: "#888", fontSize: 13 }}>
+                <span style={{ color: token.colorTextDescription, fontSize: 13 }}>
                   🤖 Hệ thống tự xác định dựa theo ngày
                   <br />
                   <span style={{ fontSize: 11 }}>
@@ -358,7 +360,7 @@ export default function StaffOvertimePage() {
               type="primary"
               htmlType="submit"
               loading={submitting}
-              style={{ background: "#fa8c16", borderColor: "#fa8c16" }}
+              style={{ background: token.colorWarning, borderColor: token.colorWarning }}
             >
               Gửi đơn OT
             </Button>

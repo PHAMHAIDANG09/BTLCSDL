@@ -14,6 +14,10 @@ import {
   Skeleton,
   Tag,
   Typography,
+  theme,
+  Flex,
+  Space,
+  Card,
 } from "antd";
 import {
   BellOutlined,
@@ -33,51 +37,49 @@ const { Text } = Typography;
 /* ------------------------------------------------------------------ */
 /* Cấu hình theo loại thông báo                                         */
 /* ------------------------------------------------------------------ */
-const typeConfig: Record<
-  NotificationType,
-  {
-    icon: React.ReactNode;
-    color: string;
-    tagColor: string;
-    label: string;
+const getTypeLabel = (type: NotificationType) => {
+  const map: Record<NotificationType, string> = {
+    leave_approved: "Nghỉ phép",
+    leave_rejected: "Nghỉ phép",
+    ot_approved: "Làm thêm",
+    ot_rejected: "Làm thêm",
+    payslip: "Lương",
+  };
+  return map[type] || "Thông báo";
+};
+
+const getTypeTagColor = (type: NotificationType) => {
+  const map: Record<NotificationType, string> = {
+    leave_approved: "success",
+    leave_rejected: "error",
+    ot_approved: "processing",
+    ot_rejected: "error",
+    payslip: "warning",
+  };
+  return map[type] || "default";
+};
+
+const getTypeColor = (type: NotificationType, token: any) => {
+  switch (type) {
+    case "leave_approved":
+      return token.colorSuccess;
+    case "leave_rejected":
+    case "ot_rejected":
+      return token.colorError;
+    case "ot_approved":
+      return token.colorInfo;
+    case "payslip":
+      return token.colorWarning;
+    default:
+      return token.colorPrimary;
   }
-> = {
-  leave_approved: {
-    icon: <CalendarOutlined />,
-    color: "#52c41a",
-    tagColor: "success",
-    label: "Nghỉ phép",
-  },
-  leave_rejected: {
-    icon: <CalendarOutlined />,
-    color: "#ff4d4f",
-    tagColor: "error",
-    label: "Nghỉ phép",
-  },
-  ot_approved: {
-    icon: <ClockCircleOutlined />,
-    color: "#1677ff",
-    tagColor: "processing",
-    label: "Làm thêm",
-  },
-  ot_rejected: {
-    icon: <ClockCircleOutlined />,
-    color: "#ff4d4f",
-    tagColor: "error",
-    label: "Làm thêm",
-  },
-  payslip: {
-    icon: <DollarOutlined />,
-    color: "#faad14",
-    tagColor: "warning",
-    label: "Lương",
-  },
 };
 
 /* ------------------------------------------------------------------ */
 /* NotificationList                                                     */
 /* ------------------------------------------------------------------ */
 export const NotificationList: React.FC = () => {
+  const { token } = theme.useToken();
   const router = useRouter();
   const {
     notifications,
@@ -102,58 +104,56 @@ export const NotificationList: React.FC = () => {
 
   if (isLoading && notifications.length === 0) {
     return (
-      <div style={{ padding: "0 4px" }}>
+      <Flex vertical gap={10} style={{ padding: "0 4px" }}>
         {[1, 2, 3, 4].map((i) => (
-          <div
+          <Card
             key={i}
-            style={{
-              background: "#fff",
-              borderRadius: 12,
-              padding: "16px 20px",
-              marginBottom: 10,
-              border: "1px solid #f0f0f0",
-            }}
+            bordered
+            style={{ borderRadius: 12 }}
+            styles={{ body: { padding: "16px 20px" } }}
           >
-            <Skeleton avatar active paragraph={{ rows: 2 }} />
-          </div>
+            <Skeleton active paragraph={{ rows: 2 }} />
+          </Card>
         ))}
-      </div>
+      </Flex>
     );
   }
 
   if (notifications.length === 0) {
     return (
-      <div
+      <Card
+        bordered
         style={{
-          background: "#fff",
           borderRadius: 16,
-          padding: "60px 24px",
-          textAlign: "center",
-          border: "1px solid #f0f0f0",
+        }}
+        styles={{
+          body: {
+            padding: "60px 24px",
+            textAlign: "center",
+          },
         }}
       >
         <Empty
           image={
             <BellOutlined
-              style={{ fontSize: 64, color: "#d9d9d9" }}
+              style={{ fontSize: 64, color: token.colorTextDisabled }}
             />
           }
           imageStyle={{ height: "auto" }}
           description={
-            <div>
-              <div
+            <Flex vertical gap={8} align="center">
+              <Text
                 style={{
                   fontSize: 16,
                   fontWeight: 600,
-                  color: "#8c8c8c",
-                  marginBottom: 8,
+                  color: token.colorTextSecondary,
                 }}
               >
                 Chưa có thông báo nào
-              </div>
-              <div style={{ fontSize: 13, color: "#bfbfbf", marginBottom: 16 }}>
+              </Text>
+              <Text style={{ fontSize: 13, color: token.colorTextDescription, marginBottom: 16 }}>
                 Thông báo sẽ xuất hiện khi đơn của bạn được xử lý
-              </div>
+              </Text>
               <Button
                 icon={<ReloadOutlined />}
                 onClick={handleRefresh}
@@ -161,37 +161,30 @@ export const NotificationList: React.FC = () => {
               >
                 Làm mới
               </Button>
-            </div>
+            </Flex>
           }
         />
-      </div>
+      </Card>
     );
   }
 
   return (
     <div>
       {/* Toolbar */}
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          marginBottom: 16,
-        }}
-      >
-        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <Text style={{ color: "#595959", fontSize: 14 }}>
+      <Flex justify="space-between" align="center" style={{ marginBottom: 16 }}>
+        <Space size={10} align="center">
+          <Text style={{ color: token.colorTextSecondary, fontSize: 14 }}>
             {notifications.length} thông báo
           </Text>
           {unreadCount > 0 && (
             <Badge
               count={`${unreadCount} chưa đọc`}
-              color="#1677ff"
+              color={token.colorPrimary}
               style={{ fontSize: 11 }}
             />
           )}
-        </div>
-        <div style={{ display: "flex", gap: 8 }}>
+        </Space>
+        <Space size={8}>
           {unreadCount > 0 && (
             <Button
               size="small"
@@ -209,105 +202,70 @@ export const NotificationList: React.FC = () => {
             onClick={handleRefresh}
             style={{ borderRadius: 8, fontSize: 12 }}
           />
-        </div>
-      </div>
+        </Space>
+      </Flex>
 
       {/* Danh sách */}
       <List
         dataSource={notifications}
         renderItem={(item) => {
-          const cfg = typeConfig[item.type];
+          const tagColor = getTypeTagColor(item.type);
+          const label = getTypeLabel(item.type);
+          const color = getTypeColor(item.type, token);
           return (
             <List.Item
               key={item.id}
               onClick={() => handleItemClick(item)}
               style={{
-                background: item.read ? "#fff" : "#f0f7ff",
+                background: item.read ? "#fff" : token.colorInfoBg,
                 borderRadius: 12,
                 marginBottom: 10,
                 padding: "16px 20px",
-                border: item.read
-                  ? "1px solid #f0f0f0"
-                  : `1px solid ${cfg.color}33`,
-                borderLeft: `4px solid ${item.read ? "#f0f0f0" : cfg.color}`,
+                border: item.read ? `1px solid ${token.colorBorderSecondary}` : `1px solid ${token.colorPrimaryBg}`,
                 cursor: "pointer",
                 transition: "all 0.2s ease",
                 boxShadow: item.read
                   ? "none"
-                  : "0 2px 8px rgba(22,119,255,0.08)",
+                  : "0 2px 8px rgba(22,119,255,0.04)",
               }}
               className="notification-item"
             >
               <List.Item.Meta
-                avatar={
-                  <div
-                    style={{
-                      width: 44,
-                      height: 44,
-                      borderRadius: "50%",
-                      background: `${cfg.color}18`,
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      color: cfg.color,
-                      fontSize: 20,
-                      flexShrink: 0,
-                    }}
-                  >
-                    {cfg.icon}
-                  </div>
-                }
                 title={
-                  <div
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 8,
-                      flexWrap: "wrap",
-                    }}
-                  >
-                    <span
+                  <Flex align="center" gap={8} wrap="wrap">
+                    <Text
                       style={{
                         fontWeight: item.read ? 500 : 700,
                         fontSize: 14,
-                        color: "#1a1a2e",
+                        color: token.colorText,
                       }}
                     >
                       {item.title}
-                    </span>
-                    <Tag color={cfg.tagColor} style={{ margin: 0, fontSize: 11 }}>
-                      {cfg.label}
+                    </Text>
+                    <Tag color={tagColor} style={{ margin: 0, fontSize: 11 }}>
+                      {label}
                     </Tag>
                     {!item.read && (
-                      <span
-                        style={{
-                          width: 8,
-                          height: 8,
-                          borderRadius: "50%",
-                          background: cfg.color,
-                          display: "inline-block",
-                        }}
-                      />
+                      <Badge status="processing" color={color} style={{ marginInlineStart: 4 }} />
                     )}
-                  </div>
+                  </Flex>
                 }
                 description={
-                  <div>
-                    <div
+                  <Flex vertical gap={6}>
+                    <Text
                       style={{
                         fontSize: 13,
-                        color: "#595959",
-                        marginBottom: 6,
+                        color: token.colorTextSecondary,
                         lineHeight: 1.5,
                       }}
                     >
                       {item.description}
-                    </div>
+                    </Text>
                     <Text
                       type="secondary"
                       style={{ fontSize: 12 }}
                     >
-                      🕐 {relativeTime(item.time)} &nbsp;·&nbsp;{" "}
+                      {relativeTime(item.time)} &nbsp;·&nbsp;{" "}
                       {item.time.toLocaleDateString("vi-VN", {
                         day: "2-digit",
                         month: "2-digit",
@@ -316,7 +274,7 @@ export const NotificationList: React.FC = () => {
                         minute: "2-digit",
                       })}
                     </Text>
-                  </div>
+                  </Flex>
                 }
               />
             </List.Item>

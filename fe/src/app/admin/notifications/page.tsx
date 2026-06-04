@@ -4,15 +4,15 @@ import React, { useEffect } from "react";
 import { Typography, Divider, Card, Flex, Avatar } from "antd";
 import { BellOutlined } from "@ant-design/icons";
 import { useNotificationStore } from "@/store/notificationStore";
-import { NotificationList } from "./_components/NotificationList";
+import { NotificationList } from "@/app/staff/notifications/_components/NotificationList";
 
 const { Title, Text } = Typography;
 
-export default function StaffNotificationsPage() {
+export default function AdminNotificationsPage() {
   const { fetchNotifications, unreadCount, notifications } = useNotificationStore();
 
   useEffect(() => {
-    // Force fresh fetch khi vào trang
+    // Force fresh fetch when entering the page
     useNotificationStore.setState({ lastFetchedAt: null });
     fetchNotifications();
   }, []);
@@ -23,7 +23,7 @@ export default function StaffNotificationsPage() {
       <Card
         style={{
           marginBottom: 24,
-          background: "linear-gradient(135deg, #1677ff 0%, #4096ff 100%)",
+          background: "linear-gradient(135deg, #ff4d4f 0%, #ff7875 100%)",
           borderRadius: 16,
           border: "none",
         }}

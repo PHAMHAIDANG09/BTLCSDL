@@ -270,7 +270,7 @@ export class AttendanceService {
 
     return this.donLamThemRepository.find({
       where,
-      relations: ['nhanVien'],
+      relations: ['nhanVien', 'nhanVien.phongBan', 'nguoiDuyet'],
       order: { NgayTao: 'DESC' },
     });
   }

@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import {
   Typography, Tag, Button, message, Spin, Badge, Space,
   Modal, Form, DatePicker, Input, Select, InputNumber, Row, Col, Tooltip,
+  theme,
 } from "antd";
 import {
   PlusOutlined, CalendarOutlined,
@@ -37,6 +38,7 @@ const getStatusBadge = (status: string) => {
 /* Page                                                                 */
 /* ================================================================== */
 export default function StaffLeavePage() {
+  const { token } = theme.useToken();
   const [leaveForm] = Form.useForm();
   const [leaveRequests, setLeaveRequests] = useState<any[]>([]);
   const [leaveTypes, setLeaveTypes] = useState<any[]>([]);
@@ -126,7 +128,7 @@ export default function StaffLeavePage() {
       width: 180,
       render: (_, r) => (
         <Text>
-          <CalendarOutlined style={{ color: "#8c8c8c", marginRight: 8 }} />
+          <CalendarOutlined style={{ color: token.colorTextDescription, marginRight: 8 }} />
           {dayjs(r.NgayBatDau).format("DD/MM/YYYY")} – {dayjs(r.NgayKetThuc).format("DD/MM/YYYY")}
         </Text>
       ),
@@ -165,7 +167,7 @@ export default function StaffLeavePage() {
             <Text type="secondary" style={{ fontSize: 12 }}>
               {dayjs(d).format("DD/MM/YYYY")}
               <br />
-              <span style={{ color: "#1677ff" }}>{dayjs(d).format("HH:mm")}</span>
+              <span style={{ color: token.colorInfo }}>{dayjs(d).format("HH:mm")}</span>
             </Text>
           </Tooltip>
         ) : "—",
@@ -243,7 +245,7 @@ export default function StaffLeavePage() {
       <Modal
         title={
           <span style={{ fontWeight: 700, fontSize: 18 }}>
-            <CalendarOutlined style={{ marginRight: 8, color: "#1677ff" }} />
+            <CalendarOutlined style={{ marginRight: 8, color: token.colorInfo }} />
             Tạo Đơn Xin Nghỉ Phép
           </span>
         }

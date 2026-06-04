@@ -1,10 +1,12 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
-import { Tag, Tooltip, Button, Select, Input, Space, Statistic, Row, Col, Card } from "antd";
+import { Tag, Tooltip, Select, Input, Space, Row, Col, theme } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import { NhatKyHeThong } from "@/types/system";
 import Table from "@/components/shared/Table/Table";
+import Button from "@/components/shared/Button/Button";
+import StatsCard from "@/components/shared/StatsCard/StatsCard";
 import dayjs from "dayjs";
 import {
   SyncOutlined,
@@ -36,6 +38,7 @@ const getActionCfg = (action: string) =>
   ACTION_CONFIG[action?.toUpperCase()] ?? { color: "#8c8c8c", icon: <DatabaseOutlined />, label: action, bg: "#fafafa" };
 
 export default function AuditLogTable({ dataSource, loading, onRefresh }: AuditLogTableProps) {
+  const { token } = theme.useToken();
   const [filterAction, setFilterAction] = useState<string | undefined>(undefined);
   const [filterTable, setFilterTable]   = useState<string | undefined>(undefined);
   const [searchId, setSearchId]         = useState("");
@@ -125,7 +128,7 @@ export default function AuditLogTable({ dataSource, loading, onRefresh }: AuditL
               border: `1px solid ${cfg.color}33`,
             }}
           >
-            {cfg.icon} {cfg.label}
+            {cfg.label}
           </span>
         );
       },
@@ -136,7 +139,7 @@ export default function AuditLogTable({ dataSource, loading, onRefresh }: AuditL
       key: "TenBang",
       width: 140,
       render: (text: string) => (
-        <Tag icon={<DatabaseOutlined />} color="geekblue" style={{ borderRadius: 6 }}>
+        <Tag color="geekblue" style={{ borderRadius: 6 }}>
           {text}
         </Tag>
       ),
@@ -207,26 +210,42 @@ export default function AuditLogTable({ dataSource, loading, onRefresh }: AuditL
     <div>
       {/* Stats Row */}
       <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
-        {[
-          { label: "Tổng nhật ký", value: stats.total,  color: "#1677ff", bg: "#e6f4ff" },
-          { label: "Thêm mới",    value: stats.insert, color: "#52c41a", bg: "#f6ffed" },
-          { label: "Cập nhật",    value: stats.update, color: "#1677ff", bg: "#e6f4ff" },
-          { label: "Xóa",         value: stats.delete, color: "#ff4d4f", bg: "#fff1f0" },
-        ].map((s) => (
-          <Col key={s.label} xs={12} sm={8} md={6} lg={4}>
-            <Card
-              size="small"
-              style={{ borderRadius: 12, border: `1px solid ${s.color}33`, background: s.bg, textAlign: "center" }}
-              bodyStyle={{ padding: "12px 8px" }}
-            >
-              <Statistic
-                title={<span style={{ fontSize: 11, color: "#8c8c8c" }}>{s.label}</span>}
-                value={s.value}
-                valueStyle={{ fontSize: 22, fontWeight: 700, color: s.color }}
-              />
-            </Card>
-          </Col>
-        ))}
+        <Col xs={24} sm={12} md={6}>
+          <StatsCard
+            label="Tổng nhật ký"
+            value={stats.total}
+            icon={<DatabaseOutlined />}
+            color={token.colorInfo}
+            bg={token.colorInfoBg}
+          />
+        </Col>
+        <Col xs={24} sm={12} md={6}>
+          <StatsCard
+            label="Thêm mới"
+            value={stats.insert}
+            icon={<PlusCircleOutlined />}
+            color={token.colorSuccess}
+            bg={token.colorSuccessBg}
+          />
+        </Col>
+        <Col xs={24} sm={12} md={6}>
+          <StatsCard
+            label="Cập nhật"
+            value={stats.update}
+            icon={<EditOutlined />}
+            color={token.colorWarning}
+            bg={token.colorWarningBg}
+          />
+        </Col>
+        <Col xs={24} sm={12} md={6}>
+          <StatsCard
+            label="Xóa"
+            value={stats.delete}
+            icon={<DeleteOutlined />}
+            color={token.colorError}
+            bg={token.colorErrorBg}
+          />
+        </Col>
       </Row>
 
       {/* Filter Bar */}

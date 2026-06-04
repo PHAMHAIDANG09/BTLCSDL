@@ -2,13 +2,15 @@
 
 import React, { useState, useEffect } from "react";
 import {
-  Typography, Button, Tag, Space, Modal, Input,
-  message, Spin, Popconfirm, Avatar, Segmented, Badge, Tooltip,
+  Typography, Button, Tag, Space, Input,
+  message, Spin, Popconfirm, Avatar, Tabs, Badge, Tooltip,
+  theme,
 } from "antd";
 import {
   CheckOutlined, CloseOutlined, UserOutlined, CalendarOutlined,
-  SearchOutlined,
+  SearchOutlined, EyeOutlined,
 } from "@ant-design/icons";
+import Modal from "@/components/shared/Modal/Modal";
 import Table from "@/components/shared/Table/Table";
 import type { TableColumnsType } from "antd";
 import { LeaveService } from "@/services/leave.service";
@@ -44,6 +46,7 @@ const employeeRender = (nv: any) => (
 /* Page                                                                 */
 /* ================================================================== */
 export default function AdminLeavePage() {
+  const { token } = theme.useToken();
   const [leaveRequests, setLeaveRequests] = useState<any[]>([]);
   const [loading, setLoading]             = useState(false);
   const [viewMode, setViewMode]           = useState<"pending" | "history">("pending");
@@ -53,6 +56,10 @@ export default function AdminLeavePage() {
   const [rejectId, setRejectId]           = useState<number | null>(null);
   const [rejectReason, setRejectReason]   = useState("");
   const [submitting, setSubmitting]       = useState(false);
+
+  // Detail modal
+  const [detailVisible, setDetailVisible] = useState(false);
+  const [selectedLeave, setSelectedLeave] = useState<any>(null);
 
   useEffect(() => { fetchData(); }, []);
 
@@ -141,7 +148,7 @@ export default function AdminLeavePage() {
       </div>
     ),
     filterIcon: (filtered: boolean) => (
-      <SearchOutlined style={{ color: filtered ? '#1677ff' : undefined }} />
+      <SearchOutlined style={{ color: filtered ? token.colorPrimary : undefined }} />
     ),
     onFilter: (value: any, record: any) => {
       const searchVal = String(value).toLowerCase();
@@ -185,19 +192,6 @@ export default function AdminLeavePage() {
       ),
     },
     {
-      title: "Thời gian nghỉ",
-      key: "time",
-      width: 185,
-      render: (_, r) => (
-        <Text>
-          <CalendarOutlined style={{ color: "#8c8c8c", marginRight: 4 }} />
-          {dayjs(r.NgayBatDau).format("DD/MM/YYYY")} – {dayjs(r.NgayKetThuc).format("DD/MM/YYYY")}
-        </Text>
-      ),
-      sorter: (a: any, b: any) =>
-        new Date(a.NgayBatDau).getTime() - new Date(b.NgayBatDau).getTime(),
-    },
-    {
       title: "Số ngày nghỉ",
       dataIndex: "TongSoNgay",
       key: "TongSoNgay",
@@ -220,25 +214,6 @@ export default function AdminLeavePage() {
         </div>
       ),
     },
-    {
-      title: "Ngày tạo",
-      dataIndex: "NgayTao",
-      key: "NgayTao",
-      width: 125,
-      render: (d: string) =>
-        d ? (
-          <Tooltip title={dayjs(d).format("DD/MM/YYYY HH:mm:ss")}>
-            <Text type="secondary" style={{ fontSize: 12 }}>
-              {dayjs(d).format("DD/MM/YYYY")}
-              <br />
-              <span style={{ color: "#1677ff" }}>{dayjs(d).format("HH:mm")}</span>
-            </Text>
-          </Tooltip>
-        ) : "—",
-      sorter: (a: any, b: any) =>
-        new Date(a.NgayTao).getTime() - new Date(b.NgayTao).getTime(),
-      defaultSortOrder: "descend" as const,
-    },
   ];
 
   const getColumns = (): TableColumnsType<any> => {
@@ -248,9 +223,20 @@ export default function AdminLeavePage() {
         {
           title: "Thao tác",
           key: "action",
-          width: 170,
+          width: 230,
           render: (_, record) => (
             <Space size="small">
+              <Button
+                type="default"
+                size="small"
+                icon={<EyeOutlined />}
+                onClick={() => {
+                  setSelectedLeave(record);
+                  setDetailVisible(true);
+                }}
+              >
+                Xem
+              </Button>
               <Popconfirm
                 title="Bạn có chắc chắn muốn duyệt đơn này?"
                 onConfirm={() => handleApprove(record.Id)}
@@ -261,7 +247,7 @@ export default function AdminLeavePage() {
                   type="primary"
                   size="small"
                   icon={<CheckOutlined />}
-                  style={{ background: "#52c41a", borderColor: "#52c41a" }}
+                  style={{ background: token.colorSuccess, borderColor: token.colorSuccess }}
                 >
                   Duyệt
                 </Button>
@@ -282,43 +268,10 @@ export default function AdminLeavePage() {
     return [
       ...baseColumns,
       {
-        title: "Thời gian duyệt",
-        dataIndex: "NgayDuyet",
-        key: "approvalTime",
-        width: 140,
-        render: (d: string) =>
-          d ? (
-            <Tooltip title={dayjs(d).format("DD/MM/YYYY HH:mm:ss")}>
-              <Text type="secondary" style={{ fontSize: 12 }}>
-                {dayjs(d).format("DD/MM/YYYY")}
-                <br />
-                <span style={{ color: "#52c41a" }}>{dayjs(d).format("HH:mm")}</span>
-              </Text>
-            </Tooltip>
-          ) : "—",
-        sorter: (a: any, b: any) =>
-          a.NgayDuyet && b.NgayDuyet
-            ? new Date(a.NgayDuyet).getTime() - new Date(b.NgayDuyet).getTime()
-            : 0,
-      },
-      {
         title: "Trạng thái",
         key: "status",
-        width: 140,
-        render: (_, record) => (
-          <Space direction="vertical" size={2} style={{ display: "flex" }}>
-            <div>{getStatusBadge(record.TrangThai)}</div>
-            {record.TrangThai === "Rejected" && record.LyDoTuChoi && (
-              <Tooltip title={record.LyDoTuChoi}>
-                <div
-                  className="text-xs text-red-500 truncate max-w-[120px] italic cursor-help"
-                >
-                  Lý do: {record.LyDoTuChoi}
-                </div>
-              </Tooltip>
-            )}
-          </Space>
-        ),
+        width: 160,
+        render: (_, record) => getStatusBadge(record.TrangThai),
         filters: [
           { text: "Đã duyệt", value: "Approved" },
           { text: "Từ chối",  value: "Rejected" },
@@ -331,6 +284,28 @@ export default function AdminLeavePage() {
   const pendingLeaves = leaveRequests.filter((r) => r.TrangThai === "Pending");
   const historyLeaves = leaveRequests.filter((r) => r.TrangThai !== "Pending");
   const displayData   = viewMode === "pending" ? pendingLeaves : historyLeaves;
+
+  const tabItems = [
+    {
+      key: "pending",
+      label: (
+        <span>
+          Chờ xử lý
+          {pendingLeaves.length > 0 && (
+            <Badge
+              count={pendingLeaves.length}
+              style={{ marginLeft: 6 }}
+              color={token.colorError}
+            />
+          )}
+        </span>
+      ),
+    },
+    {
+      key: "history",
+      label: "Lịch sử duyệt",
+    },
+  ];
 
   /* ─────────── RENDER ─────────── */
   return (
@@ -345,34 +320,16 @@ export default function AdminLeavePage() {
             Xem xét và phê duyệt các đơn xin nghỉ phép của nhân viên
           </Text>
         </div>
-        <Segmented
-          options={[
-            {
-              label: (
-                <span>
-                  Chờ xử lý
-                  {pendingLeaves.length > 0 && (
-                    <Badge
-                      count={pendingLeaves.length}
-                      style={{ marginLeft: 6 }}
-                      color="#f5222d"
-                    />
-                  )}
-                </span>
-              ),
-              value: "pending",
-            },
-            { label: "Lịch sử duyệt", value: "history" },
-          ]}
-          value={viewMode}
-          onChange={(val) => setViewMode(val as any)}
-          size="large"
-          className="shadow-sm"
-        />
       </div>
 
       {/* Bảng */}
       <div className="bg-white p-5 rounded-xl shadow-sm">
+        <Tabs
+          activeKey={viewMode}
+          onChange={(val) => setViewMode(val as any)}
+          items={tabItems}
+          className="mb-4"
+        />
         <Spin spinning={loading}>
           <Table
             columns={getColumns()}
@@ -386,6 +343,18 @@ export default function AdminLeavePage() {
                 viewMode === "pending"
                   ? "Không có đơn nghỉ phép nào đang chờ duyệt 🎉"
                   : "Chưa có lịch sử duyệt đơn",
+            }}
+            onRow={(record) => {
+              if (viewMode === "history") {
+                return {
+                  onClick: () => {
+                    setSelectedLeave(record);
+                    setDetailVisible(true);
+                  },
+                  style: { cursor: "pointer" },
+                };
+              }
+              return {};
             }}
           />
         </Spin>
@@ -420,6 +389,104 @@ export default function AdminLeavePage() {
           />
         </div>
       </Modal>
+
+      {/* Modal xem chi tiết */}
+      {selectedLeave && (
+        <Modal
+          title={
+            <div style={{ display: "flex", alignItems: "center", gap: 8, color: token.colorPrimary }}>
+              <CalendarOutlined />
+              <span>Chi Tiết Đơn Nghỉ Phép</span>
+            </div>
+          }
+          open={detailVisible}
+          onCancel={() => {
+            setDetailVisible(false);
+            setSelectedLeave(null);
+          }}
+          width={600}
+          footer={[
+            <Button
+              key="close"
+              type="primary"
+              onClick={() => {
+                setDetailVisible(false);
+                setSelectedLeave(null);
+              }}
+            >
+              Đóng
+            </Button>
+          ]}
+        >
+          <div style={{ padding: "12px 0" }}>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px 24px", marginBottom: 20 }}>
+              <div>
+                <span style={{ display: "block", color: "#8c8c8c", fontSize: 12, fontWeight: 600, textTransform: "uppercase" }}>Nhân viên</span>
+                <span style={{ fontWeight: 600, fontSize: 14 }}>{selectedLeave.nhanVien?.HoTen}</span>
+              </div>
+              <div>
+                <span style={{ display: "block", color: "#8c8c8c", fontSize: 12, fontWeight: 600, textTransform: "uppercase" }}>Mã nhân viên</span>
+                <span style={{ fontFamily: "monospace", fontSize: 14 }}>{selectedLeave.nhanVien?.MaNhanVien}</span>
+              </div>
+              <div>
+                <span style={{ display: "block", color: "#8c8c8c", fontSize: 12, fontWeight: 600, textTransform: "uppercase" }}>Phòng ban</span>
+                <span>{selectedLeave.nhanVien?.phongBan?.TenPhong || "N/A"}</span>
+              </div>
+              <div>
+                <span style={{ display: "block", color: "#8c8c8c", fontSize: 12, fontWeight: 600, textTransform: "uppercase" }}>Loại phép</span>
+                <Tag color="blue" style={{ margin: 0 }}>{selectedLeave.loaiNghiPhep?.TenLoaiPhep || "Khác"}</Tag>
+              </div>
+              <div>
+                <span style={{ display: "block", color: "#8c8c8c", fontSize: 12, fontWeight: 600, textTransform: "uppercase" }}>Thời gian nghỉ</span>
+                <span>
+                  {dayjs(selectedLeave.NgayBatDau).format("DD/MM/YYYY")} – {dayjs(selectedLeave.NgayKetThuc).format("DD/MM/YYYY")}
+                </span>
+              </div>
+              <div>
+                <span style={{ display: "block", color: "#8c8c8c", fontSize: 12, fontWeight: 600, textTransform: "uppercase" }}>Số ngày nghỉ</span>
+                <span style={{ fontWeight: 600 }}>{selectedLeave.TongSoNgay} ngày</span>
+              </div>
+              <div>
+                <span style={{ display: "block", color: "#8c8c8c", fontSize: 12, fontWeight: 600, textTransform: "uppercase" }}>Ngày tạo đơn</span>
+                <span>{selectedLeave.NgayTao ? dayjs(selectedLeave.NgayTao).format("DD/MM/YYYY HH:mm") : "—"}</span>
+              </div>
+              <div>
+                <span style={{ display: "block", color: "#8c8c8c", fontSize: 12, fontWeight: 600, textTransform: "uppercase" }}>Trạng thái</span>
+                <div>{getStatusBadge(selectedLeave.TrangThai)}</div>
+              </div>
+            </div>
+
+            <div style={{ marginBottom: 20 }}>
+              <span style={{ display: "block", color: "#8c8c8c", fontSize: 12, fontWeight: 600, textTransform: "uppercase", marginBottom: 4 }}>Lý do nghỉ</span>
+              <div style={{ background: "#f8f9fa", padding: "10px 14px", borderRadius: 8, border: "1px solid #f0f0f0", fontStyle: "italic" }}>
+                {selectedLeave.LyDo || "Không có lý do"}
+              </div>
+            </div>
+
+            {(selectedLeave.TrangThai === "Approved" || selectedLeave.TrangThai === "Rejected") && (
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px 24px", marginTop: 20, paddingTop: 16, borderTop: "1px dashed #f0f0f0" }}>
+                <div>
+                  <span style={{ display: "block", color: "#8c8c8c", fontSize: 12, fontWeight: 600, textTransform: "uppercase" }}>Người duyệt</span>
+                  <span>{selectedLeave.nguoiDuyet?.HoTen || `Quản lý (ID: ${selectedLeave.MaNguoiDuyetId || "—"})`}</span>
+                </div>
+                <div>
+                  <span style={{ display: "block", color: "#8c8c8c", fontSize: 12, fontWeight: 600, textTransform: "uppercase" }}>Thời gian duyệt</span>
+                  <span>{selectedLeave.NgayDuyet ? dayjs(selectedLeave.NgayDuyet).format("DD/MM/YYYY HH:mm") : "—"}</span>
+                </div>
+              </div>
+            )}
+
+            {selectedLeave.TrangThai === "Rejected" && selectedLeave.LyDoTuChoi && (
+              <div style={{ marginTop: 20 }}>
+                <span style={{ display: "block", color: "var(--error-color)", fontSize: 12, fontWeight: 600, textTransform: "uppercase", marginBottom: 4 }}>Lý do từ chối</span>
+                <div style={{ background: "#fff1f0", padding: "10px 14px", borderRadius: 8, border: "1px solid #ffccc7", color: "var(--error-color)" }}>
+                  {selectedLeave.LyDoTuChoi}
+                </div>
+              </div>
+            )}
+          </div>
+        </Modal>
+      )}
     </div>
   );
 }

@@ -2,13 +2,15 @@
 
 import React, { useState, useEffect } from "react";
 import {
-  Typography, Button, Tag, Space, Modal, Input,
-  message, Spin, Popconfirm, Avatar, Segmented, Badge, Tooltip,
+  Typography, Button, Tag, Space, Input,
+  message, Spin, Popconfirm, Avatar, Tabs, Badge, Tooltip,
+  theme,
 } from "antd";
 import {
   CheckOutlined, CloseOutlined, UserOutlined,
-  CalendarOutlined, HistoryOutlined, SearchOutlined,
+  CalendarOutlined, HistoryOutlined, SearchOutlined, EyeOutlined,
 } from "@ant-design/icons";
+import Modal from "@/components/shared/Modal/Modal";
 import Table from "@/components/shared/Table/Table";
 import type { TableColumnsType } from "antd";
 import { AttendanceService } from "@/services/attendance.service";
@@ -54,6 +56,7 @@ const employeeRender = (nv: any) => (
 /* Page                                                                 */
 /* ================================================================== */
 export default function AdminOvertimePage() {
+  const { token } = theme.useToken();
   const [otRequests, setOtRequests] = useState<any[]>([]);
   const [loading, setLoading]       = useState(false);
   const [viewMode, setViewMode]     = useState<"pending" | "history">("pending");
@@ -63,6 +66,10 @@ export default function AdminOvertimePage() {
   const [rejectId, setRejectId]           = useState<number | null>(null);
   const [rejectReason, setRejectReason]   = useState("");
   const [submitting, setSubmitting]       = useState(false);
+
+  // Detail modal
+  const [detailVisible, setDetailVisible] = useState(false);
+  const [selectedOT, setSelectedOT] = useState<any>(null);
 
   useEffect(() => { fetchData(); }, []);
 
@@ -151,7 +158,7 @@ export default function AdminOvertimePage() {
       </div>
     ),
     filterIcon: (filtered: boolean) => (
-      <SearchOutlined style={{ color: filtered ? '#1677ff' : undefined }} />
+      <SearchOutlined style={{ color: filtered ? token.colorPrimary : undefined }} />
     ),
     onFilter: (value: any, record: any) => {
       const searchVal = String(value).toLowerCase();
@@ -184,24 +191,6 @@ export default function AdminOvertimePage() {
       render: (nv: any) => <Text className="font-mono text-gray-600">{nv?.MaNhanVien}</Text>,
     },
     {
-      title: "Ngày làm thêm",
-      key: "NgayLamThem",
-      width: 140,
-      render: (_, r) => (
-        <Space direction="vertical" size={0}>
-          <Text strong>
-            <CalendarOutlined style={{ color: "#8c8c8c", marginRight: 6 }} />
-            {dayjs(r.NgayLamThem).format("DD/MM/YYYY")}
-          </Text>
-          <Text type="secondary" style={{ fontSize: 12 }}>
-            {r.GioBatDau} – {r.GioKetThuc}
-          </Text>
-        </Space>
-      ),
-      sorter: (a: any, b: any) =>
-        new Date(a.NgayLamThem).getTime() - new Date(b.NgayLamThem).getTime(),
-    },
-    {
       title: "Số giờ",
       dataIndex: "TongSoGio",
       key: "TongSoGio",
@@ -227,16 +216,6 @@ export default function AdminOvertimePage() {
       onFilter: (value: any, r: any) => r.LoaiOT === value,
     },
     {
-      title: "Hệ số OT",
-      dataIndex: "HeSoOT",
-      key: "HeSoOT",
-      width: 90,
-      align: "center" as const,
-      render: (h: number) => (
-        <Text style={{ color: "#fa8c16", fontWeight: 700 }}>×{h}</Text>
-      ),
-    },
-    {
       title: "Công việc",
       dataIndex: "LyDo",
       key: "LyDo",
@@ -247,24 +226,6 @@ export default function AdminOvertimePage() {
         </div>
       ),
     },
-    {
-      title: "Ngày tạo",
-      dataIndex: "NgayTao",
-      key: "NgayTao",
-      width: 130,
-      render: (d: string) =>
-        d ? (
-          <Tooltip title={dayjs(d).format("DD/MM/YYYY HH:mm:ss")}>
-            <Text type="secondary" style={{ fontSize: 12 }}>
-              {dayjs(d).format("DD/MM/YYYY")}
-              <br />
-              <span style={{ color: "#1677ff" }}>{dayjs(d).format("HH:mm")}</span>
-            </Text>
-          </Tooltip>
-        ) : "—",
-      sorter: (a: any, b: any) =>
-        new Date(a.NgayTao).getTime() - new Date(b.NgayTao).getTime(),
-    },
   ];
 
   const getColumns = (): TableColumnsType<any> => {
@@ -274,9 +235,20 @@ export default function AdminOvertimePage() {
         {
           title: "Thao tác",
           key: "action",
-          width: 160,
+          width: 240,
           render: (_, record) => (
             <Space size="small">
+              <Button
+                type="default"
+                size="small"
+                icon={<EyeOutlined />}
+                onClick={() => {
+                  setSelectedOT(record);
+                  setDetailVisible(true);
+                }}
+              >
+                Xem
+              </Button>
               <Popconfirm
                 title="Xác nhận duyệt đơn OT này?"
                 onConfirm={() => handleApprove(record.Id)}
@@ -287,7 +259,7 @@ export default function AdminOvertimePage() {
                   type="primary"
                   size="small"
                   icon={<CheckOutlined />}
-                  style={{ background: "#52c41a", borderColor: "#52c41a" }}
+                  style={{ background: token.colorSuccess, borderColor: token.colorSuccess }}
                 >
                   Duyệt
                 </Button>
@@ -308,30 +280,10 @@ export default function AdminOvertimePage() {
     return [
       ...baseColumns,
       {
-        title: "Thời gian duyệt",
-        dataIndex: "NgayDuyet",
-        key: "approvalTime",
-        width: 140,
-        render: (d: string) =>
-          d ? (
-            <Tooltip title={dayjs(d).format("DD/MM/YYYY HH:mm:ss")}>
-              <Text type="secondary" style={{ fontSize: 12 }}>
-                {dayjs(d).format("DD/MM/YYYY")}
-                <br />
-                <span style={{ color: "#fa8c16" }}>{dayjs(d).format("HH:mm")}</span>
-              </Text>
-            </Tooltip>
-          ) : "—",
-        sorter: (a: any, b: any) =>
-          a.NgayDuyet && b.NgayDuyet
-            ? new Date(a.NgayDuyet).getTime() - new Date(b.NgayDuyet).getTime()
-            : 0,
-      },
-      {
         title: "Trạng thái",
         key: "status",
-        width: 140,
-        render: (_, r) => getStatusBadge(r.TrangThai),
+        width: 160,
+        render: (_, record) => getStatusBadge(record.TrangThai),
         filters: [
           { text: "Đã duyệt", value: "Approved" },
           { text: "Từ chối",  value: "Rejected" },
@@ -344,6 +296,28 @@ export default function AdminOvertimePage() {
   const pendingOTs = otRequests.filter((r) => r.TrangThai === "Pending");
   const historyOTs = otRequests.filter((r) => r.TrangThai !== "Pending");
   const displayData = viewMode === "pending" ? pendingOTs : historyOTs;
+
+  const tabItems = [
+    {
+      key: "pending",
+      label: (
+        <span>
+          Chờ xử lý
+          {pendingOTs.length > 0 && (
+            <Badge
+              count={pendingOTs.length}
+              style={{ marginLeft: 6 }}
+              color={token.colorWarning}
+            />
+          )}
+        </span>
+      ),
+    },
+    {
+      key: "history",
+      label: "Lịch sử duyệt",
+    },
+  ];
 
   /* ─────────── RENDER ─────────── */
   return (
@@ -358,34 +332,16 @@ export default function AdminOvertimePage() {
             Xem xét và phê duyệt đơn đăng ký làm thêm giờ của nhân viên
           </Text>
         </div>
-        <Segmented
-          options={[
-            {
-              label: (
-                <span>
-                  Chờ xử lý
-                  {pendingOTs.length > 0 && (
-                    <Badge
-                      count={pendingOTs.length}
-                      style={{ marginLeft: 6 }}
-                      color="#fa8c16"
-                    />
-                  )}
-                </span>
-              ),
-              value: "pending",
-            },
-            { label: "Lịch sử duyệt", value: "history" },
-          ]}
-          value={viewMode}
-          onChange={(val) => setViewMode(val as any)}
-          size="large"
-          className="shadow-sm"
-        />
       </div>
 
       {/* Bảng */}
       <div className="bg-white p-5 rounded-xl shadow-sm">
+        <Tabs
+          activeKey={viewMode}
+          onChange={(val) => setViewMode(val as any)}
+          items={tabItems}
+          className="mb-4"
+        />
         <Spin spinning={loading}>
           <Table
             columns={getColumns()}
@@ -399,6 +355,18 @@ export default function AdminOvertimePage() {
                 viewMode === "pending"
                   ? "Không có đơn OT nào đang chờ duyệt 🎉"
                   : "Chưa có lịch sử duyệt đơn OT",
+            }}
+            onRow={(record) => {
+              if (viewMode === "history") {
+                return {
+                  onClick: () => {
+                    setSelectedOT(record);
+                    setDetailVisible(true);
+                  },
+                  style: { cursor: "pointer" },
+                };
+              }
+              return {};
             }}
           />
         </Spin>
@@ -433,6 +401,101 @@ export default function AdminOvertimePage() {
           />
         </div>
       </Modal>
+      
+      {/* Modal xem chi tiết */}
+      {selectedOT && (
+        <Modal
+          title={
+            <div style={{ display: "flex", alignItems: "center", gap: 8, color: token.colorPrimary }}>
+              <CalendarOutlined />
+              <span>Chi Tiết Yêu Cầu Làm Thêm Giờ</span>
+            </div>
+          }
+          open={detailVisible}
+          onCancel={() => {
+            setDetailVisible(false);
+            setSelectedOT(null);
+          }}
+          width={600}
+          footer={[
+            <Button
+              key="close"
+              type="primary"
+              onClick={() => {
+                setDetailVisible(false);
+                setSelectedOT(null);
+              }}
+            >
+              Đóng
+            </Button>
+          ]}
+        >
+          <div style={{ padding: "12px 0" }}>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px 24px", marginBottom: 20 }}>
+              <div>
+                <span style={{ display: "block", color: "#8c8c8c", fontSize: 12, fontWeight: 600, textTransform: "uppercase" }}>Nhân viên</span>
+                <span style={{ fontWeight: 600, fontSize: 14 }}>{selectedOT.nhanVien?.HoTen}</span>
+              </div>
+              <div>
+                <span style={{ display: "block", color: "#8c8c8c", fontSize: 12, fontWeight: 600, textTransform: "uppercase" }}>Mã nhân viên</span>
+                <span style={{ fontFamily: "monospace", fontSize: 14 }}>{selectedOT.nhanVien?.MaNhanVien}</span>
+              </div>
+              <div>
+                <span style={{ display: "block", color: "#8c8c8c", fontSize: 12, fontWeight: 600, textTransform: "uppercase" }}>Phòng ban</span>
+                <span>{selectedOT.nhanVien?.phongBan?.TenPhong || "N/A"}</span>
+              </div>
+              <div>
+                <span style={{ display: "block", color: "#8c8c8c", fontSize: 12, fontWeight: 600, textTransform: "uppercase" }}>Phân loại</span>
+                <div>{getLoaiOTTag(selectedOT.LoaiOT)}</div>
+              </div>
+              <div>
+                <span style={{ display: "block", color: "#8c8c8c", fontSize: 12, fontWeight: 600, textTransform: "uppercase" }}>Ngày làm thêm</span>
+                <span>{dayjs(selectedOT.NgayLamThem).format("DD/MM/YYYY")}</span>
+              </div>
+              <div>
+                <span style={{ display: "block", color: "#8c8c8c", fontSize: 12, fontWeight: 600, textTransform: "uppercase" }}>Thời gian làm</span>
+                <span>{selectedOT.GioBatDau} – {selectedOT.GioKetThuc}</span>
+              </div>
+              <div>
+                <span style={{ display: "block", color: "#8c8c8c", fontSize: 12, fontWeight: 600, textTransform: "uppercase" }}>Tổng số giờ</span>
+                <span style={{ fontWeight: 600 }}>{selectedOT.TongSoGio} giờ</span>
+              </div>
+              <div>
+                <span style={{ display: "block", color: "#8c8c8c", fontSize: 12, fontWeight: 600, textTransform: "uppercase" }}>Hệ số OT</span>
+                <span style={{ color: token.colorWarning, fontWeight: 700 }}>×{selectedOT.HeSoOT}</span>
+              </div>
+              <div>
+                <span style={{ display: "block", color: "#8c8c8c", fontSize: 12, fontWeight: 600, textTransform: "uppercase" }}>Ngày tạo đơn</span>
+                <span>{selectedOT.NgayTao ? dayjs(selectedOT.NgayTao).format("DD/MM/YYYY HH:mm") : "—"}</span>
+              </div>
+              <div>
+                <span style={{ display: "block", color: "#8c8c8c", fontSize: 12, fontWeight: 600, textTransform: "uppercase" }}>Trạng thái</span>
+                <div>{getStatusBadge(selectedOT.TrangThai)}</div>
+              </div>
+            </div>
+
+            <div style={{ marginBottom: 20 }}>
+              <span style={{ display: "block", color: "#8c8c8c", fontSize: 12, fontWeight: 600, textTransform: "uppercase", marginBottom: 4 }}>Công việc</span>
+              <div style={{ background: "#f8f9fa", padding: "10px 14px", borderRadius: 8, border: "1px solid #f0f0f0", fontStyle: "italic" }}>
+                {selectedOT.LyDo || "Không có nội dung"}
+              </div>
+            </div>
+
+            {(selectedOT.TrangThai === "Approved" || selectedOT.TrangThai === "Rejected") && (
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px 24px", marginTop: 20, paddingTop: 16, borderTop: "1px dashed #f0f0f0" }}>
+                <div>
+                  <span style={{ display: "block", color: "#8c8c8c", fontSize: 12, fontWeight: 600, textTransform: "uppercase" }}>Người duyệt</span>
+                  <span>{selectedOT.nguoiDuyet?.HoTen || `Quản lý (ID: ${selectedOT.NguoiDuyetId || "—"})`}</span>
+                </div>
+                <div>
+                  <span style={{ display: "block", color: "#8c8c8c", fontSize: 12, fontWeight: 600, textTransform: "uppercase" }}>Thời gian duyệt</span>
+                  <span>{selectedOT.NgayDuyet ? dayjs(selectedOT.NgayDuyet).format("DD/MM/YYYY HH:mm") : "—"}</span>
+                </div>
+              </div>
+            )}
+          </div>
+        </Modal>
+      )}
     </div>
   );
 }

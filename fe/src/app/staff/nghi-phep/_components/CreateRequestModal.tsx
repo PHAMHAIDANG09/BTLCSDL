@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Modal, Form, Input, Button, DatePicker, Select, Space, message, Tabs, InputNumber, Row, Col } from "antd";
+import { Modal, Form, Input, Button, DatePicker, Select, Space, message, Tabs, InputNumber, Row, Col, theme } from "antd";
 import { LeaveService } from "@/services/leave.service";
 import { AttendanceService } from "@/services/attendance.service";
 import dayjs from "dayjs";
@@ -18,6 +18,7 @@ interface CreateRequestModalProps {
 }
 
 export default function CreateRequestModal({ open, onCancel, onSuccess, defaultTab = '1' }: CreateRequestModalProps) {
+  const { token } = theme.useToken();
   const [leaveForm] = Form.useForm();
   const [otForm] = Form.useForm();
   const [loading, setLoading] = useState(false);
@@ -194,7 +195,7 @@ export default function CreateRequestModal({ open, onCancel, onSuccess, defaultT
 
         <Col xs={24} md={12}>
           <Form.Item label="Loại OT">
-            <span style={{ color: '#888', fontSize: 13 }}>
+            <span style={{ color: token.colorTextDescription, fontSize: 13 }}>
               🤖 Hệ thống tự xác định (Ngày thường / Cuối tuần / Ngày lễ)
             </span>
           </Form.Item>
