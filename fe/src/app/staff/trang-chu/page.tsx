@@ -246,12 +246,11 @@ export default function StaffHomePage() {
           <Row gutter={[24, 24]}>
             {/* ── LEFT col: Holiday Calendar ── */}
             <Col xs={24} lg={15}>
-              {/* Holiday Calendar — read-only */}
               <Card
                 bordered={false}
-                style={{ borderRadius: 16, boxShadow: "0 4px 12px rgba(0,0,0,0.06)", padding: 0 }}
+                style={{ borderRadius: 16, boxShadow: "0 4px 12px rgba(0,0,0,0.06)" }}
                 styles={{ body: { padding: 0 } }}
-                title={<span style={{ fontWeight: 700, fontSize: 15, padding: "0 4px" }}>Lịch ngày lễ</span>}
+                title={<span style={{ fontWeight: 700, fontSize: 15 }}>Lịch ngày lễ</span>}
               >
                 <HolidayCalendar holidays={holidays} height={600} />
               </Card>

@@ -36,7 +36,16 @@ services:
       - ./init-db:/init-db:ro
     entrypoint: >
       /bin/bash -c "
+      echo 'Running SchemaNEXTHR.sql...'
       /opt/mssql-tools18/bin/sqlcmd -S sqlserver -U sa -P 'Dang@12345' -C -i /init-db/SchemaNEXTHR.sql
+      echo 'Applying database updates in order...'
+      for f in /init-db/updates/*.sql; do
+        if [ -f \"$$f\" ]; then
+          echo \"Applying update: $$f\"
+          /opt/mssql-tools18/bin/sqlcmd -S sqlserver -U sa -P 'Dang@12345' -C -i \"$$f\"
+        fi
+      done
+      echo 'Database initialization complete!'
       "
     networks:
       - app-network
