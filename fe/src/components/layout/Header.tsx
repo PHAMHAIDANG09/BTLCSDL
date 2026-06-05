@@ -69,18 +69,42 @@ const SEGMENT_MAP: Record<string, string> = {
   payslip: "Phiếu lương",
   "my-requests": "Yêu cầu của tôi",
   "nghi-phep": "Nghỉ phép",
+  "phieu-luong": "Phiếu lương cá nhân",
 };
 
 const getBreadcrumbs = (
   pathname: string,
   dynamicLabels?: Record<string, string>,
 ): Array<{ title: React.ReactNode; href?: string }> => {
-  const segments = pathname.split("/").filter((seg) => seg && seg !== "admin" && seg !== "staff");
-  
   // Determine the root based on the pathname
   const isStaff = pathname.startsWith("/staff");
   const rootHref = isStaff ? "/staff/trang-chu" : "/admin/bang-dieu-khien";
-  const rootLabel = isStaff ? "Trang chủ" : "Bảng điều khiển";
+  const rootLabel = isStaff ? "Trang chủ" : "Dashboard";
+
+  // Custom manual mappings for specific paths
+  if (pathname === "/admin/phong-ban") {
+    return [
+      { title: <Link href={rootHref}>{rootLabel}</Link> },
+      { title: "Nhân sự" },
+      { title: "Quản lý Phòng ban" },
+    ];
+  }
+  if (pathname === "/admin/chuc-vu") {
+    return [
+      { title: <Link href={rootHref}>{rootLabel}</Link> },
+      { title: "Nhân sự" },
+      { title: "Quản lý Chức vụ" },
+    ];
+  }
+  if (pathname === "/admin/loai-phep") {
+    return [
+      { title: <Link href={rootHref}>{rootLabel}</Link> },
+      { title: "Cấu hình" },
+      { title: "Cấu hình Loại phép" },
+    ];
+  }
+
+  const segments = pathname.split("/").filter((seg) => seg && seg !== "admin" && seg !== "staff");
 
   const breadcrumbs: Array<{ title: React.ReactNode; href?: string }> = [
     {

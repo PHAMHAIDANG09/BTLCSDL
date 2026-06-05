@@ -4,6 +4,7 @@ import React from "react";
 import { Modal, Descriptions, Divider, Tag, Typography, Space, Row, Col, Card } from "antd";
 import { PhieuLuong } from "@/types/payroll";
 import { DollarOutlined, SafetyCertificateOutlined, ExceptionOutlined } from "@ant-design/icons";
+import { useAuthStore } from "@/store/authStore";
 
 const { Title, Text } = Typography;
 
@@ -16,6 +17,8 @@ interface PayrollDetailModalProps {
 const fmt = (n: number | undefined) => (n || 0).toLocaleString("vi-VN") + " đ";
 
 const PayrollDetailModal: React.FC<PayrollDetailModalProps> = ({ visible, onClose, data }) => {
+  const { user } = useAuthStore();
+
   if (!data) return null;
 
   return (
@@ -34,8 +37,8 @@ const PayrollDetailModal: React.FC<PayrollDetailModalProps> = ({ visible, onClos
     >
       <div className="py-4">
         <Descriptions bordered column={2} size="small">
-          <Descriptions.Item label="Mã nhân viên">{data.nhanVien?.MaNhanVien || "N/A"}</Descriptions.Item>
-          <Descriptions.Item label="Họ và tên">{data.nhanVien?.HoTen || "N/A"}</Descriptions.Item>
+          <Descriptions.Item label="Mã nhân viên">{data.nhanVien?.MaNhanVien || user?.maNhanVien || "N/A"}</Descriptions.Item>
+          <Descriptions.Item label="Họ và tên">{data.nhanVien?.HoTen || user?.hoTen || "N/A"}</Descriptions.Item>
           <Descriptions.Item label="Số ngày công chuẩn">{data.SoNgayCongChuan} ngày</Descriptions.Item>
           <Descriptions.Item label="Số ngày công thực tế">{data.SoNgayCongThucTe} ngày</Descriptions.Item>
           <Descriptions.Item label="Số giờ làm thêm">{data.SoGioLamThem} giờ</Descriptions.Item>

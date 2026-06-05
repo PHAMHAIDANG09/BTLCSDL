@@ -38,8 +38,8 @@ const getStatusBadge = (status: string) => {
 const getLoaiOTTag = (l: string) => {
   const map: Record<string, { color: string; label: string }> = {
     NgayThuong: { color: "default", label: "Ngày thường" },
-    CuoiTuan:   { color: "orange",  label: "Cuối tuần"   },
-    NgayLe:     { color: "red",     label: "Ngày lễ"     },
+    CuoiTuan: { color: "orange", label: "Cuối tuần" },
+    NgayLe: { color: "red", label: "Ngày lễ" },
   };
   const cfg = map[l] || { color: "default", label: l };
   return <Tag color={cfg.color} bordered={false}>{cfg.label}</Tag>;
@@ -58,20 +58,28 @@ const employeeRender = (nv: any) => (
 export default function AdminOvertimePage() {
   const { token } = theme.useToken();
   const [otRequests, setOtRequests] = useState<any[]>([]);
-  const [loading, setLoading]       = useState(false);
-  const [viewMode, setViewMode]     = useState<"pending" | "history">("pending");
+  const [loading, setLoading] = useState(false);
+  const [viewMode, setViewMode] = useState<"pending" | "history">("pending");
 
   // Reject modal
   const [rejectVisible, setRejectVisible] = useState(false);
-  const [rejectId, setRejectId]           = useState<number | null>(null);
-  const [rejectReason, setRejectReason]   = useState("");
-  const [submitting, setSubmitting]       = useState(false);
+  const [rejectId, setRejectId] = useState<number | null>(null);
+  const [rejectReason, setRejectReason] = useState("");
+  const [submitting, setSubmitting] = useState(false);
 
   // Detail modal
   const [detailVisible, setDetailVisible] = useState(false);
   const [selectedOT, setSelectedOT] = useState<any>(null);
 
-  useEffect(() => { fetchData(); }, []);
+  useEffect(() => {
+    fetchData();
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get("tab") === "history") {
+        setViewMode("history");
+      }
+    }
+  }, []);
 
   const fetchData = async () => {
     setLoading(true);
@@ -210,8 +218,8 @@ export default function AdminOvertimePage() {
       render: (l: string) => getLoaiOTTag(l),
       filters: [
         { text: "Ngày thường", value: "NgayThuong" },
-        { text: "Cuối tuần",   value: "CuoiTuan"   },
-        { text: "Ngày lễ",     value: "NgayLe"     },
+        { text: "Cuối tuần", value: "CuoiTuan" },
+        { text: "Ngày lễ", value: "NgayLe" },
       ],
       onFilter: (value: any, r: any) => r.LoaiOT === value,
     },
@@ -286,7 +294,7 @@ export default function AdminOvertimePage() {
         render: (_, record) => getStatusBadge(record.TrangThai),
         filters: [
           { text: "Đã duyệt", value: "Approved" },
-          { text: "Từ chối",  value: "Rejected" },
+          { text: "Từ chối", value: "Rejected" },
         ],
         onFilter: (value: any, r: any) => r.TrangThai === value,
       },
@@ -401,7 +409,7 @@ export default function AdminOvertimePage() {
           />
         </div>
       </Modal>
-      
+
       {/* Modal xem chi tiết */}
       {selectedOT && (
         <Modal

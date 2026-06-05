@@ -220,7 +220,6 @@ export default function StaffOvertimePage() {
           type="primary"
           size="large"
           icon={<PlusOutlined />}
-          className="shadow-sm"
           onClick={() => setModalOpen(true)}
           style={{ background: token.colorWarning, borderColor: token.colorWarning }}
         >
@@ -229,7 +228,7 @@ export default function StaffOvertimePage() {
       </div>
 
       {/* Bảng danh sách */}
-      <div className="bg-white p-5 rounded-xl shadow-sm">
+      <div className="bg-white p-5 rounded-xl" style={{ border: "1px solid #f1f5f9" }}>
         <Spin spinning={loading}>
           <Table
             columns={columns}

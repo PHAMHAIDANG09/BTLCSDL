@@ -39,4 +39,5 @@ export interface AuthState {
   logout: () => void;
   setLoading: (loading: boolean) => void;
   loadFromStorage: () => void;
+  updateUser: (updatedUser: Partial<User>) => void;
 }

@@ -1,13 +1,13 @@
 "use client";
 
 import { Typography, Descriptions, Avatar, Tag, Row, Col, Card, Modal, message, Space, Form, Input, App, theme } from "antd";
-import { 
-  UserOutlined, 
-  EditOutlined, 
-  PhoneOutlined, 
-  MailOutlined, 
-  BankOutlined, 
-  FileTextOutlined, 
+import {
+  UserOutlined,
+  EditOutlined,
+  PhoneOutlined,
+  MailOutlined,
+  BankOutlined,
+  FileTextOutlined,
   InfoCircleOutlined,
   LockOutlined
 } from "@ant-design/icons";
@@ -17,6 +17,7 @@ import Button from "@/components/shared/Button/Button";
 import ProfileForm, { ProfileFormValues } from "./ProfileForm";
 import ProfileDetailModal from "./ProfileDetailModal";
 import { updateProfileApi, changePasswordApi } from "@/services/auth.service";
+import useAuthStore from "@/store/authStore";
 
 const { Title, Text } = Typography;
 
@@ -57,7 +58,15 @@ export default function ProfileView({ data, isAdmin = false, onRefresh }: Profil
         ChiNhanhNganHang: values.bankBranch,
       };
 
-      await updateProfileApi(updateData);
+      const updatedProfile = await updateProfileApi(updateData) as any;
+
+      // Đồng bộ thông tin mới vào global authStore để đổi tên ở Header lập tức
+      const { updateUser } = useAuthStore.getState();
+      updateUser({
+        hoTen: updatedProfile.HoTen,
+        email: updatedProfile.Email,
+      });
+
       message.success("Cập nhật hồ sơ thành công!");
       setIsEditModalOpen(false);
       onRefresh?.(); // Tải lại dữ liệu mới
@@ -73,7 +82,7 @@ export default function ProfileView({ data, isAdmin = false, onRefresh }: Profil
     if (values.newPassword !== values.confirmPassword) {
       return message.error("Mật khẩu xác nhận không khớp!");
     }
-    
+
     setLoading(true);
     try {
       await changePasswordApi({
@@ -99,21 +108,21 @@ export default function ProfileView({ data, isAdmin = false, onRefresh }: Profil
           <Text type="secondary">Quản lý thông tin định danh và xem chi tiết hồ sơ nhân sự</Text>
         </div>
         <Space>
-          <Button 
-            icon={<LockOutlined />} 
+          <Button
+            icon={<LockOutlined />}
             onClick={() => setIsPasswordModalOpen(true)}
           >
             Đổi mật khẩu
           </Button>
-          <Button 
-            icon={<InfoCircleOutlined />} 
+          <Button
+            icon={<InfoCircleOutlined />}
             onClick={() => setIsDetailModalOpen(true)}
           >
             Xem chi tiết
           </Button>
-          <Button 
-            type="primary" 
-            icon={<EditOutlined />} 
+          <Button
+            type="primary"
+            icon={<EditOutlined />}
             onClick={() => setIsEditModalOpen(true)}
           >
             Chỉnh sửa
@@ -127,9 +136,9 @@ export default function ProfileView({ data, isAdmin = false, onRefresh }: Profil
           <Avatar
             size={88}
             icon={<UserOutlined />}
-            style={{ 
-              backgroundColor: data.avatarColor || token.colorPrimary, 
-              flexShrink: 0, 
+            style={{
+              backgroundColor: data.avatarColor || token.colorPrimary,
+              flexShrink: 0,
               fontSize: 36,
               boxShadow: "0 4px 10px rgba(0,0,0,0.1)"
             }}
@@ -214,12 +223,12 @@ export default function ProfileView({ data, isAdmin = false, onRefresh }: Profil
         width={800}
         destroyOnClose
       >
-        <ProfileForm 
+        <ProfileForm
           onlyPersonalInfo={true}
           initialValues={{
             ...data,
             dob: dayjs(data.dob),
-          } as any} 
+          } as any}
           onFinish={handleUpdateProfile}
           loading={loading}
           onCancel={() => setIsEditModalOpen(false)}
@@ -250,7 +259,7 @@ export default function ProfileView({ data, isAdmin = false, onRefresh }: Profil
         </Form>
       </Modal>
 
-      <ProfileDetailModal 
+      <ProfileDetailModal
         open={isDetailModalOpen}
         onCancel={() => setIsDetailModalOpen(false)}
         data={data}

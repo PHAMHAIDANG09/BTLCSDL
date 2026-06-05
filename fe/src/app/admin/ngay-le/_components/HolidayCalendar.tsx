@@ -134,7 +134,8 @@ export default function HolidayCalendar({ holidays = [], height }: HolidayCalend
         .gcal-wrap {
           background: #fff;
           border-radius: 20px;
-          box-shadow: 0 4px 32px rgba(0,0,0,0.10);
+          border: 1px solid #f0f0f0;
+          box-shadow: none;
           overflow: hidden;
           width: 100%;
           font-family: 'Inter', 'Segoe UI', Arial, sans-serif;

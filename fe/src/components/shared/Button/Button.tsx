@@ -36,16 +36,16 @@ export const Button: React.FC<CustomButtonProps> = ({
     justifyContent: "center",
     transition: "all 0.3s cubic-bezier(0.645, 0.045, 0.355, 1)",
     
-    // Đồng bộ màu sắc với CSS Variables để khi đổi màu hệ thống sẽ tự cập nhật
+    // Đồng bộ màu sắc với Ant Design theme tokens từ providers.tsx
     ...(isPrimary && {
-      backgroundColor: "var(--primary-color)",
-      borderColor: "var(--primary-color)",
+      backgroundColor: token.colorPrimary,
+      borderColor: token.colorPrimary,
       color: "#fff",
     }),
 
     ...(isDanger && {
-      backgroundColor: "var(--error-color)",
-      borderColor: "var(--error-color)",
+      backgroundColor: token.colorError,
+      borderColor: token.colorError,
       color: "#fff",
     }),
     

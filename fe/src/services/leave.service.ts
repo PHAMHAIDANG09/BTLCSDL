@@ -36,4 +36,32 @@ export const LeaveService = {
     const response = await api.get('/nghi-phep/so-du', { params: { year } });
     return response as any;
   },
+
+  createLeaveType: async (data: {
+    TenLoaiPhep: string;
+    CoHuongLuong?: boolean;
+    SoNgayToiDaNam: number;
+    MoTa?: string;
+  }): Promise<any> => {
+    const response = await api.post('/nghi-phep/loai-phep', data);
+    return response;
+  },
+
+  updateLeaveType: async (
+    id: number,
+    data: {
+      TenLoaiPhep?: string;
+      CoHuongLuong?: boolean;
+      SoNgayToiDaNam?: number;
+      MoTa?: string;
+    }
+  ): Promise<any> => {
+    const response = await api.put(`/nghi-phep/loai-phep/${id}`, data);
+    return response;
+  },
+
+  deleteLeaveType: async (id: number): Promise<any> => {
+    const response = await api.delete(`/nghi-phep/loai-phep/${id}`);
+    return response;
+  },
 };

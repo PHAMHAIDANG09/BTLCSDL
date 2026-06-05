@@ -2,10 +2,10 @@
 
 import {
   Typography, Row, Col, Card, Statistic, Spin, Tag, Button,
-  Modal, Form, DatePicker, Input, Select, InputNumber, message, theme,
+  Modal, Form, DatePicker, Input, Select, InputNumber, message, theme, Space,
 } from "antd";
 import {
-  RightOutlined, HistoryOutlined,
+  RightOutlined, HistoryOutlined, DollarOutlined,
 } from "@ant-design/icons";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -54,6 +54,7 @@ export default function StaffHomePage() {
   /* ---- summary stats ---- */
   const [loadingStats, setLoadingStats] = useState(true);
   const [stats, setStats] = useState({ ngayCong: 0, ngayPhep: 0, luongThangTruoc: 0, ngayLeConLai: 0 });
+  const [latestPayslip, setLatestPayslip] = useState<any>(null);
 
   /* ---- recent attendance ---- */
   const [recentAttendance, setRecentAttendance] = useState<any[]>([]);
@@ -112,7 +113,9 @@ export default function StaffHomePage() {
       const balances: any[]   = extract(leaveRes);
       const ngayPhep   = balances.reduce((s, b) => s + (b.TongNgayPhep - b.DaSuDung), 0);
       const payslips: any[]   = extract(payRes);
-      const luongThangTruoc   = payslips[0]?.TongThuNhap ?? payslips[0]?.LuongThucNhan ?? 0;
+      const validPayslips     = (payslips || []).filter((p: any) => (p.LuongThucNhan ?? 0) > 0);
+      const latest            = validPayslips[0] || payslips[0] || null;
+      const luongThangTruoc   = latest?.LuongThucNhan ?? 0;
       const allHolidays: any[]= extract(holRes);
       const ngayLeConLai       = allHolidays.filter((h) => dayjs(h.NgayLe ?? h.NgayBatDau).isAfter(now)).length;
 
@@ -129,7 +132,10 @@ export default function StaffHomePage() {
           status:    mapBackendStatus(item.TrangThai),
         }));
 
-      if (payslips[0]) setSelectedPayslip(payslips[0]);
+      if (latest) {
+        setSelectedPayslip(latest);
+        setLatestPayslip(latest);
+      }
 
       setStats({ ngayCong, ngayPhep, luongThangTruoc, ngayLeConLai });
       setRecentAttendance(recent);
@@ -246,12 +252,11 @@ export default function StaffHomePage() {
           <Row gutter={[24, 24]}>
             {/* ── LEFT col: Holiday Calendar ── */}
             <Col xs={24} lg={15}>
-              {/* Holiday Calendar — read-only */}
               <Card
-                bordered={false}
-                style={{ borderRadius: 16, boxShadow: "0 4px 12px rgba(0,0,0,0.06)", padding: 0 }}
+                bordered={true}
+                style={{ borderRadius: 16 }}
                 styles={{ body: { padding: 0 } }}
-                title={<span style={{ fontWeight: 700, fontSize: 15, padding: "0 4px" }}>Lịch ngày lễ</span>}
+                title={<span style={{ fontWeight: 700, fontSize: 15 }}>Lịch ngày lễ</span>}
               >
                 <HolidayCalendar holidays={holidays} height={600} />
               </Card>
@@ -261,8 +266,8 @@ export default function StaffHomePage() {
             <Col xs={24} lg={9} style={{ display: "flex", flexDirection: "column", gap: 24 }}>
               {/* Quick actions */}
               <Card
-                bordered={false}
-                style={{ borderRadius: 16, boxShadow: "0 4px 12px rgba(0,0,0,0.06)" }}
+                bordered={true}
+                style={{ borderRadius: 16 }}
                 styles={{ body: { padding: "20px 24px" } }}
                 title={<span style={{ fontWeight: 700, fontSize: 15 }}>Thao tác nhanh</span>}
               >
@@ -305,10 +310,117 @@ export default function StaffHomePage() {
                 </div>
               </Card>
 
+              {/* Lương tháng gần nhất */}
+              <Card
+                bordered={true}
+                style={{ borderRadius: 16 }}
+                styles={{ body: { padding: "20px 24px" } }}
+                title={
+                  <Space>
+                    <DollarOutlined style={{ color: "#faad14" }} />
+                    <span style={{ fontWeight: 700, fontSize: 15 }}>Lương tháng gần nhất</span>
+                  </Space>
+                }
+                extra={
+                  latestPayslip && (
+                    <Tag color="warning" style={{ borderRadius: 6, fontWeight: 600 }}>
+                      Tháng {latestPayslip.Thang}/{latestPayslip.Nam}
+                    </Tag>
+                  )
+                }
+              >
+                {!latestPayslip ? (
+                  <div style={{ textAlign: "center", padding: "16px 0", color: "#64748b" }}>
+                    Chưa có dữ liệu phiếu lương nào được ghi nhận.
+                  </div>
+                ) : (
+                  <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+                    {/* Tổng thực lĩnh */}
+                    <div style={{
+                      textAlign: "center",
+                      padding: "16px",
+                      background: "#fffbe6",
+                      borderRadius: 12,
+                      border: "1px solid #ffe58f"
+                    }}>
+                      <div style={{ fontSize: 12, color: "#d46b08", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.5px" }}>
+                        Thực Lĩnh Nhận Được
+                      </div>
+                      <div style={{ fontSize: 24, fontWeight: 800, color: "#d46b08", marginTop: 4 }}>
+                        {fmt(Number(latestPayslip.LuongThucNhan))}
+                      </div>
+                    </div>
+
+                    {/* Chi tiết cơ cấu lương */}
+                    <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13 }}>
+                        <span style={{ color: "#64748b" }}>Lương cơ bản:</span>
+                        <span style={{ fontWeight: 600, color: "#1e293b" }}>{fmt(Number(latestPayslip.LuongCoBan))}</span>
+                      </div>
+                      
+                      {Number(latestPayslip.PhuCap) > 0 && (
+                        <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13 }}>
+                          <span style={{ color: "#64748b" }}>Phụ cấp:</span>
+                          <span style={{ fontWeight: 600, color: "#1e293b" }}>{fmt(Number(latestPayslip.PhuCap))}</span>
+                        </div>
+                      )}
+
+                      {Number(latestPayslip.TienLamThem) > 0 && (
+                        <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13 }}>
+                          <span style={{ color: "#64748b" }}>Lương tăng ca (OT):</span>
+                          <span style={{ fontWeight: 600, color: "#22c55e" }}>+{fmt(Number(latestPayslip.TienLamThem))}</span>
+                        </div>
+                      )}
+
+                      {(Number(latestPayslip.BaoHiemXaHoi) + Number(latestPayslip.BaoHiemYTe) + Number(latestPayslip.BaoHiemThatNghiep)) > 0 && (
+                        <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13 }}>
+                          <span style={{ color: "#64748b" }}>Khấu trừ bảo hiểm:</span>
+                          <span style={{ fontWeight: 600, color: "#ef4444" }}>
+                            -{fmt(Number(latestPayslip.BaoHiemXaHoi) + Number(latestPayslip.BaoHiemYTe) + Number(latestPayslip.BaoHiemThatNghiep))}
+                          </span>
+                        </div>
+                      )}
+
+                      {Number(latestPayslip.ThueTNCN) > 0 && (
+                        <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13 }}>
+                          <span style={{ color: "#64748b" }}>Thuế TNCN:</span>
+                          <span style={{ fontWeight: 600, color: "#ef4444" }}>-{fmt(Number(latestPayslip.ThueTNCN))}</span>
+                        </div>
+                      )}
+
+                      {Number(latestPayslip.KhauTruDiMuon) > 0 && (
+                        <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13 }}>
+                          <span style={{ color: "#64748b" }}>Khấu trừ đi muộn/về sớm:</span>
+                          <span style={{ fontWeight: 600, color: "#ef4444" }}>-{fmt(Number(latestPayslip.KhauTruDiMuon))}</span>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Nút xem chi tiết */}
+                    <Button
+                      type="default"
+                      icon={<HistoryOutlined />}
+                      onClick={() => setPayslipOpen(true)}
+                      style={{
+                        width: "100%",
+                        borderRadius: 10,
+                        fontWeight: 600,
+                        marginTop: 4,
+                        borderColor: "#faad14",
+                        color: "#d46b08",
+                        backgroundColor: "#fffbe6"
+                      }}
+                    >
+                      Xem chi tiết phiếu lương
+                    </Button>
+                  </div>
+                )}
+              </Card>
+
               {/* Recent Attendance */}
               <Card
-                bordered={false}
-                style={{ borderRadius: 16, boxShadow: "0 4px 12px rgba(0,0,0,0.06)" }}
+                bordered={true}
+                style={{ borderRadius: 16 }}
                 styles={{ body: { padding: "20px 24px" } }}
                 title={<span style={{ fontWeight: 700, fontSize: 15 }}>Chấm công gần đây</span>}
                 extra={
