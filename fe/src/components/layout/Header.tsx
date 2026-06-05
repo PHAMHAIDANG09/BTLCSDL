@@ -91,6 +91,12 @@ const getBreadcrumbs = (
   let path = isStaff ? "/staff" : "/admin";
   segments.forEach((segment, index) => {
     path += `/${segment}`;
+    
+    // Skip duplicate root segments (e.g. "Trang chủ / Trang chủ")
+    if ((isStaff && segment === "trang-chu") || (!isStaff && segment === "bang-dieu-khien")) {
+      return;
+    }
+
     const isLast = index === segments.length - 1;
     
     // Map segment to Vietnamese label or capitalize if not found

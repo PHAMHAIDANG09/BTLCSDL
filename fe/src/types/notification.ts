@@ -7,8 +7,10 @@
 export type NotificationType =
   | 'leave_approved'
   | 'leave_rejected'
+  | 'leave_pending'
   | 'ot_approved'
   | 'ot_rejected'
+  | 'ot_pending'
   | 'payslip';
 
 export interface AppNotification {

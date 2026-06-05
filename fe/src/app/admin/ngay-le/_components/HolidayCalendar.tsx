@@ -10,11 +10,13 @@ dayjs.locale("vi");
 
 interface HolidayCalendarProps {
   holidays: NgayLe[];
+  /** Ghi đè chiều cao wrapper (mặc định: calc(100vh - 180px)) */
+  height?: string | number;
 }
 
 const WEEKDAYS = ["T2", "T3", "T4", "T5", "T6", "T7", "CN"];
 
-export default function HolidayCalendar({ holidays = [] }: HolidayCalendarProps) {
+export default function HolidayCalendar({ holidays = [], height }: HolidayCalendarProps) {
   const { token } = theme.useToken();
   const [currentMonth, setCurrentMonth] = useState(() => dayjs().startOf("month"));
 
@@ -138,7 +140,7 @@ export default function HolidayCalendar({ holidays = [] }: HolidayCalendarProps)
           font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
           display: flex;
           flex-direction: column;
-          height: calc(100vh - 180px);
+          height: ${typeof height === 'number' ? height + 'px' : height ?? 'calc(100vh - 180px)'};
           min-height: 560px;
         }
 

@@ -58,110 +58,208 @@ export const NotificationService = {
   fetchAll: async (): Promise<AppNotification[]> => {
     const readIds = getReadIds();
     const notifications: AppNotification[] = [];
+    const isAdmin = typeof window !== 'undefined' ? window.location.pathname.startsWith('/admin') : false;
 
-    // ---- 1. Đơn nghỉ phép ----
-    try {
-      const leaves: any[] = (await api.get('/nghi-phep/lich-su')) as any;
-      if (Array.isArray(leaves)) {
-        for (const leave of leaves) {
-          const status: string = leave.TrangThai;
-          if (status !== 'Approved' && status !== 'Rejected') continue;
+    if (isAdmin) {
+      // ---- ADMIN 1. Đơn nghỉ phép ----
+      try {
+        const leaves: any[] = (await api.get('/nghi-phep/tat-ca')) as any;
+        if (Array.isArray(leaves)) {
+          for (const leave of leaves) {
+            const time = new Date(leave.NgayTao || Date.now());
+            // Chỉ hiển thị thông báo trong 30 ngày gần nhất để tránh quá tải
+            const thirtyDaysAgo = Date.now() - 30 * 24 * 3600 * 1000;
+            if (time.getTime() < thirtyDaysAgo) continue;
 
-          const id = `leave_${leave.Id}`;
-          const type: NotificationType =
-            status === 'Approved' ? 'leave_approved' : 'leave_rejected';
-          const time = new Date(leave.NgayDuyet || leave.NgayTao);
-          const tenLoaiPhep =
-            leave.loaiNghiPhep?.TenLoaiPhep ||
-            leave.LoaiNghiPhep?.TenLoaiPhep ||
-            'Nghỉ phép';
-          const from = new Date(leave.NgayBatDau).toLocaleDateString('vi-VN');
-          const to = new Date(leave.NgayKetThuc).toLocaleDateString('vi-VN');
+            const id = `admin_leave_${leave.Id}`;
+            const isRead = leave.TrangThai !== 'Pending' || readIds.has(id);
+            const tenLoaiPhep = leave.loaiNghiPhep?.TenLoaiPhep || leave.LoaiNghiPhep?.TenLoaiPhep || 'Nghỉ phép';
+            const nv = leave.nhanVien?.HoTen || 'Nhân viên';
+            const link = leave.TrangThai !== 'Pending' ? '/admin/nghi-phep?tab=history' : '/admin/nghi-phep';
 
-          notifications.push({
-            id,
-            type,
-            title:
-              status === 'Approved'
-                ? 'Đơn nghỉ phép được duyệt'
-                : 'Đơn nghỉ phép bị từ chối',
-            description:
-              status === 'Approved'
-                ? `${tenLoaiPhep} từ ${from} đến ${to} đã được phê duyệt.`
-                : `${tenLoaiPhep} từ ${from} đến ${to} bị từ chối.${leave.LyDoTuChoi ? ' Lý do: ' + leave.LyDoTuChoi : ''}`,
-            time,
-            link: '/staff/nghi-phep',
-            read: readIds.has(id),
-          });
+            notifications.push({
+              id,
+              type: 'leave_pending',
+              title: 'Đơn nghỉ phép mới chờ duyệt',
+              description: `${nv} vừa tạo yêu cầu ${tenLoaiPhep}.`,
+              time,
+              link,
+              read: isRead,
+            });
+          }
         }
-      }
-    } catch {
-      // Không throw — cứ bỏ qua nếu API lỗi
-    }
+      } catch { }
 
-    // ---- 2. Đơn làm thêm giờ (OT) ----
-    try {
-      const otList: any[] = (await api.get('/cham-cong/lam-them/lich-su')) as any;
-      if (Array.isArray(otList)) {
-        for (const ot of otList) {
-          const status: string = ot.TrangThai;
-          if (status !== 'Approved' && status !== 'Rejected') continue;
+      // ---- ADMIN 2. Đơn làm thêm giờ ----
+      try {
+        const otList: any[] = (await api.get('/cham-cong/lam-them')) as any;
+        if (Array.isArray(otList)) {
+          for (const ot of otList) {
+            const time = new Date(ot.NgayTao || Date.now());
+            // Chỉ hiển thị thông báo trong 30 ngày gần nhất
+            const thirtyDaysAgo = Date.now() - 30 * 24 * 3600 * 1000;
+            if (time.getTime() < thirtyDaysAgo) continue;
 
-          const id = `ot_${ot.Id}`;
-          const type: NotificationType =
-            status === 'Approved' ? 'ot_approved' : 'ot_rejected';
-          const time = new Date(ot.NgayTao);
-          const ngay = new Date(ot.NgayLamThem).toLocaleDateString('vi-VN');
+            const id = `admin_ot_${ot.Id}`;
+            const isRead = ot.TrangThai !== 'Pending' || readIds.has(id);
+            const nv = ot.nhanVien?.HoTen || 'Nhân viên';
+            const ngay = new Date(ot.NgayLamThem).toLocaleDateString('vi-VN');
+            const link = ot.TrangThai !== 'Pending' ? '/admin/lam-them-gio?tab=history' : '/admin/lam-them-gio';
 
-          notifications.push({
-            id,
-            type,
-            title:
-              status === 'Approved'
-                ? 'Đơn làm thêm giờ được duyệt'
-                : 'Đơn làm thêm giờ bị từ chối',
-            description:
-              status === 'Approved'
-                ? `OT ngày ${ngay} (${ot.TongSoGio}h) đã được phê duyệt.`
-                : `OT ngày ${ngay} (${ot.TongSoGio}h) bị từ chối.`,
-            time,
-            link: '/staff/cham-cong',
-            read: readIds.has(id),
-          });
+            notifications.push({
+              id,
+              type: 'ot_pending',
+              title: 'Đơn làm thêm giờ mới chờ duyệt',
+              description: `${nv} đăng ký làm thêm ${ot.TongSoGio}h ngày ${ngay}.`,
+              time,
+              link,
+              read: isRead,
+            });
+          }
         }
-      }
-    } catch {
-      // Bỏ qua nếu lỗi
-    }
+      } catch { }
 
-    // ---- 3. Phiếu lương mới ----
-    try {
-      const payslips: any[] = (await api.get('/luong/phieu-luong-cua-toi')) as any;
-      if (Array.isArray(payslips)) {
-        for (const slip of payslips) {
-          const id = `payslip_${slip.Id}`;
-          const time = new Date(slip.NgayTao || slip.NgayThanhToan || Date.now());
+      // ---- ADMIN 3. Bảng lương mới ----
+      try {
+        const payslips: any[] = (await api.get('/luong/tat-ca-phieu-luong')) as any;
+        if (Array.isArray(payslips)) {
+          const batches = new Map<string, any>();
+          for (const slip of payslips) {
+             const key = `${slip.Thang}-${slip.Nam}`;
+             if (!batches.has(key)) {
+                batches.set(key, slip);
+             } else {
+                const existing = batches.get(key);
+                if (new Date(slip.NgayTao || Date.now()).getTime() > new Date(existing.NgayTao || Date.now()).getTime()) {
+                   batches.set(key, slip);
+                }
+             }
+          }
 
-          // Chỉ tạo thông báo cho phiếu lương trong 3 tháng gần nhất
-          const threeMonthsAgo = Date.now() - 90 * 24 * 3600 * 1000;
-          if (time.getTime() < threeMonthsAgo) continue;
+          for (const [key, slip] of batches.entries()) {
+             const time = new Date(slip.NgayTao || Date.now());
+             // Chỉ hiển thị thông báo trong 30 ngày gần nhất
+             const thirtyDaysAgo = Date.now() - 30 * 24 * 3600 * 1000;
+             if (time.getTime() < thirtyDaysAgo) continue;
 
-          const formatter = new Intl.NumberFormat('vi-VN');
-          const soTien = formatter.format(slip.LuongThucNhan || 0);
-
-          notifications.push({
-            id,
-            type: 'payslip',
-            title: 'Phiếu lương đã sẵn sàng',
-            description: `Phiếu lương tháng ${slip.Thang}/${slip.Nam} — Thực nhận: ${soTien}đ`,
-            time,
-            link: '/staff/phieu-luong',
-            read: readIds.has(id),
-          });
+             const id = `admin_payroll_${slip.Thang}_${slip.Nam}`;
+             notifications.push({
+                id,
+                type: 'payslip',
+                title: 'Bảng lương đã sẵn sàng',
+                description: `Bảng lương tháng ${slip.Thang}/${slip.Nam} đã được tính toán xong.`,
+                time,
+                link: `/admin/luong?month=${slip.Thang}&year=${slip.Nam}`,
+                read: readIds.has(id),
+             });
+          }
         }
+      } catch { }
+    } else {
+      // ---- STAFF 1. Đơn nghỉ phép ----
+      try {
+        const leaves: any[] = (await api.get('/nghi-phep/lich-su')) as any;
+        if (Array.isArray(leaves)) {
+          for (const leave of leaves) {
+            const status: string = leave.TrangThai;
+            if (status !== 'Approved' && status !== 'Rejected') continue;
+
+            const id = `leave_${leave.Id}`;
+            const type: NotificationType =
+              status === 'Approved' ? 'leave_approved' : 'leave_rejected';
+            const time = new Date(leave.NgayDuyet || leave.NgayTao);
+            const tenLoaiPhep =
+              leave.loaiNghiPhep?.TenLoaiPhep ||
+              leave.LoaiNghiPhep?.TenLoaiPhep ||
+              'Nghỉ phép';
+            const from = new Date(leave.NgayBatDau).toLocaleDateString('vi-VN');
+            const to = new Date(leave.NgayKetThuc).toLocaleDateString('vi-VN');
+
+            notifications.push({
+              id,
+              type,
+              title:
+                status === 'Approved'
+                  ? 'Đơn nghỉ phép được duyệt'
+                  : 'Đơn nghỉ phép bị từ chối',
+              description:
+                status === 'Approved'
+                  ? `${tenLoaiPhep} từ ${from} đến ${to} đã được phê duyệt.`
+                  : `${tenLoaiPhep} từ ${from} đến ${to} bị từ chối.${leave.LyDoTuChoi ? ' Lý do: ' + leave.LyDoTuChoi : ''}`,
+              time,
+              link: '/staff/nghi-phep',
+              read: readIds.has(id),
+            });
+          }
+        }
+      } catch {
+        // Bỏ qua nếu lỗi
       }
-    } catch {
-      // Bỏ qua nếu lỗi
+
+      // ---- STAFF 2. Đơn làm thêm giờ (OT) ----
+      try {
+        const otList: any[] = (await api.get('/cham-cong/lam-them/lich-su')) as any;
+        if (Array.isArray(otList)) {
+          for (const ot of otList) {
+            const status: string = ot.TrangThai;
+            if (status !== 'Approved' && status !== 'Rejected') continue;
+
+            const id = `ot_${ot.Id}`;
+            const type: NotificationType =
+              status === 'Approved' ? 'ot_approved' : 'ot_rejected';
+            const time = new Date(ot.NgayTao);
+            const ngay = new Date(ot.NgayLamThem).toLocaleDateString('vi-VN');
+
+            notifications.push({
+              id,
+              type,
+              title:
+                status === 'Approved'
+                  ? 'Đơn làm thêm giờ được duyệt'
+                  : 'Đơn làm thêm giờ bị từ chối',
+              description:
+                status === 'Approved'
+                  ? `OT ngày ${ngay} (${ot.TongSoGio}h) đã được phê duyệt.`
+                  : `OT ngày ${ngay} (${ot.TongSoGio}h) bị từ chối.`,
+              time,
+              link: '/staff/cham-cong',
+              read: readIds.has(id),
+            });
+          }
+        }
+      } catch {
+        // Bỏ qua nếu lỗi
+      }
+
+      // ---- STAFF 3. Phiếu lương mới ----
+      try {
+        const payslips: any[] = (await api.get('/luong/phieu-luong-cua-toi')) as any;
+        if (Array.isArray(payslips)) {
+          for (const slip of payslips) {
+            const id = `payslip_${slip.Id}`;
+            const time = new Date(slip.NgayTao || slip.NgayThanhToan || Date.now());
+
+            // Chỉ tạo thông báo cho phiếu lương trong 3 tháng gần nhất
+            const threeMonthsAgo = Date.now() - 90 * 24 * 3600 * 1000;
+            if (time.getTime() < threeMonthsAgo) continue;
+
+            const formatter = new Intl.NumberFormat('vi-VN');
+            const soTien = formatter.format(slip.LuongThucNhan || 0);
+
+            notifications.push({
+              id,
+              type: 'payslip',
+              title: 'Phiếu lương đã sẵn sàng',
+              description: `Phiếu lương tháng ${slip.Thang}/${slip.Nam} — Thực nhận: ${soTien}đ`,
+              time,
+              link: '/staff/phieu-luong',
+              read: readIds.has(id),
+            });
+          }
+        }
+      } catch {
+        // Bỏ qua nếu lỗi
+      }
     }
 
     // Sắp xếp mới nhất lên đầu

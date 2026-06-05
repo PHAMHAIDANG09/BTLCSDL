@@ -38,6 +38,7 @@ import PayrollDetailModal from "@/components/payroll/PayrollDetailModal";
 import exportService from "@/components/shared/utils/export";
 import confetti from "canvas-confetti";
 import dayjs from "dayjs";
+import { useNotificationStore } from "@/store/notificationStore";
 
 const { Title, Text } = Typography;
 const { Option } = Select;
@@ -82,6 +83,16 @@ export default function AdminPayrollPage() {
   };
 
   useEffect(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const m = params.get("month");
+      const y = params.get("year");
+      if (m) setSelectedMonth(Number(m));
+      if (y) setSelectedYear(Number(y));
+    }
+  }, []);
+
+  useEffect(() => {
     fetchPaySlips();
     fetchEmployees();
   }, [selectedMonth, selectedYear]);
@@ -120,6 +131,9 @@ export default function AdminPayrollPage() {
         origin: { y: 0.6 },
       });
       fetchPaySlips();
+      // Force refresh notifications so the bell updates immediately
+      useNotificationStore.setState({ lastFetchedAt: null } as any);
+      useNotificationStore.getState().fetchNotifications();
     } catch (error: any) {
       message.error(error.message || "Lỗi khi tính lương");
     } finally {

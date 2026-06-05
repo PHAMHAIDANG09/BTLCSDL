@@ -1,11 +1,12 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
-import { Tag, Tooltip, Select, Input, Space, Row, Col, theme } from "antd";
+import { Tag, Select, Input, Space, Row, Col, theme } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import { NhatKyHeThong } from "@/types/system";
 import Table from "@/components/shared/Table/Table";
 import Button from "@/components/shared/Button/Button";
+import Modal from "@/components/shared/Modal/Modal";
 import StatsCard from "@/components/shared/StatsCard/StatsCard";
 import dayjs from "dayjs";
 import {
@@ -16,7 +17,7 @@ import {
   DeleteOutlined,
   DatabaseOutlined,
   SearchOutlined,
-  FilterOutlined,
+  UserOutlined,
 } from "@ant-design/icons";
 
 interface AuditLogTableProps {
@@ -31,28 +32,31 @@ const ACTION_CONFIG: Record<string, { color: string; icon: React.ReactNode; labe
   DELETE: { color: "#ff4d4f", icon: <DeleteOutlined />,     label: "Xóa",      bg: "#fff1f0" },
 };
 
-// Bỏ qua các bản ghi LOGIN — không phải thay đổi dữ liệu nghiệp vụ
 const isLoginEntry = (d: { HanhDong: string }) => d.HanhDong?.toUpperCase() === "LOGIN";
 
 const getActionCfg = (action: string) =>
   ACTION_CONFIG[action?.toUpperCase()] ?? { color: "#8c8c8c", icon: <DatabaseOutlined />, label: action, bg: "#fafafa" };
+
+interface JsonModalState {
+  open: boolean;
+  title: string;
+  data: any;
+}
 
 export default function AuditLogTable({ dataSource, loading, onRefresh }: AuditLogTableProps) {
   const { token } = theme.useToken();
   const [filterAction, setFilterAction] = useState<string | undefined>(undefined);
   const [filterTable, setFilterTable]   = useState<string | undefined>(undefined);
   const [searchId, setSearchId]         = useState("");
+  const [modal, setModal] = useState<JsonModalState>({ open: false, title: "", data: null });
 
-  // Loại bỏ LOGIN trước mọi xử lý
   const nonLoginData = useMemo(() => dataSource.filter((d) => !isLoginEntry(d)), [dataSource]);
 
-  // Unique table names for filter dropdown
   const tableOptions = useMemo(() => {
     const names = [...new Set(nonLoginData.map((d) => d.TenBang))].sort();
     return names.map((n) => ({ label: n, value: n }));
   }, [nonLoginData]);
 
-  // Stats
   const stats = useMemo(() => ({
     total:  nonLoginData.length,
     insert: nonLoginData.filter((d) => d.HanhDong?.toUpperCase() === "INSERT").length,
@@ -60,40 +64,33 @@ export default function AuditLogTable({ dataSource, loading, onRefresh }: AuditL
     delete: nonLoginData.filter((d) => d.HanhDong?.toUpperCase() === "DELETE").length,
   }), [nonLoginData]);
 
-  // Filtered data
   const filtered = useMemo(() => {
     let result = [...nonLoginData];
     if (filterAction) result = result.filter((d) => d.HanhDong?.toUpperCase() === filterAction);
     if (filterTable)  result = result.filter((d) => d.TenBang === filterTable);
-    if (searchId)     result = result.filter((d) => String(d.MaBanGhi).includes(searchId) || String(d.Id).includes(searchId));
+    if (searchId)     result = result.filter((d) => String(d.Id).includes(searchId));
     return result;
   }, [nonLoginData, filterAction, filterTable, searchId]);
 
-  const renderJsonValue = (value: string | null) => {
-    if (!value) return <span style={{ color: "#bfbfbf", fontStyle: "italic" }}>—</span>;
+  const openJsonModal = (title: string, rawValue: string | null) => {
+    if (!rawValue) return;
     try {
-      const parsed = JSON.parse(value);
-      return (
-        <Tooltip
-          overlayStyle={{ maxWidth: 420 }}
-          title={
-            <pre style={{ fontSize: 11, maxHeight: 240, overflow: "auto", margin: 0 }}>
-              {JSON.stringify(parsed, null, 2)}
-            </pre>
-          }
-        >
-          <span style={{ color: "#1677ff", cursor: "pointer", display: "flex", alignItems: "center", gap: 4 }}>
-            <EyeOutlined /> Xem chi tiết
-          </span>
-        </Tooltip>
-      );
+      setModal({ open: true, title, data: JSON.parse(rawValue) });
     } catch {
-      return (
-        <Tooltip title={value}>
-          <span>{value.length > 40 ? `${value.substring(0, 40)}…` : value}</span>
-        </Tooltip>
-      );
+      setModal({ open: true, title, data: rawValue });
     }
+  };
+
+  const renderJsonValue = (value: string | null, label: string) => {
+    if (!value) return <span style={{ color: "#bfbfbf", fontStyle: "italic" }}>—</span>;
+    return (
+      <span
+        onClick={() => openJsonModal(label, value)}
+        style={{ color: "#1677ff", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 4, userSelect: "none" }}
+      >
+        <EyeOutlined /> Xem chi tiết
+      </span>
+    );
   };
 
   const columns: ColumnsType<NhatKyHeThong> = [
@@ -104,7 +101,7 @@ export default function AuditLogTable({ dataSource, loading, onRefresh }: AuditL
       width: 70,
       sorter: (a, b) => a.Id - b.Id,
       defaultSortOrder: "descend",
-      render: (id: number) => <span style={{ color: "#8c8c8c", fontSize: 12 }}>#{id}</span>,
+      render: (id: number) => <span style={{ color: "#262626", fontSize: 13, fontWeight: 700 }}>{id}</span>,
     },
     {
       title: "Hành động",
@@ -145,50 +142,49 @@ export default function AuditLogTable({ dataSource, loading, onRefresh }: AuditL
       ),
     },
     {
-      title: "Mã bản ghi",
-      dataIndex: "MaBanGhi",
-      key: "MaBanGhi",
-      width: 110,
-      render: (val: number) => (
-        <span style={{ fontFamily: "monospace", background: "#f5f5f5", padding: "2px 8px", borderRadius: 4 }}>
-          {val}
-        </span>
-      ),
-    },
-    {
       title: "Giá trị cũ",
       dataIndex: "GiaTriCu",
       key: "GiaTriCu",
       width: 140,
-      render: renderJsonValue,
+      render: (value: string | null) => renderJsonValue(value, "Giá trị cũ"),
     },
     {
       title: "Giá trị mới",
       dataIndex: "GiaTriMoi",
       key: "GiaTriMoi",
       width: 140,
-      render: renderJsonValue,
+      render: (value: string | null) => renderJsonValue(value, "Giá trị mới"),
     },
     {
       title: "Người thực hiện",
-      dataIndex: "MaNguoiThucHienId",
-      key: "MaNguoiThucHienId",
-      width: 140,
-      render: (id: number) => (
-        <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
-          <span
-            style={{
-              width: 26, height: 26, borderRadius: "50%",
-              background: "linear-gradient(135deg,#667eea,#764ba2)",
-              color: "#fff", fontSize: 11, fontWeight: 700,
-              display: "flex", alignItems: "center", justifyContent: "center",
-            }}
-          >
-            {id}
+      dataIndex: "nguoiThucHien",
+      key: "nguoiThucHien",
+      width: 180,
+      render: (_: any, record: NhatKyHeThong) => {
+        const nv = record.nguoiThucHien;
+        const hoTen = nv?.HoTen ?? "—";
+        const maNV  = nv?.MaNhanVien ?? String(record.MaNguoiThucHienId ?? "");
+        const initials = hoTen !== "—" ? hoTen.split(" ").map((w) => w[0]).slice(-2).join("").toUpperCase() : "?";
+        return (
+          <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <span
+              style={{
+                width: 30, height: 30, borderRadius: "50%",
+                background: "linear-gradient(135deg,#667eea,#764ba2)",
+                color: "#fff", fontSize: 11, fontWeight: 700,
+                display: "flex", alignItems: "center", justifyContent: "center",
+                flexShrink: 0,
+              }}
+            >
+              {initials}
+            </span>
+            <span>
+              <div style={{ color: "#262626", fontSize: 13, fontWeight: 600, lineHeight: 1.3 }}>{hoTen}</div>
+              <div style={{ color: "#8c8c8c", fontSize: 11 }}>{maNV}</div>
+            </span>
           </span>
-          <span style={{ color: "#595959", fontSize: 12 }}>NV #{id}</span>
-        </span>
-      ),
+        );
+      },
     },
     {
       title: "Thời gian",
@@ -263,7 +259,6 @@ export default function AuditLogTable({ dataSource, loading, onRefresh }: AuditL
         }}
       >
         <Space wrap size={10}>
-          <FilterOutlined style={{ color: "#8c8c8c" }} />
           <Select
             allowClear
             placeholder="Hành động"
@@ -271,9 +266,9 @@ export default function AuditLogTable({ dataSource, loading, onRefresh }: AuditL
             value={filterAction}
             onChange={setFilterAction}
             options={[
-              { label: "➕ Thêm mới", value: "INSERT" },
-              { label: "✏️ Cập nhật",  value: "UPDATE" },
-              { label: "🗑️ Xóa",       value: "DELETE" },
+              { label: "Thêm mới", value: "INSERT" },
+              { label: "Cập nhật",  value: "UPDATE" },
+              { label: "Xóa",       value: "DELETE" },
             ]}
           />
           <Select
@@ -315,9 +310,65 @@ export default function AuditLogTable({ dataSource, loading, onRefresh }: AuditL
           rowKey="Id"
           loading={loading}
           searchable={false}
-          scroll={{ x: 1100 }}
+          scroll={{ x: 1000 }}
         />
       </div>
+
+      {/* JSON Detail Modal */}
+      <Modal
+        open={modal.open}
+        title={<span style={{ fontWeight: 700, fontSize: 15 }}>{modal.title}</span>}
+        onCancel={() => setModal({ open: false, title: "", data: null })}
+        footer={null}
+        width={640}
+        centered
+        styles={{ body: { padding: "16px 20px" } }}
+      >
+        {modal.data !== null && (
+          <div style={{ maxHeight: 500, overflowY: "auto", borderRadius: 8, border: "1px solid #e8e8e8" }}>
+            {typeof modal.data === "object" ? (
+              <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
+                <thead style={{ position: "sticky", top: 0, zIndex: 1 }}>
+                  <tr>
+                    <th style={{ textAlign: "left", padding: "8px 14px", background: "#f5f5f5", fontWeight: 600, color: "#595959", width: "38%", borderBottom: "1px solid #e8e8e8" }}>
+                      Trường
+                    </th>
+                    <th style={{ textAlign: "left", padding: "8px 14px", background: "#f5f5f5", fontWeight: 600, color: "#595959", borderBottom: "1px solid #e8e8e8" }}>
+                      Giá trị
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {Object.entries(modal.data).map(([key, val], idx) => (
+                    <tr key={key} style={{ background: idx % 2 === 0 ? "#fff" : "#fafafa" }}>
+                      <td style={{ padding: "8px 14px", borderTop: "1px solid #f0f0f0", color: "#1677ff", fontWeight: 600, fontFamily: "monospace", fontSize: 12 }}>
+                        {key}
+                      </td>
+                      <td style={{ padding: "8px 14px", borderTop: "1px solid #f0f0f0", color: "#262626", wordBreak: "break-all", fontSize: 13 }}>
+                        {val === null || val === undefined
+                          ? <span style={{ color: "#bfbfbf", fontStyle: "italic" }}>null</span>
+                          : typeof val === "object"
+                            ? <pre style={{ margin: 0, fontSize: 11, whiteSpace: "pre-wrap" }}>{JSON.stringify(val, null, 2)}</pre>
+                            : String(val)
+                        }
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            ) : (
+              <pre style={{ background: "#f8f9fa", padding: 16, fontSize: 12, margin: 0, whiteSpace: "pre-wrap", wordBreak: "break-all" }}>
+                {String(modal.data)}
+              </pre>
+            )}
+          </div>
+        )}
+        <div style={{ textAlign: "right", marginTop: 16 }}>
+          <Button onClick={() => setModal({ open: false, title: "", data: null })}>
+            Đóng
+          </Button>
+        </div>
+      </Modal>
     </div>
   );
 }

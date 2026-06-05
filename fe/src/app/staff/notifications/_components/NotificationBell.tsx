@@ -34,8 +34,10 @@ const getTypeLabel = (type: NotificationType) => {
   const map: Record<NotificationType, string> = {
     leave_approved: "Nghỉ phép",
     leave_rejected: "Nghỉ phép",
+    leave_pending: "Nghỉ phép",
     ot_approved: "Làm thêm",
     ot_rejected: "Làm thêm",
+    ot_pending: "Làm thêm",
     payslip: "Lương",
   };
   return map[type] || "Thông báo";
@@ -45,8 +47,10 @@ const getTypeTagColor = (type: NotificationType) => {
   const map: Record<NotificationType, string> = {
     leave_approved: "success",
     leave_rejected: "error",
+    leave_pending: "warning",
     ot_approved: "processing",
     ot_rejected: "error",
+    ot_pending: "warning",
     payslip: "warning",
   };
   return map[type] || "default";
@@ -61,6 +65,8 @@ const getTypeColor = (type: NotificationType, token: any) => {
       return token.colorError;
     case "ot_approved":
       return token.colorInfo;
+    case "leave_pending":
+    case "ot_pending":
     case "payslip":
       return token.colorWarning;
     default:
@@ -173,7 +179,7 @@ export const NotificationBell: React.FC = () => {
   const handleItemClick = (id: string, link: string) => {
     markAsRead(id);
     setOpen(false);
-    router.push(link);
+    router.push(link || allNotificationsLink);
   };
 
   // Hiển thị tối đa 5 thông báo trong dropdown
