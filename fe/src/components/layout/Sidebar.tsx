@@ -23,6 +23,9 @@ import {
   HomeOutlined,
   BellOutlined,
   FileTextOutlined,
+  PartitionOutlined,
+  SolutionOutlined,
+  SlidersOutlined,
 } from "@ant-design/icons";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -87,6 +90,16 @@ const adminMenuItems = [
         label: <Link href="/admin/co-cau-to-chuc">Cơ cấu tổ chức</Link>,
       },
       {
+        key: "phong-ban",
+        icon: <PartitionOutlined />,
+        label: <Link href="/admin/phong-ban">Phòng ban</Link>,
+      },
+      {
+        key: "chuc-vu",
+        icon: <SolutionOutlined />,
+        label: <Link href="/admin/chuc-vu">Chức vụ</Link>,
+      },
+      {
         key: "hop-dong",
         icon: <FileProtectOutlined />,
         label: <Link href="/admin/hop-dong">Hợp đồng</Link>,
@@ -107,6 +120,11 @@ const adminMenuItems = [
         key: "nghi-phep",
         icon: <CalendarOutlined />,
         label: <Link href="/admin/nghi-phep">Nghỉ phép</Link>,
+      },
+      {
+        key: "loai-phep",
+        icon: <SlidersOutlined />,
+        label: <Link href="/admin/loai-phep">Loại phép</Link>,
       },
       {
         key: "lam-them-gio",
