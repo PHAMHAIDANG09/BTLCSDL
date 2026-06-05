@@ -130,7 +130,7 @@ export default function PositionPage() {
       <div className="mb-6 flex justify-between items-center">
         <div>
           <Title level={3} className="m-0 font-bold flex items-center gap-2">
-            <SolutionOutlined style={{ color: "var(--primary-color)" }} />
+            <SolutionOutlined style={{ color: token.colorPrimary }} />
             Quản lý Chức vụ
           </Title>
           <Text type="secondary">Quản lý các vị trí chức vụ, cấp bậc và vai trò chuyên môn trong doanh nghiệp</Text>
@@ -138,7 +138,7 @@ export default function PositionPage() {
       </div>
 
       {/* Stats Section */}
-      <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
+      <Row gutter={[16, 16]} style={{ marginBottom: 0 }}>
         <Col xs={24} sm={8}>
           <StatsCard 
             label="TỔNG SỐ CHỨC VỤ"
@@ -177,7 +177,7 @@ export default function PositionPage() {
           type="primary"
           icon={<PlusOutlined />}
           onClick={handleAdd}
-          className="bg-red-700 hover:bg-red-800 border-none rounded-lg shadow-sm"
+          className="rounded-lg shadow-sm"
         >
           Thêm chức vụ
         </Button>

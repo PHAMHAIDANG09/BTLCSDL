@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Table, Space, Typography, Tooltip, Tag, Input } from "antd";
+import { Table, Space, Typography, Tooltip, Tag, Input, theme } from "antd";
 import { EditOutlined, DeleteOutlined, CheckOutlined, CloseOutlined, SearchOutlined } from "@ant-design/icons";
 import { LeaveType } from "../page";
 import Button from "@/components/shared/Button/Button";
@@ -21,6 +21,7 @@ export default function LeaveTypeTable({
   onEdit,
   onDelete,
 }: LeaveTypeTableProps) {
+  const { token } = theme.useToken();
 
   // Search filter helper for columns
   const getColumnSearchProps = (dataIndex: keyof LeaveType, placeholder: string) => ({
@@ -72,7 +73,7 @@ export default function LeaveTypeTable({
       key: "TenLoaiPhep",
       width: "35%",
       ...getColumnSearchProps("TenLoaiPhep", "Tìm tên loại phép..."),
-      render: (text: string) => <Text strong className="text-red-700">{text}</Text>,
+      render: (text: string) => <Text strong style={{ color: token.colorPrimary }}>{text}</Text>,
     },
     {
       title: "Hưởng lương",

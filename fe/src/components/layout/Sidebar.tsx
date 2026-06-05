@@ -144,6 +144,11 @@ const adminMenuItems = [
         label: <Link href="/admin/luong">Bảng lương</Link>,
       },
       {
+        key: "phieu-luong",
+        icon: <DollarOutlined />,
+        label: <Link href="/admin/phieu-luong">Phiếu lương cá nhân</Link>,
+      },
+      {
         key: "lich-su-luong",
         icon: <HistoryOutlined />,
         label: <Link href="/admin/lich-su-luong">Lịch sử lương</Link>,

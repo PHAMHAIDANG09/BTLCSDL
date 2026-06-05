@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Table, Space, Typography, Tooltip, Input } from "antd";
+import { Table, Space, Typography, Tooltip, Input, theme } from "antd";
 import { EditOutlined, DeleteOutlined, UserOutlined, SearchOutlined } from "@ant-design/icons";
 import { Department } from "@/services/organization.service";
 import Button from "@/components/shared/Button/Button";
@@ -25,6 +25,7 @@ export default function DepartmentTable({
   onEdit,
   onDelete,
 }: DepartmentTableProps) {
+  const { token } = theme.useToken();
 
   // Search filter helper for columns
   const getColumnSearchProps = (dataIndex: keyof Department, placeholder: string) => ({
@@ -76,7 +77,7 @@ export default function DepartmentTable({
       key: "MaPhong",
       width: "15%",
       ...getColumnSearchProps("MaPhong", "Tìm mã phòng..."),
-      render: (text: string) => <Text strong className="text-red-700">{text}</Text>,
+      render: (text: string) => <Text strong style={{ color: token.colorPrimary }}>{text}</Text>,
     },
     {
       title: "Tên phòng ban",

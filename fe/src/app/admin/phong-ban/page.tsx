@@ -151,7 +151,7 @@ export default function DepartmentPage() {
       <div className="mb-6 flex justify-between items-center">
         <div>
           <Title level={3} className="m-0 font-bold flex items-center gap-2">
-            <PartitionOutlined style={{ color: "var(--primary-color)" }} />
+            <PartitionOutlined style={{ color: token.colorPrimary }} />
             Quản lý Phòng ban
           </Title>
           <Text type="secondary">Quản lý cơ cấu phòng ban và sơ đồ tổ chức của doanh nghiệp</Text>
@@ -159,7 +159,7 @@ export default function DepartmentPage() {
       </div>
 
       {/* Stats Section */}
-      <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
+      <Row gutter={[16, 16]} style={{ marginBottom: 0 }}>
         <Col xs={24} sm={8}>
           <StatsCard 
             label="TỔNG SỐ PHÒNG BAN"

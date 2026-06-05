@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Table, Space, Typography, Tooltip, Input } from "antd";
+import { Table, Space, Typography, Tooltip, Input, theme } from "antd";
 import { EditOutlined, DeleteOutlined, SearchOutlined } from "@ant-design/icons";
 import { Position } from "@/services/organization.service";
 import Button from "@/components/shared/Button/Button";
@@ -21,6 +21,7 @@ export default function PositionTable({
   onEdit,
   onDelete,
 }: PositionTableProps) {
+  const { token } = theme.useToken();
 
   // Search filter helper for columns
   const getColumnSearchProps = (dataIndex: keyof Position, placeholder: string) => ({
@@ -72,7 +73,7 @@ export default function PositionTable({
       key: "TenChucVu",
       width: "35%",
       ...getColumnSearchProps("TenChucVu", "Tìm tên chức vụ..."),
-      render: (text: string) => <Text strong className="text-blue-700">{text}</Text>,
+      render: (text: string) => <Text strong style={{ color: token.colorPrimary }}>{text}</Text>,
     },
     {
       title: "Cấp độ",

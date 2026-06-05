@@ -77,6 +77,18 @@
   transition: all 0.3s ease !important;
 }
 
+.admin-btn.ant-btn-primary:hover {
+  background-color: var(--primary-hover) !important;
+  border-color: var(--primary-hover) !important;
+  opacity: 0.9;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(var(--primary-rgb), 0.15) !important;
+}
+
+.admin-btn.ant-btn-primary:active {
+  transform: translateY(0);
+}
+
 /* Admin shell polish */
 .admin-main-layout, 
 .ant-layout, 

@@ -16,7 +16,7 @@ const { Title, Text } = Typography;
 
 const fmt = (n: number) => n.toLocaleString("vi-VN") + " đ";
 
-export default function StaffPayslipPage() {
+export default function AdminPayslipPage() {
   const { user } = useAuthStore();
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState<PhieuLuong[]>([]);
@@ -210,7 +210,7 @@ export default function StaffPayslipPage() {
     <div className="p-6">
       <div className="flex justify-between items-center mb-6">
         <div>
-          <Title level={2} className="m-0">Phiếu lương</Title>
+          <Title level={2} className="m-0">Phiếu lương cá nhân</Title>
           <Text type="secondary">Lịch sử và chi tiết các khoản thu nhập của bạn</Text>
         </div>
         <Button

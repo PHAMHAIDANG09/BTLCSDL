@@ -138,7 +138,7 @@ export default function LeaveTypePage() {
       <div className="mb-6 flex justify-between items-center">
         <div>
           <Title level={3} className="m-0 font-bold flex items-center gap-2">
-            <SlidersOutlined style={{ color: "var(--primary-color)" }} />
+            <SlidersOutlined style={{ color: token.colorPrimary }} />
             Cấu hình Loại phép
           </Title>
           <Text type="secondary">Quản lý định nghĩa các loại nghỉ phép và cấu hình chế độ hưởng lương tương ứng</Text>
@@ -146,7 +146,7 @@ export default function LeaveTypePage() {
       </div>
 
       {/* Stats Section */}
-      <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
+      <Row gutter={[16, 16]} style={{ marginBottom: 0 }}>
         <Col xs={24} sm={8}>
           <StatsCard 
             label="TỔNG SỐ LOẠI PHÉP"
@@ -185,7 +185,7 @@ export default function LeaveTypePage() {
           type="primary"
           icon={<PlusOutlined />}
           onClick={handleAdd}
-          className="bg-red-700 hover:bg-red-800 border-none rounded-lg shadow-sm"
+          className="rounded-lg shadow-sm"
         >
           Thêm loại phép
         </Button>

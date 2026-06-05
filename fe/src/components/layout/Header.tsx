@@ -69,6 +69,7 @@ const SEGMENT_MAP: Record<string, string> = {
   payslip: "Phiếu lương",
   "my-requests": "Yêu cầu của tôi",
   "nghi-phep": "Nghỉ phép",
+  "phieu-luong": "Phiếu lương cá nhân",
 };
 
 const getBreadcrumbs = (
