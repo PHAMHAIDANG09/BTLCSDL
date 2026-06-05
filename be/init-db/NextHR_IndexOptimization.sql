@@ -1,21 +1,8 @@
-USE NextHR;
+﻿USE NextHR;
 GO
 
--- =============================================================================================================
--- NEXTHR - INDEX OPTIMIZATION SCRIPT (FIXED v2.0)
--- Tác giả: NextHR Dev Team
--- Phiên bản: 2.0 - Fixed
--- Danh sách bug đã sửa:
---   [BUG-01] IDX_DonNghiPhep_Pending_Filtered: Key column NguoiDuyetId luôn NULL khi TrangThai='Pending'
---            => Đổi key thành (NgayTao DESC, MaNhanVienId) để index thực sự có dữ liệu
---   [BUG-02] IDX_DonLamThem_Pending_Filtered: Cùng lỗi NguoiDuyetId NULL khi Pending
---            => Đổi key thành (NgayTao DESC, MaNhanVienId)
---   [BUG-03] IDX_PhieuLuong_ChuaThanhToan: SQL Server KHÔNG hỗ trợ IN() trong mệnh đề WHERE của Filtered Index
---            => Đổi thành WHERE TrangThai <> N'Paid' (tương đương, SQL Server chấp nhận)
---   [BUG-04] Section 5.1 - Query kiểm tra: STRING_AGG bị nhập nhằng khi ORDER BY key_ordinal
---            với cả included và key columns trong cùng GROUP BY => Tách thành 2 subquery riêng
---   [BUG-05] Phần 4.1: Biến cursor bị khai báo ngoài scope trong một số version SSMS => Bọc vào BEGIN/END
--- =============================================================================================================
+-- NextHR - Index Optimization
+-- Phan tich hien trang, xoa index cu, tao lai index toi uu, bao tri va thong ke.
 
 SET NOCOUNT ON;
 
@@ -160,7 +147,7 @@ PRINT N'--- Phần 3: Tạo index tối ưu ---';
 -- BẢNG: NhanVien (bảng trung tâm, query nhiều nhất)
 -- ─────────────────────────────────────────────
 
--- [NV-01] Tìm nhân viên theo Phòng Ban + Trạng thái (query phổ biến nhất trong HR)
+-- Tìm nhân viên theo Phòng Ban + Trạng thái (query phổ biến nhất trong HR)
 -- Use case: WHERE MaPhongId = ? AND TrangThai = 'Active'
 IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'IDX_NhanVien_PhongBan_TrangThai' AND object_id = OBJECT_ID('dbo.NhanVien'))
 CREATE NONCLUSTERED INDEX IDX_NhanVien_PhongBan_TrangThai
@@ -169,7 +156,7 @@ INCLUDE (MaNhanVien, HoTen, Email, SoDienThoai, MaChucVuId, NgayVaoLam)
 WITH (PAD_INDEX = ON, FILLFACTOR = 85, STATISTICS_NORECOMPUTE = OFF);
 GO
 
--- [NV-02] Filtered Index: Chỉ nhân viên đang Active (tiết kiệm 60-70% storage)
+-- Filtered Index: Chỉ nhân viên đang Active (tiết kiệm 60-70% storage)
 -- Use case: Dashboard, báo cáo nhân sự active
 IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'IDX_NhanVien_Active_Filtered' AND object_id = OBJECT_ID('dbo.NhanVien'))
 CREATE NONCLUSTERED INDEX IDX_NhanVien_Active_Filtered
@@ -179,7 +166,7 @@ WHERE TrangThai = N'Active'
 WITH (PAD_INDEX = ON, FILLFACTOR = 90);
 GO
 
--- [NV-03] Tìm kiếm nhân viên theo tên (hỗ trợ prefix search)
+-- Tìm kiếm nhân viên theo tên (hỗ trợ prefix search)
 -- Use case: WHERE HoTen LIKE 'Nguyen%'
 IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'IDX_NhanVien_HoTen' AND object_id = OBJECT_ID('dbo.NhanVien'))
 CREATE NONCLUSTERED INDEX IDX_NhanVien_HoTen
@@ -188,7 +175,7 @@ INCLUDE (MaNhanVien, Email, MaPhongId, TrangThai)
 WITH (PAD_INDEX = ON, FILLFACTOR = 80);
 GO
 
--- [NV-04] Lookup theo Vai Trò (phân quyền hệ thống)
+-- Lookup theo Vai Trò (phân quyền hệ thống)
 -- Use case: WHERE MaVaiTroId = 2 AND TrangThai = 'Active'
 IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'IDX_NhanVien_VaiTro_TrangThai' AND object_id = OBJECT_ID('dbo.NhanVien'))
 CREATE NONCLUSTERED INDEX IDX_NhanVien_VaiTro_TrangThai
@@ -197,7 +184,7 @@ INCLUDE (MaNhanVien, HoTen, Email, MaPhongId)
 WITH (FILLFACTOR = 90);
 GO
 
--- [NV-05] Tìm nhân viên đã nghỉ việc theo khoảng thời gian (báo cáo turnover)
+-- Tìm nhân viên đã nghỉ việc theo khoảng thời gian (báo cáo turnover)
 -- Use case: WHERE NgayNghiViec BETWEEN @Start AND @End
 IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'IDX_NhanVien_NgayNghiViec_Filtered' AND object_id = OBJECT_ID('dbo.NhanVien'))
 CREATE NONCLUSTERED INDEX IDX_NhanVien_NgayNghiViec_Filtered
@@ -212,7 +199,7 @@ GO
 -- BẢNG: ChamCong (bảng lớn nhất, ghi mỗi ngày)
 -- ─────────────────────────────────────────────
 
--- [CC-01] Chấm công theo nhân viên + khoảng ngày (query chính của module chấm công)
+-- Chấm công theo nhân viên + khoảng ngày (query chính của module chấm công)
 -- Use case: WHERE MaNhanVienId = ? AND NgayLamViec BETWEEN ? AND ?
 IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'IDX_ChamCong_NhanVien_Ngay' AND object_id = OBJECT_ID('dbo.ChamCong'))
 CREATE NONCLUSTERED INDEX IDX_ChamCong_NhanVien_Ngay
@@ -221,7 +208,7 @@ INCLUDE (GioVao, GioRa, SoGioLam, SoPhutDiMuon, TrangThai, NguonChamCong)
 WITH (PAD_INDEX = ON, FILLFACTOR = 80);
 GO
 
--- [CC-02] Điểm danh hàng ngày toàn bộ nhân viên
+-- Điểm danh hàng ngày toàn bộ nhân viên
 -- Use case: WHERE NgayLamViec = @Today (màn hình điểm danh)
 IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'IDX_ChamCong_Ngay_NhanVien' AND object_id = OBJECT_ID('dbo.ChamCong'))
 CREATE NONCLUSTERED INDEX IDX_ChamCong_Ngay_NhanVien
@@ -230,7 +217,7 @@ INCLUDE (MaNhanVienId, GioVao, GioRa, SoGioLam, SoPhutDiMuon)
 WITH (FILLFACTOR = 80);
 GO
 
--- [CC-03] Filtered: Thống kê đi muộn trong tháng (báo cáo kỷ luật)
+-- Filtered: Thống kê đi muộn trong tháng (báo cáo kỷ luật)
 -- Use case: WHERE TrangThai = 'DiMuon' AND NgayLamViec BETWEEN ...
 IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'IDX_ChamCong_DiMuon_Filtered' AND object_id = OBJECT_ID('dbo.ChamCong'))
 CREATE NONCLUSTERED INDEX IDX_ChamCong_DiMuon_Filtered
@@ -240,7 +227,7 @@ WHERE TrangThai = N'DiMuon'
 WITH (FILLFACTOR = 85);
 GO
 
--- [CC-04] Lọc theo nguồn chấm công (audit, phân tích dữ liệu)
+-- Lọc theo nguồn chấm công (audit, phân tích dữ liệu)
 IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'IDX_ChamCong_NguonChamCong' AND object_id = OBJECT_ID('dbo.ChamCong'))
 CREATE NONCLUSTERED INDEX IDX_ChamCong_NguonChamCong
 ON dbo.ChamCong (NguonChamCong, NgayLamViec DESC)
@@ -253,7 +240,7 @@ GO
 -- BẢNG: PhieuLuong (tính toán phức tạp, query cao điểm cuối tháng)
 -- ─────────────────────────────────────────────
 
--- [PL-01] Phiếu lương theo nhân viên + kỳ lương
+-- Phiếu lương theo nhân viên + kỳ lương
 -- Use case: WHERE MaNhanVienId = ? AND Nam = ? AND Thang = ?
 IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'IDX_PhieuLuong_NhanVien_KyLuong' AND object_id = OBJECT_ID('dbo.PhieuLuong'))
 CREATE NONCLUSTERED INDEX IDX_PhieuLuong_NhanVien_KyLuong
@@ -262,7 +249,7 @@ INCLUDE (LuongCoBan, PhuCap, TienLamThem, TongLuongGop, LuongThucNhan, TrangThai
 WITH (FILLFACTOR = 90);
 GO
 
--- [PL-02] Thống kê toàn bộ phiếu lương trong tháng (chạy cuối tháng)
+-- Thống kê toàn bộ phiếu lương trong tháng (chạy cuối tháng)
 -- Use case: WHERE Nam = ? AND Thang = ? AND TrangThai = ?
 IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'IDX_PhieuLuong_KyLuong_TrangThai' AND object_id = OBJECT_ID('dbo.PhieuLuong'))
 CREATE NONCLUSTERED INDEX IDX_PhieuLuong_KyLuong_TrangThai
@@ -271,7 +258,7 @@ INCLUDE (MaNhanVienId, LuongCoBan, PhuCap, TienLamThem, TongLuongGop, LuongThucN
 WITH (FILLFACTOR = 90);
 GO
 
--- [PL-03] ✅ BUG-03 FIXED: Filtered Index - Phiếu lương chưa thanh toán
+-- BUG-03 FIXED: Filtered Index - Phiếu lương chưa thanh toán
 -- LỖI CŨ: WHERE TrangThai IN (N'Draft', N'Approved')
 -- SQL Server KHÔNG hỗ trợ IN() trong Filtered Index predicate
 -- SỬA: Dùng <> N'Paid' - logic tương đương, SQL Server chấp nhận
@@ -279,11 +266,11 @@ IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'IDX_PhieuLuong_ChuaThanhT
 CREATE NONCLUSTERED INDEX IDX_PhieuLuong_ChuaThanhToan
 ON dbo.PhieuLuong (Nam DESC, Thang DESC, MaNhanVienId)
 INCLUDE (TongLuongGop, LuongThucNhan, NguoiTaoId, TrangThai)
-WHERE TrangThai <> N'Paid'          -- ✅ FIXED: dùng <> thay vì IN()
+WHERE TrangThai <> N'Paid'          -- FIXED: dùng <> thay vì IN()
 WITH (FILLFACTOR = 95);
 GO
 
--- [PL-04] Tổng hợp lương theo phòng ban (join với NhanVien)
+-- Tổng hợp lương theo phòng ban (join với NhanVien)
 IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'IDX_PhieuLuong_Nam_Thang' AND object_id = OBJECT_ID('dbo.PhieuLuong'))
 CREATE NONCLUSTERED INDEX IDX_PhieuLuong_Nam_Thang
 ON dbo.PhieuLuong (Nam DESC, Thang DESC)
@@ -296,7 +283,7 @@ GO
 -- BẢNG: DonNghiPhep (workflow duyệt phép)
 -- ─────────────────────────────────────────────
 
--- [DNP-01] Đơn nghỉ phép của nhân viên (tab "Đơn của tôi")
+-- Đơn nghỉ phép của nhân viên (tab "Đơn của tôi")
 IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'IDX_DonNghiPhep_NhanVien_Ngay' AND object_id = OBJECT_ID('dbo.DonNghiPhep'))
 CREATE NONCLUSTERED INDEX IDX_DonNghiPhep_NhanVien_Ngay
 ON dbo.DonNghiPhep (MaNhanVienId, NgayBatDau DESC)
@@ -304,20 +291,20 @@ INCLUDE (MaLoaiPhepId, NgayKetThuc, TongSoNgay, TrangThai, NguoiDuyetId, NgayDuy
 WITH (FILLFACTOR = 85);
 GO
 
--- [DNP-02] ✅ BUG-01 FIXED: Đơn chờ duyệt (Manager xem danh sách cần duyệt)
+-- BUG-01 FIXED: Đơn chờ duyệt (Manager xem danh sách cần duyệt)
 -- LỖI CŨ: Key column là NguoiDuyetId — nhưng khi TrangThai='Pending' thì NguoiDuyetId luôn NULL
 --         => Filtered Index sẽ không bao giờ được dùng, toàn bộ rows trong index là NULL key
 -- SỬA: Đổi key thành (NgayTao DESC, MaNhanVienId) để Manager có thể sort theo thời gian nộp đơn
 --      INCLUDE NguoiDuyetId để Manager có thể lọc theo phòng ban (join NhanVien)
 IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'IDX_DonNghiPhep_Pending_Filtered' AND object_id = OBJECT_ID('dbo.DonNghiPhep'))
 CREATE NONCLUSTERED INDEX IDX_DonNghiPhep_Pending_Filtered
-ON dbo.DonNghiPhep (NgayTao DESC, MaNhanVienId)   -- ✅ FIXED: bỏ NguoiDuyetId khỏi key
+ON dbo.DonNghiPhep (NgayTao DESC, MaNhanVienId)   -- FIXED: bỏ NguoiDuyetId khỏi key
 INCLUDE (MaLoaiPhepId, NgayBatDau, NgayKetThuc, TongSoNgay, LyDo)
 WHERE TrangThai = N'Pending'
 WITH (FILLFACTOR = 90);
 GO
 
--- [DNP-03] Thống kê đơn nghỉ phép theo loại + khoảng thời gian
+-- Thống kê đơn nghỉ phép theo loại + khoảng thời gian
 IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'IDX_DonNghiPhep_LoaiPhep_Ngay' AND object_id = OBJECT_ID('dbo.DonNghiPhep'))
 CREATE NONCLUSTERED INDEX IDX_DonNghiPhep_LoaiPhep_Ngay
 ON dbo.DonNghiPhep (MaLoaiPhepId, NgayBatDau DESC, TrangThai)
@@ -330,7 +317,7 @@ GO
 -- BẢNG: DonLamThem (OT workflow)
 -- ─────────────────────────────────────────────
 
--- [DLT-01] Đơn OT của nhân viên
+-- Đơn OT của nhân viên
 IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'IDX_DonLamThem_NhanVien_Ngay' AND object_id = OBJECT_ID('dbo.DonLamThem'))
 CREATE NONCLUSTERED INDEX IDX_DonLamThem_NhanVien_Ngay
 ON dbo.DonLamThem (MaNhanVienId, NgayLamThem DESC)
@@ -338,18 +325,18 @@ INCLUDE (LoaiOT, TongSoGio, HeSoOT, TrangThai, NguoiDuyetId)
 WITH (FILLFACTOR = 85);
 GO
 
--- [DLT-02] ✅ BUG-02 FIXED: Đơn OT chờ duyệt
+-- BUG-02 FIXED: Đơn OT chờ duyệt
 -- LỖI CŨ: Key column NguoiDuyetId luôn NULL khi TrangThai='Pending' — index rỗng hoàn toàn
 -- SỬA: Đổi key thành (NgayTao DESC, MaNhanVienId) giống logic fix DNP-02
 IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'IDX_DonLamThem_Pending_Filtered' AND object_id = OBJECT_ID('dbo.DonLamThem'))
 CREATE NONCLUSTERED INDEX IDX_DonLamThem_Pending_Filtered
-ON dbo.DonLamThem (NgayTao DESC, MaNhanVienId)    -- ✅ FIXED: bỏ NguoiDuyetId khỏi key
+ON dbo.DonLamThem (NgayTao DESC, MaNhanVienId)    -- FIXED: bỏ NguoiDuyetId khỏi key
 INCLUDE (NgayLamThem, LoaiOT, TongSoGio, HeSoOT, LyDo)
 WHERE TrangThai = N'Pending'
 WITH (FILLFACTOR = 90);
 GO
 
--- [DLT-03] Tổng hợp OT trong tháng để tính tiền lương
+-- Tổng hợp OT trong tháng để tính tiền lương
 -- Use case: WHERE NgayLamThem BETWEEN ... AND TrangThai = 'Approved'
 IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'IDX_DonLamThem_Approved_Thang' AND object_id = OBJECT_ID('dbo.DonLamThem'))
 CREATE NONCLUSTERED INDEX IDX_DonLamThem_Approved_Thang
@@ -364,7 +351,7 @@ GO
 -- BẢNG: HopDong
 -- ─────────────────────────────────────────────
 
--- [HD-01] Hợp đồng của nhân viên theo trạng thái
+-- Hợp đồng của nhân viên theo trạng thái
 IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'IDX_HopDong_NhanVien_TrangThai' AND object_id = OBJECT_ID('dbo.HopDong'))
 CREATE NONCLUSTERED INDEX IDX_HopDong_NhanVien_TrangThai
 ON dbo.HopDong (MaNhanVienId, TrangThai)
@@ -372,7 +359,7 @@ INCLUDE (MaHopDong, LoaiHopDong, NgayBatDau, NgayKetThuc, NgayKy)
 WITH (FILLFACTOR = 90);
 GO
 
--- [HD-02] Filtered: Hợp đồng Active (kiểm tra hợp đồng hiện hành)
+-- Filtered: Hợp đồng Active (kiểm tra hợp đồng hiện hành)
 IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'IDX_HopDong_Active_Filtered' AND object_id = OBJECT_ID('dbo.HopDong'))
 CREATE NONCLUSTERED INDEX IDX_HopDong_Active_Filtered
 ON dbo.HopDong (MaNhanVienId, NgayKetThuc)
@@ -381,7 +368,7 @@ WHERE TrangThai = N'Active'
 WITH (FILLFACTOR = 90);
 GO
 
--- [HD-03] Hợp đồng sắp hết hạn (cảnh báo tự động 30 ngày trước)
+-- Hợp đồng sắp hết hạn (cảnh báo tự động 30 ngày trước)
 -- Use case: WHERE NgayKetThuc BETWEEN GETDATE() AND DATEADD(DAY,30,GETDATE()) AND TrangThai='Active'
 IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'IDX_HopDong_NgayHetHan' AND object_id = OBJECT_ID('dbo.HopDong'))
 CREATE NONCLUSTERED INDEX IDX_HopDong_NgayHetHan
@@ -396,7 +383,7 @@ GO
 -- BẢNG: LichSuLuong
 -- ─────────────────────────────────────────────
 
--- [LSL-01] Lấy lương hiện hành của nhân viên (thay thế index gốc, thêm INCLUDE)
+-- Lấy lương hiện hành của nhân viên (thay thế index gốc, thêm INCLUDE)
 IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'IDX_LichSuLuong_HienTai_Covered' AND object_id = OBJECT_ID('dbo.LichSuLuong'))
 CREATE NONCLUSTERED INDEX IDX_LichSuLuong_HienTai_Covered
 ON dbo.LichSuLuong (MaNhanVienId, DangHieuLuc)
@@ -404,7 +391,7 @@ INCLUDE (LuongCoBan, PhuCap, NgayBatDau, NgayKetThuc, NguoiThayDoiId)
 WITH (FILLFACTOR = 90);
 GO
 
--- [LSL-02] Filtered: Chỉ bản ghi lương đang hiệu lực (tránh quét toàn bảng)
+-- Filtered: Chỉ bản ghi lương đang hiệu lực (tránh quét toàn bảng)
 -- Use case: WHERE DangHieuLuc = 1 (query rất phổ biến khi tính lương)
 IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'IDX_LichSuLuong_DangHieuLuc_Filtered' AND object_id = OBJECT_ID('dbo.LichSuLuong'))
 CREATE NONCLUSTERED INDEX IDX_LichSuLuong_DangHieuLuc_Filtered
@@ -419,7 +406,7 @@ GO
 -- BẢNG: LichSuDieuChuyen
 -- ─────────────────────────────────────────────
 
--- [LSDC-01] Lịch sử điều chuyển theo nhân viên (mới nhất trước)
+-- Lịch sử điều chuyển theo nhân viên (mới nhất trước)
 IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'IDX_LichSuDieuChuyen_NhanVien' AND object_id = OBJECT_ID('dbo.LichSuDieuChuyen'))
 CREATE NONCLUSTERED INDEX IDX_LichSuDieuChuyen_NhanVien
 ON dbo.LichSuDieuChuyen (MaNhanVienId, NgayHieuLuc DESC)
@@ -427,7 +414,7 @@ INCLUDE (PhongBanCuId, PhongBanMoiId, ChucVuCuId, ChucVuMoiId, LyDo, NguoiDuyetI
 WITH (FILLFACTOR = 90);
 GO
 
--- [LSDC-02] Lịch sử ai đã đến/rời phòng ban
+-- Lịch sử ai đã đến/rời phòng ban
 IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'IDX_LichSuDieuChuyen_PhongBanMoi' AND object_id = OBJECT_ID('dbo.LichSuDieuChuyen'))
 CREATE NONCLUSTERED INDEX IDX_LichSuDieuChuyen_PhongBanMoi
 ON dbo.LichSuDieuChuyen (PhongBanMoiId, NgayHieuLuc DESC)
@@ -440,7 +427,7 @@ GO
 -- BẢNG: SoDuPhep
 -- ─────────────────────────────────────────────
 
--- [SDP-01] Số dư phép theo năm (PK đã cover MaNhanVienId+MaLoaiPhepId+Nam, thêm index cho Nam)
+-- Số dư phép theo năm (PK đã cover MaNhanVienId+MaLoaiPhepId+Nam, thêm index cho Nam)
 IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'IDX_SoDuPhep_Nam_NhanVien' AND object_id = OBJECT_ID('dbo.SoDuPhep'))
 CREATE NONCLUSTERED INDEX IDX_SoDuPhep_Nam_NhanVien
 ON dbo.SoDuPhep (Nam DESC, MaNhanVienId)
@@ -453,7 +440,7 @@ GO
 -- BẢNG: NhatKyHeThong (Audit Log - ghi nhiều, đọc ít)
 -- ─────────────────────────────────────────────
 
--- [NK-01] Tìm log theo bảng + hành động + thời gian (audit query)
+-- Tìm log theo bảng + hành động + thời gian (audit query)
 IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'IDX_NhatKy_Bang_HanhDong_Ngay' AND object_id = OBJECT_ID('dbo.NhatKyHeThong'))
 CREATE NONCLUSTERED INDEX IDX_NhatKy_Bang_HanhDong_Ngay
 ON dbo.NhatKyHeThong (TenBang, HanhDong, NgayThucHien DESC)
@@ -461,7 +448,7 @@ INCLUDE (MaBanGhi, MaNguoiThucHienId)
 WITH (PAD_INDEX = ON, FILLFACTOR = 70);  -- FillFactor 70: bảng INSERT nhiều nhất
 GO
 
--- [NK-02] Tìm log theo người thực hiện (ai đã làm gì)
+-- Tìm log theo người thực hiện (ai đã làm gì)
 IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'IDX_NhatKy_NguoiThucHien_Ngay' AND object_id = OBJECT_ID('dbo.NhatKyHeThong'))
 CREATE NONCLUSTERED INDEX IDX_NhatKy_NguoiThucHien_Ngay
 ON dbo.NhatKyHeThong (MaNguoiThucHienId, NgayThucHien DESC)
@@ -469,7 +456,7 @@ INCLUDE (TenBang, HanhDong, MaBanGhi)
 WITH (FILLFACTOR = 70);
 GO
 
--- [NK-03] Lịch sử thay đổi của 1 record cụ thể
+-- Lịch sử thay đổi của 1 record cụ thể
 IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'IDX_NhatKy_Bang_MaBanGhi' AND object_id = OBJECT_ID('dbo.NhatKyHeThong'))
 CREATE NONCLUSTERED INDEX IDX_NhatKy_Bang_MaBanGhi
 ON dbo.NhatKyHeThong (TenBang, MaBanGhi, NgayThucHien DESC)
@@ -481,7 +468,7 @@ GO
 -- BẢNG: NgayLe (bảng nhỏ, ít thay đổi)
 -- ─────────────────────────────────────────────
 
--- [NL-01] Kiểm tra ngày có phải ngày lễ không (dùng khi tính OT)
+-- Kiểm tra ngày có phải ngày lễ không (dùng khi tính OT)
 IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'IDX_NgayLe_Ngay' AND object_id = OBJECT_ID('dbo.NgayLe'))
 CREATE NONCLUSTERED INDEX IDX_NgayLe_Ngay
 ON dbo.NgayLe (NgayLe ASC)
@@ -494,7 +481,7 @@ GO
 -- BẢNG: PhongBan
 -- ─────────────────────────────────────────────
 
--- [PB-01] Cây phòng ban (self-join theo MaPhongCha) - thay thế index gốc, thêm INCLUDE
+-- Cây phòng ban (self-join theo MaPhongCha) - thay thế index gốc, thêm INCLUDE
 IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'IDX_PhongBan_MaPhongCha_Covered' AND object_id = OBJECT_ID('dbo.PhongBan'))
 CREATE NONCLUSTERED INDEX IDX_PhongBan_MaPhongCha_Covered
 ON dbo.PhongBan (MaPhongCha, DangHoatDong)
@@ -510,7 +497,7 @@ GO
 -- PHẦN 4: SCRIPT BẢO TRÌ INDEX (chạy định kỳ qua SQL Agent Job)
 -- =============================================================================================================
 
--- 4.1 ✅ BUG-05 FIXED: Bao toàn bộ cursor trong BEGIN/END block riêng để tránh scope issue
+-- 4.1 BUG-05 FIXED: Bao toàn bộ cursor trong BEGIN/END block riêng để tránh scope issue
 -- Script AUTO-REORGANIZE hoặc REBUILD dựa trên ngưỡng (threshold) fragmentation
 -- Gợi ý: Chạy Chủ nhật 2:00 AM qua SQL Agent Job
 
@@ -583,7 +570,7 @@ GO
 -- PHẦN 5: KIỂM TRA KẾT QUẢ SAU KHI TẠO INDEX
 -- =============================================================================================================
 
--- 5.1 ✅ BUG-04 FIXED: Tổng hợp toàn bộ index sau khi tối ưu
+-- 5.1 BUG-04 FIXED: Tổng hợp toàn bộ index sau khi tối ưu
 -- LỖI CŨ: STRING_AGG với WITHIN GROUP (ORDER BY key_ordinal) bị nhập nhằng
 --          khi đồng thời aggregate cả is_included_column=0 và =1 trong cùng GROUP BY
 -- SỬA: Dùng subquery tách riêng Key Columns và Include Columns
@@ -594,7 +581,7 @@ SELECT
     i.name                          AS [Tên Index],
     i.type_desc                     AS [Loại],
     CASE i.is_unique WHEN 1 THEN 'Có' ELSE 'Không' END AS [Unique],
-    -- ✅ FIXED: Tách thành 2 subquery riêng thay vì CASE trong STRING_AGG
+    -- FIXED: Tách thành 2 subquery riêng thay vì CASE trong STRING_AGG
     (
         SELECT STRING_AGG(c2.name, ', ') WITHIN GROUP (ORDER BY ic2.key_ordinal)
         FROM sys.index_columns ic2
@@ -651,17 +638,3 @@ WHERE t.is_ms_shipped = 0
 ORDER BY p.rows ASC;  -- Sắp xếp tăng dần: index rỗng (0 rows) sẽ hiện đầu tiên để dễ phát hiện
 GO
 
-
--- =============================================================================================================
-PRINT '======================================================';
-PRINT ' NextHR Index Optimization Script v2.0 - FIXED';
-PRINT ' Tổng index tối ưu: 27';
-PRINT ' Bugs đã sửa:';
-PRINT '   [BUG-01] IDX_DonNghiPhep_Pending_Filtered: key NguoiDuyetId=NULL => đổi thành NgayTao+MaNhanVienId';
-PRINT '   [BUG-02] IDX_DonLamThem_Pending_Filtered:  key NguoiDuyetId=NULL => đổi thành NgayTao+MaNhanVienId';
-PRINT '   [BUG-03] IDX_PhieuLuong_ChuaThanhToan: IN() không hợp lệ => đổi thành <> N''Paid''';
-PRINT '   [BUG-04] Section 5.1 STRING_AGG nhập nhằng => tách thành 2 subquery riêng';
-PRINT '   [BUG-05] Cursor scope: thêm LOCAL FAST_FORWARD + BEGIN/END block';
-PRINT '   [BONUS]  Toàn bộ CREATE INDEX thêm IF NOT EXISTS để idempotent (chạy nhiều lần an toàn)';
-PRINT '======================================================';
-GO

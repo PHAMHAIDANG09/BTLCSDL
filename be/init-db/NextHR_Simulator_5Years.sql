@@ -1,13 +1,8 @@
--- =============================================================================================================
--- DỰ ÁN: NEXTHR - MASTER WORKLOAD SIMULATION v2.0 (5 NĂM)
--- Thời gian giả lập: 01/01/2022 → 31/12/2026
--- Mục tiêu:
---   ① Seed đầy đủ dữ liệu gốc cho tất cả bảng danh mục
---   ② Giả lập 100 nhân viên với vòng đời thực tế (tuyển dụng, điều chuyển, nghỉ việc)
---   ③ Phủ 100% các bảng nghiệp vụ: ChamCong, HopDong, LichSuLuong, DonNghiPhep,
---      DonLamThem, SoDuPhep, LichSuDieuChuyen, PhieuLuong, NhatKyHeThong
---   ④ Kích hoạt tất cả 27 Index trong script tối ưu
---   ⑤ Phản ánh đúng tỷ lệ thực tế: 10% OT, 5% đơn phép/tháng, 2% điều chuyển/quý
+﻿-- NextHR - Workload Simulation 5 nam
+-- Thoi gian: 01/01/2022 - 31/12/2026
+-- Seed 100 nhan vien, cham cong, hop dong, luong, nghi phep, OT, dieu chuyen qua 5 nam
+
+
 -- =============================================================================================================
 
 USE NextHR;
@@ -16,9 +11,6 @@ GO
 SET NOCOUNT ON;
 SET XACT_ABORT ON;
 
-PRINT N'╔══════════════════════════════════════════════════════╗';
-PRINT N'║   NEXTHR SIMULATOR v2.0  ║';
-PRINT N'╚══════════════════════════════════════════════════════╝';
 
 -- =============================================================================================================
 -- BƯỚC 0: DỌN DẸP DỮ LIỆU CŨ (theo thứ tự FK)
@@ -473,7 +465,7 @@ INSERT INTO dbo.LichSuDieuChuyen (
     LyDo, NguoiDuyetId, NgayTao
 )
 VALUES
-    -- 2022 Q3: IT → IT-BE (thành lập bộ phận)
+    -- 2022 Q3: IT -> IT-BE (thành lập bộ phận)
     (10, 3, 8, 5, 5, '2022-07-01', N'Thành lập bộ phận Backend',   1, '2022-07-01'),
     (11, 3, 8, 5, 5, '2022-07-01', N'Thành lập bộ phận Backend',   1, '2022-07-01'),
     (12, 3, 9, 5, 5, '2022-07-01', N'Thành lập bộ phận Frontend',  1, '2022-07-01'),
@@ -508,7 +500,7 @@ JOIN (
 
 PRINT N'[4/7] Giả lập nhân viên nghỉ việc (turnover)...';
 
--- Cập nhật hợp đồng thử việc 2 tháng → Expired sau khi hết hạn
+-- Cập nhật hợp đồng thử việc 2 tháng -> Expired sau khi hết hạn
 UPDATE dbo.HopDong
 SET TrangThai = N'Expired'
 WHERE LoaiHopDong = N'Xác định thời hạn'
@@ -516,7 +508,7 @@ WHERE LoaiHopDong = N'Xác định thời hạn'
   AND NgayKetThuc <= DATEADD(MONTH, 2, NgayBatDau)  -- Chỉ hđ ngắn (≤ 2 tháng = thử việc)
   AND TrangThai = N'Active';
 
--- Renew hợp đồng Xác định thời hạn → tạo HĐ mới
+-- Renew hợp đồng Xác định thời hạn -> tạo HĐ mới
 INSERT INTO dbo.HopDong (
     MaNhanVienId, MaHopDong, LoaiHopDong,
     NgayBatDau, NgayKetThuc, NgayKy,
@@ -576,7 +568,7 @@ PRINT N'[4/7] Turnover xong.';
 -- BƯỚC 5: VÒNG LẶP THỜI GIAN — Chấm Công + OT + Nghỉ Phép + Lương (2022-2026)
 -- =============================================================================================================
 
-PRINT N'[5/7] Bắt đầu vòng lặp thời gian 2022→2026 (có thể mất vài phút)...';
+PRINT N'[5/7] Bắt đầu vòng lặp thời gian 2022->2026 (có thể mất vài phút)...';
 
 DECLARE @CurrentDate DATE = '2022-01-01';
 DECLARE @EndDate     DATE = '2026-12-31';
@@ -595,7 +587,7 @@ WHILE @CurrentDate <= @EndDate
 BEGIN
     -- Thông báo tiến độ theo quý
     IF DAY(@CurrentDate) = 1 AND MONTH(@CurrentDate) IN (1, 4, 7, 10)
-        PRINT N'  → Đang xử lý: Q' + CAST(DATEPART(QUARTER, @CurrentDate) AS VARCHAR)
+        PRINT N'  Dang xu ly: Q' + CAST(DATEPART(QUARTER, @CurrentDate) AS VARCHAR)
               + '/' + CAST(YEAR(@CurrentDate) AS VARCHAR);
 
     SET @DayOfWeek = DATEPART(dw, @CurrentDate);  -- 1=Sun, 7=Sat
@@ -619,7 +611,6 @@ BEGIN
         SELECT @Dummy = Id FROM dbo.PhongBan WHERE MaPhongCha IS NULL AND DangHoatDong = 1;
         SELECT @Dummy = Id FROM dbo.NgayLe WHERE NgayLe = @CurrentDate;
 
-        -- ── Dashboard HR (kích hoạt index báo cáo) ──
         SELECT @Dummy = COUNT(*) FROM dbo.NhanVien WHERE NgayNghiViec IS NOT NULL;
         SELECT @Dummy = COUNT(*) FROM dbo.NhanVien WHERE MaVaiTroId = 2 AND TrangThai = N'Active';
         SELECT @Dummy = COUNT(*) FROM dbo.HopDong
@@ -627,7 +618,6 @@ BEGIN
         SELECT @Dummy = COUNT(*) FROM dbo.DonNghiPhep
             WHERE MaLoaiPhepId = 1 AND NgayBatDau >= DATEADD(MONTH, -1, @CurrentDate);
 
-        -- ── Chấm công cho 5 NV ngẫu nhiên mỗi ngày ──
         SET @DailyLoop = 1;
         WHILE @DailyLoop <= 5
         BEGIN
@@ -640,7 +630,6 @@ BEGIN
 
             IF @RandEmp IS NOT NULL
             BEGIN
-                -- ── Xác định trạng thái chấm công ──
                 SET @PhuutDiMuon = 0;
                 SET @CCTrangThai = N'CoMat';
                 -- 10% cơ hội đi muộn
@@ -674,7 +663,6 @@ BEGIN
                     );
                 END;
 
-                -- ── Login + tra cứu (kích hoạt UQ indexes) ──
                 SELECT @Dummy = Id FROM dbo.NhanVien WHERE Email = 'emp' + CAST(@RandEmp AS VARCHAR) + '@nexthr.com';
                 SELECT @Dummy = Id FROM dbo.NhanVien WHERE MaNhanVien = 'EMP-2022-' + RIGHT('0000' + CAST(@RandEmp AS VARCHAR), 4);
                 SELECT @Dummy = Id FROM dbo.NhanVien WHERE HoTen LIKE N'Nguyễn%';
@@ -684,7 +672,6 @@ BEGIN
                 SELECT @Dummy = TongNgayPhep - DaSuDung FROM dbo.SoDuPhep
                     WHERE MaNhanVienId = @RandEmp AND MaLoaiPhepId = 1 AND Nam = YEAR(@CurrentDate);
 
-                -- ── OT (10% cơ hội mỗi ngày) ──
                 IF (ABS(CHECKSUM(NEWID())) % 10) = 0
                 BEGIN
                     INSERT INTO dbo.DonLamThem (
@@ -700,7 +687,6 @@ BEGIN
                     );
                 END;
 
-                -- ── Đơn nghỉ phép (3% cơ hội) ──
                 IF (ABS(CHECKSUM(NEWID())) % 33) = 0
                 BEGIN
                     DECLARE @NghiTu DATE = DATEADD(DAY, 1 + (ABS(CHECKSUM(NEWID())) % 5), @CurrentDate);
@@ -730,7 +716,6 @@ BEGIN
                     END;
                 END;
 
-                -- ── Ghi Audit Log ──
                 INSERT INTO dbo.NhatKyHeThong (
                     TenBang, MaBanGhi, HanhDong, MaNguoiThucHienId, NgayThucHien
                 )
@@ -744,7 +729,6 @@ BEGIN
             SET @DailyLoop += 1;
         END; -- WHILE DailyLoop
 
-        -- ── Duyệt OT và Phép cuối ngày (Manager hành động) ──
         UPDATE dbo.DonLamThem
         SET TrangThai = N'Approved', NguoiDuyetId = 1
         WHERE TrangThai = N'Pending' AND NgayLamThem < @CurrentDate;
@@ -956,7 +940,6 @@ PRINT N'[6/7] Bổ sung hoàn tất.';
 -- =============================================================================================================
 
 PRINT N'[7/7] Kiểm tra kết quả...';
-PRINT N'';
 
 SELECT 'NhanVien'         AS [Bảng], COUNT(*) AS [Tổng dòng],
        SUM(CASE WHEN TrangThai = N'Active'     THEN 1 ELSE 0 END) AS [Active],
@@ -999,15 +982,4 @@ GROUP BY Nam, Thang
 ORDER BY Nam, Thang;
 GO
 
-PRINT N'';
-PRINT N'╔══════════════════════════════════════════════════════════╗';
-PRINT N'║   NEXTHR SIMULATOR v2.0 — HUẤN LUYỆN HOÀN TẤT!        ║';
-PRINT N'║                                                          ║';
-PRINT N'║   ✅ 12 bảng danh mục được seed đầy đủ                  ║';
-PRINT N'║   ✅ 100 nhân viên với vòng đời 5 năm                   ║';
-PRINT N'║   ✅ Chấm công, OT, Nghỉ phép, Lương hàng tháng        ║';
-PRINT N'║   ✅ Turnover ~5%/năm, tăng lương 8%/năm               ║';
-PRINT N'║   ✅ Audit log đầy đủ 6 loại hành động                  ║';
-PRINT N'║   ✅ 27 Index được kích hoạt                             ║';
-PRINT N'╚══════════════════════════════════════════════════════════╝';
 GO
