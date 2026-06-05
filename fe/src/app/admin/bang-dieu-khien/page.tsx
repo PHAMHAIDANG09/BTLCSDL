@@ -215,7 +215,7 @@ export default function DashboardPage() {
       <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
         <Col xs={24} xl={12}>
           <Card
-            bordered={false}
+            bordered={true}
             title={
               <Space>
                 <FileTextOutlined style={{ color: "var(--warning-color)" }} />
@@ -234,7 +234,7 @@ export default function DashboardPage() {
                 <Link href="/admin/lam-them-gio" className="text-blue-600 hover:text-blue-800 font-medium">Làm thêm</Link>
               </Space>
             }
-            className="rounded-lg shadow-sm"
+            className="rounded-lg"
             styles={{ body: { padding: "16px 24px", maxHeight: "350px", overflowY: "auto" } }}
           >
             {pendingRequests.length === 0 ? (
@@ -297,7 +297,7 @@ export default function DashboardPage() {
 
         <Col xs={24} xl={12}>
           <Card
-            bordered={false}
+            bordered={true}
             title={
               <Space>
                 <WarningOutlined style={{ color: "var(--warning-color)" }} />
@@ -314,7 +314,7 @@ export default function DashboardPage() {
                 Xem tất cả
               </Link>
             }
-            className="rounded-lg shadow-sm"
+            className="rounded-lg"
             styles={{ body: { padding: "16px 24px", maxHeight: "350px", overflowY: "auto" } }}
           >
             {expiringContractsList.length === 0 ? (

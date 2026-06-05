@@ -277,7 +277,7 @@ export default function LeaveRequestPage() {
         </div>
       </div>
 
-      <Card className="shadow-sm border-0 rounded-lg">
+      <Card className="rounded-lg" bordered={true}>
         <Tabs defaultActiveKey="1" items={tabItems} size="large" />
       </Card>
     </div>

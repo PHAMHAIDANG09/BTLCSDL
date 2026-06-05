@@ -87,6 +87,20 @@ export const useAuthStore = create<AuthState>()(
           set({ token: null, user: null, isAuthenticated: false });
         }
       },
+
+      /**
+       * Cập nhật thông tin user trong store và localStorage
+       */
+      updateUser: (updatedUser: Partial<User>) => {
+        set((state) => {
+          if (!state.user) return {};
+          const newUser = { ...state.user, ...updatedUser };
+          if (typeof window !== 'undefined') {
+            localStorage.setItem('user', JSON.stringify(newUser));
+          }
+          return { user: newUser };
+        });
+      },
     }),
     {
       name: 'auth-store',

@@ -62,13 +62,16 @@
   font-size: 14px;
 }
 
-/* Ant Design Card hover effect */
-.ant-card:hover {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
-  transition: box-shadow 0.3s ease !important;
-}
-
-.no-hover-shadow.ant-card:hover {
+/* Ant Design Card shadow disabled */
+.ant-card,
+.ant-card:hover,
+.no-hover-shadow.ant-card:hover,
+.shadow,
+.shadow-sm,
+.shadow-md,
+.shadow-lg,
+.shadow-xl,
+.shadow-2xl {
   box-shadow: none !important;
 }
 

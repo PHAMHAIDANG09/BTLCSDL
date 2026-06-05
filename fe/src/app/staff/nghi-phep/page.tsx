@@ -219,7 +219,6 @@ export default function StaffLeavePage() {
           type="primary"
           size="large"
           icon={<PlusOutlined />}
-          className="shadow-sm"
           onClick={() => setModalOpen(true)}
         >
           Tạo đơn nghỉ
@@ -227,7 +226,7 @@ export default function StaffLeavePage() {
       </div>
 
       {/* Bảng danh sách */}
-      <div className="bg-white p-5 rounded-xl shadow-sm">
+      <div className="bg-white p-5 rounded-xl border border-gray-200">
         <Spin spinning={loading}>
           <Table
             columns={columns}
