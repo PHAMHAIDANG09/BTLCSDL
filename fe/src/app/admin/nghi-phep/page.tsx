@@ -48,20 +48,28 @@ const employeeRender = (nv: any) => (
 export default function AdminLeavePage() {
   const { token } = theme.useToken();
   const [leaveRequests, setLeaveRequests] = useState<any[]>([]);
-  const [loading, setLoading]             = useState(false);
-  const [viewMode, setViewMode]           = useState<"pending" | "history">("pending");
+  const [loading, setLoading] = useState(false);
+  const [viewMode, setViewMode] = useState<"pending" | "history">("pending");
 
   // Reject modal
   const [rejectVisible, setRejectVisible] = useState(false);
-  const [rejectId, setRejectId]           = useState<number | null>(null);
-  const [rejectReason, setRejectReason]   = useState("");
-  const [submitting, setSubmitting]       = useState(false);
+  const [rejectId, setRejectId] = useState<number | null>(null);
+  const [rejectReason, setRejectReason] = useState("");
+  const [submitting, setSubmitting] = useState(false);
 
   // Detail modal
   const [detailVisible, setDetailVisible] = useState(false);
   const [selectedLeave, setSelectedLeave] = useState<any>(null);
 
-  useEffect(() => { fetchData(); }, []);
+  useEffect(() => {
+    fetchData();
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get("tab") === "history") {
+        setViewMode("history");
+      }
+    }
+  }, []);
 
   const fetchData = async () => {
     setLoading(true);
@@ -274,7 +282,7 @@ export default function AdminLeavePage() {
         render: (_, record) => getStatusBadge(record.TrangThai),
         filters: [
           { text: "Đã duyệt", value: "Approved" },
-          { text: "Từ chối",  value: "Rejected" },
+          { text: "Từ chối", value: "Rejected" },
         ],
         onFilter: (value: any, r: any) => r.TrangThai === value,
       },
@@ -283,7 +291,7 @@ export default function AdminLeavePage() {
 
   const pendingLeaves = leaveRequests.filter((r) => r.TrangThai === "Pending");
   const historyLeaves = leaveRequests.filter((r) => r.TrangThai !== "Pending");
-  const displayData   = viewMode === "pending" ? pendingLeaves : historyLeaves;
+  const displayData = viewMode === "pending" ? pendingLeaves : historyLeaves;
 
   const tabItems = [
     {

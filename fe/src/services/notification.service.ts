@@ -61,15 +61,21 @@ export const NotificationService = {
     const isAdmin = typeof window !== 'undefined' ? window.location.pathname.startsWith('/admin') : false;
 
     if (isAdmin) {
-      // ---- ADMIN 1. Đơn nghỉ phép Pending ----
+      // ---- ADMIN 1. Đơn nghỉ phép ----
       try {
-        const leaves: any[] = (await api.get('/nghi-phep/tat-ca?status=Pending')) as any;
+        const leaves: any[] = (await api.get('/nghi-phep/tat-ca')) as any;
         if (Array.isArray(leaves)) {
           for (const leave of leaves) {
-            const id = `admin_leave_${leave.Id}`;
             const time = new Date(leave.NgayTao || Date.now());
+            // Chỉ hiển thị thông báo trong 30 ngày gần nhất để tránh quá tải
+            const thirtyDaysAgo = Date.now() - 30 * 24 * 3600 * 1000;
+            if (time.getTime() < thirtyDaysAgo) continue;
+
+            const id = `admin_leave_${leave.Id}`;
+            const isRead = leave.TrangThai !== 'Pending' || readIds.has(id);
             const tenLoaiPhep = leave.loaiNghiPhep?.TenLoaiPhep || leave.LoaiNghiPhep?.TenLoaiPhep || 'Nghỉ phép';
             const nv = leave.nhanVien?.HoTen || 'Nhân viên';
+            const link = leave.TrangThai !== 'Pending' ? '/admin/nghi-phep?tab=history' : '/admin/nghi-phep';
 
             notifications.push({
               id,
@@ -77,22 +83,28 @@ export const NotificationService = {
               title: 'Đơn nghỉ phép mới chờ duyệt',
               description: `${nv} vừa tạo yêu cầu ${tenLoaiPhep}.`,
               time,
-              link: '/admin/nghi-phep',
-              read: readIds.has(id),
+              link,
+              read: isRead,
             });
           }
         }
-      } catch {}
+      } catch { }
 
-      // ---- ADMIN 2. Đơn làm thêm giờ Pending ----
+      // ---- ADMIN 2. Đơn làm thêm giờ ----
       try {
-        const otList: any[] = (await api.get('/cham-cong/lam-them?status=Pending')) as any;
+        const otList: any[] = (await api.get('/cham-cong/lam-them')) as any;
         if (Array.isArray(otList)) {
           for (const ot of otList) {
-            const id = `admin_ot_${ot.Id}`;
             const time = new Date(ot.NgayTao || Date.now());
+            // Chỉ hiển thị thông báo trong 30 ngày gần nhất
+            const thirtyDaysAgo = Date.now() - 30 * 24 * 3600 * 1000;
+            if (time.getTime() < thirtyDaysAgo) continue;
+
+            const id = `admin_ot_${ot.Id}`;
+            const isRead = ot.TrangThai !== 'Pending' || readIds.has(id);
             const nv = ot.nhanVien?.HoTen || 'Nhân viên';
             const ngay = new Date(ot.NgayLamThem).toLocaleDateString('vi-VN');
+            const link = ot.TrangThai !== 'Pending' ? '/admin/lam-them-gio?tab=history' : '/admin/lam-them-gio';
 
             notifications.push({
               id,
@@ -100,12 +112,49 @@ export const NotificationService = {
               title: 'Đơn làm thêm giờ mới chờ duyệt',
               description: `${nv} đăng ký làm thêm ${ot.TongSoGio}h ngày ${ngay}.`,
               time,
-              link: '/admin/lam-them-gio',
-              read: readIds.has(id),
+              link,
+              read: isRead,
             });
           }
         }
-      } catch {}
+      } catch { }
+
+      // ---- ADMIN 3. Bảng lương mới ----
+      try {
+        const payslips: any[] = (await api.get('/luong/tat-ca-phieu-luong')) as any;
+        if (Array.isArray(payslips)) {
+          const batches = new Map<string, any>();
+          for (const slip of payslips) {
+             const key = `${slip.Thang}-${slip.Nam}`;
+             if (!batches.has(key)) {
+                batches.set(key, slip);
+             } else {
+                const existing = batches.get(key);
+                if (new Date(slip.NgayTao || Date.now()).getTime() > new Date(existing.NgayTao || Date.now()).getTime()) {
+                   batches.set(key, slip);
+                }
+             }
+          }
+
+          for (const [key, slip] of batches.entries()) {
+             const time = new Date(slip.NgayTao || Date.now());
+             // Chỉ hiển thị thông báo trong 30 ngày gần nhất
+             const thirtyDaysAgo = Date.now() - 30 * 24 * 3600 * 1000;
+             if (time.getTime() < thirtyDaysAgo) continue;
+
+             const id = `admin_payroll_${slip.Thang}_${slip.Nam}`;
+             notifications.push({
+                id,
+                type: 'payslip',
+                title: 'Bảng lương đã sẵn sàng',
+                description: `Bảng lương tháng ${slip.Thang}/${slip.Nam} đã được tính toán xong.`,
+                time,
+                link: `/admin/luong?month=${slip.Thang}&year=${slip.Nam}`,
+                read: readIds.has(id),
+             });
+          }
+        }
+      } catch { }
     } else {
       // ---- STAFF 1. Đơn nghỉ phép ----
       try {
