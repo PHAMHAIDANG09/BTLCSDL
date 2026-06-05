@@ -228,7 +228,7 @@ export default function StaffOvertimePage() {
       </div>
 
       {/* Bảng danh sách */}
-      <div className="bg-white p-5 rounded-xl border border-gray-200">
+      <div className="bg-white p-5 rounded-xl" style={{ border: "1px solid #f1f5f9" }}>
         <Spin spinning={loading}>
           <Table
             columns={columns}
