@@ -1,4 +1,4 @@
-﻿-- NextHR - Workload Simulation 5 nam
+-- NextHR - Workload Simulation 5 nam
 -- Thoi gian: 01/01/2022 - 31/12/2026
 -- Seed 100 nhan vien, cham cong, hop dong, luong, nghi phep, OT, dieu chuyen qua 5 nam
 

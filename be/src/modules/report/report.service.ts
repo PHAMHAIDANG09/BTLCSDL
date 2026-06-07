@@ -25,6 +25,12 @@ export class ReportService {
   }
 
   async getChartStats() {
+    const now = new Date();
+    const currentYear = now.getFullYear();
+    const currentMonth = now.getMonth() + 1;
+    const currentPeriodFilter = `
+      (Nam < ${currentYear} OR (Nam = ${currentYear} AND Thang <= ${currentMonth}))
+    `;
     // 1. Quỹ lương (vw_BangLuongTongHop)
     const quyLuong = await this.dataSource.query(`
       SELECT TOP 6 Nam, Thang, 
@@ -32,6 +38,7 @@ export class ReportService {
              CAST(SUM(TienLamThem) AS FLOAT) as TongTienLamThem, 
              CAST(SUM(LuongThucNhan) AS FLOAT) as TongThucNhan
       FROM dbo.vw_BangLuongTongHop
+      WHERE ${currentPeriodFilter}
       GROUP BY Nam, Thang
       ORDER BY Nam DESC, Thang DESC
     `);
@@ -42,6 +49,7 @@ export class ReportService {
              CAST(SUM(SoNgayCoMat) AS FLOAT) as TongNgayCoMat, 
              CAST(SUM(SoNgayDiMuon) AS FLOAT) as TongNgayDiMuon
       FROM dbo.vw_ChamCongThang
+      WHERE ${currentPeriodFilter}
       GROUP BY Nam, Thang
       ORDER BY Nam DESC, Thang DESC
     `);
@@ -53,6 +61,10 @@ export class ReportService {
              MONTH(NgayVaoLam) as Thang,
              COUNT(*) as SoTuyenMoi
       FROM dbo.NhanVien
+      WHERE (
+        YEAR(NgayVaoLam) < ${currentYear}
+        OR (YEAR(NgayVaoLam) = ${currentYear} AND MONTH(NgayVaoLam) <= ${currentMonth})
+      )
       GROUP BY YEAR(NgayVaoLam), MONTH(NgayVaoLam)
       ORDER BY YEAR(NgayVaoLam) DESC, MONTH(NgayVaoLam) DESC
     `);
@@ -65,6 +77,10 @@ export class ReportService {
              COUNT(*) as SoNghiViec
       FROM dbo.NhanVien
       WHERE NgayNghiViec IS NOT NULL
+        AND (
+          YEAR(NgayNghiViec) < ${currentYear}
+          OR (YEAR(NgayNghiViec) = ${currentYear} AND MONTH(NgayNghiViec) <= ${currentMonth})
+        )
       GROUP BY YEAR(NgayNghiViec), MONTH(NgayNghiViec)
       ORDER BY YEAR(NgayNghiViec) DESC, MONTH(NgayNghiViec) DESC
     `);

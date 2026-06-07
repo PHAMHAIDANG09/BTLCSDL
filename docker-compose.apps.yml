@@ -1,0 +1,48 @@
+services:
+  be:
+    image: btlcsdl-be:latest
+    container_name: nexthr-be
+    environment:
+      TZ: Asia/Ho_Chi_Minh
+      NODE_ENV: production
+      PORT: 3005
+      DB_TYPE: mssql
+      DB_HOST: sqlserver
+      DB_PORT: 1433
+      DB_USERNAME: sa
+      DB_PASSWORD: Dang@12345
+      DB_DATABASE: NextHR
+      DB_SYNCHRONIZE: "false"
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_DB: 0
+      CONTROL_API_BASE_URL: http://localhost:3001
+      CONTROL_API_TIMEOUT: 5000
+      JWT_SECRET: dangdeptraiquadi
+      JWT_EXPIRES_IN: 1d
+      ALLOWED_ORIGINS: http://localhost:3006,http://127.0.0.1:3006,http://localhost:3001,http://localhost:3000
+    ports:
+      - "3005:3005"
+    networks:
+      - existing-backend-network
+    restart: unless-stopped
+
+  fe:
+    image: btlcsdl-fe:latest
+    container_name: nexthr-fe
+    depends_on:
+      - be
+    environment:
+      TZ: Asia/Ho_Chi_Minh
+      NODE_ENV: production
+      NEXT_PUBLIC_API_URL: http://localhost:3005/api
+    ports:
+      - "3006:3000"
+    networks:
+      - existing-backend-network
+    restart: unless-stopped
+
+networks:
+  existing-backend-network:
+    external: true
+    name: be_app-network

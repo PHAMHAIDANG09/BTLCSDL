@@ -2,17 +2,18 @@ FROM mcr.microsoft.com/mssql/server:2022-latest
 
 USER root
 
-RUN apt-get update -y && apt-get install -y cron
+RUN apt-get update -y && apt-get install -y cron dos2unix
 
-# Backup scheduler disabled temporarily
-# COPY backup-full.sh /backup-full.sh
-# COPY backup-differential.sh /backup-differential.sh
-# COPY backup-transaction.sh /backup-transaction.sh
+# Backup scheduler enabled
+COPY backup-full.sh /backup-full.sh
+COPY backup-differential.sh /backup-differential.sh
+COPY backup-transaction.sh /backup-transaction.sh
 
-# RUN chmod +x /backup-full.sh /backup-differential.sh /backup-transaction.sh && \
-#     mkdir -p /backup/Full /backup/Differential /backup/TransactionLog
+RUN dos2unix /backup-full.sh /backup-differential.sh /backup-transaction.sh && \
+    chmod +x /backup-full.sh /backup-differential.sh /backup-transaction.sh && \
+    mkdir -p /backup/Full /backup/Differential /backup/TransactionLog
 
 # Install cron schedule at build time
-# RUN (echo '* * * * * /backup-transaction.sh'; echo '0 * * * * /backup-differential.sh'; echo '0 0 * * * /backup-full.sh') | crontab -
+RUN (echo '*/5 * * * * /backup-transaction.sh'; echo '0 * * * * /backup-differential.sh'; echo '0 0 * * * /backup-full.sh') | crontab -
 
-CMD ["/bin/bash"]
+ENTRYPOINT ["cron", "-f"]

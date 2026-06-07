@@ -196,7 +196,7 @@ export default function CreateRequestModal({ open, onCancel, onSuccess, defaultT
         <Col xs={24} md={12}>
           <Form.Item label="Loại OT">
             <span style={{ color: token.colorTextDescription, fontSize: 13 }}>
-              🤖 Hệ thống tự xác định (Ngày thường / Cuối tuần / Ngày lễ)
+              Hệ thống tự xác định (Ngày thường / Cuối tuần / Ngày lễ)
             </span>
           </Form.Item>
         </Col>

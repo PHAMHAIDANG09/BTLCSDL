@@ -11,10 +11,10 @@ export function AntdProvider({ children }: { children: React.ReactNode }) {
       theme={{
         token: {
           colorPrimary: '#c41d1d',
-          colorSuccess: '#52c41a',
+          colorSuccess: '#47af12ff',
           colorWarning: '#faad14',
           colorError: '#c41d1d',
-          colorInfo: '#1890ff',
+          colorInfo: '#158af8ff',
           borderRadius: 8,
           wireframe: false,
         },

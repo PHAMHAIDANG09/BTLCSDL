@@ -6,6 +6,7 @@
 
 import api from './api';
 import type { AppNotification, NotificationType } from '@/types/notification';
+import dayjs from 'dayjs';
 
 /** Key lưu trạng thái đã đọc trong localStorage */
 const READ_KEY = 'nexhr_read_notifications';
@@ -25,6 +26,26 @@ const getReadIds = (): Set<string> => {
 const saveReadIds = (ids: Set<string>): void => {
   if (typeof window === 'undefined') return;
   localStorage.setItem(READ_KEY, JSON.stringify(Array.from(ids)));
+};
+
+/**
+ * Chuyển đổi chuỗi ngày từ database (được trả về dưới dạng UTC/Z nhưng bản chất là giờ địa phương)
+ * thành đối tượng Date đúng múi giờ địa phương.
+ */
+const parseDbDate = (dateVal: any): Date => {
+  if (!dateVal) return new Date();
+  if (dateVal instanceof Date) return dateVal;
+  
+  if (typeof dateVal === 'string' && dateVal.endsWith('Z')) {
+    const localStr = dateVal.slice(0, -1);
+    const parsed = dayjs(localStr);
+    if (parsed.isValid()) {
+      return parsed.toDate();
+    }
+  }
+  
+  const parsed = dayjs(dateVal);
+  return parsed.isValid() ? parsed.toDate() : new Date();
 };
 
 /** Định dạng mô tả thời gian tương đối */
@@ -66,7 +87,7 @@ export const NotificationService = {
         const leaves: any[] = (await api.get('/nghi-phep/tat-ca')) as any;
         if (Array.isArray(leaves)) {
           for (const leave of leaves) {
-            const time = new Date(leave.NgayTao || Date.now());
+            const time = parseDbDate(leave.NgayTao);
             // Chỉ hiển thị thông báo trong 30 ngày gần nhất để tránh quá tải
             const thirtyDaysAgo = Date.now() - 30 * 24 * 3600 * 1000;
             if (time.getTime() < thirtyDaysAgo) continue;
@@ -95,7 +116,7 @@ export const NotificationService = {
         const otList: any[] = (await api.get('/cham-cong/lam-them')) as any;
         if (Array.isArray(otList)) {
           for (const ot of otList) {
-            const time = new Date(ot.NgayTao || Date.now());
+            const time = parseDbDate(ot.NgayTao);
             // Chỉ hiển thị thông báo trong 30 ngày gần nhất
             const thirtyDaysAgo = Date.now() - 30 * 24 * 3600 * 1000;
             if (time.getTime() < thirtyDaysAgo) continue;
@@ -130,14 +151,14 @@ export const NotificationService = {
                 batches.set(key, slip);
              } else {
                 const existing = batches.get(key);
-                if (new Date(slip.NgayTao || Date.now()).getTime() > new Date(existing.NgayTao || Date.now()).getTime()) {
+                if (parseDbDate(slip.NgayTao).getTime() > parseDbDate(existing.NgayTao).getTime()) {
                    batches.set(key, slip);
                 }
              }
           }
 
           for (const [key, slip] of batches.entries()) {
-             const time = new Date(slip.NgayTao || Date.now());
+             const time = parseDbDate(slip.NgayTao);
              // Chỉ hiển thị thông báo trong 30 ngày gần nhất
              const thirtyDaysAgo = Date.now() - 30 * 24 * 3600 * 1000;
              if (time.getTime() < thirtyDaysAgo) continue;
@@ -167,7 +188,7 @@ export const NotificationService = {
             const id = `leave_${leave.Id}`;
             const type: NotificationType =
               status === 'Approved' ? 'leave_approved' : 'leave_rejected';
-            const time = new Date(leave.NgayDuyet || leave.NgayTao);
+            const time = parseDbDate(leave.NgayDuyet || leave.NgayTao);
             const tenLoaiPhep =
               leave.loaiNghiPhep?.TenLoaiPhep ||
               leave.LoaiNghiPhep?.TenLoaiPhep ||
@@ -207,7 +228,7 @@ export const NotificationService = {
             const id = `ot_${ot.Id}`;
             const type: NotificationType =
               status === 'Approved' ? 'ot_approved' : 'ot_rejected';
-            const time = new Date(ot.NgayTao);
+            const time = parseDbDate(ot.NgayTao);
             const ngay = new Date(ot.NgayLamThem).toLocaleDateString('vi-VN');
 
             notifications.push({
@@ -237,7 +258,7 @@ export const NotificationService = {
         if (Array.isArray(payslips)) {
           for (const slip of payslips) {
             const id = `payslip_${slip.Id}`;
-            const time = new Date(slip.NgayTao || slip.NgayThanhToan || Date.now());
+            const time = parseDbDate(slip.NgayTao || slip.NgayThanhToan);
 
             // Chỉ tạo thông báo cho phiếu lương trong 3 tháng gần nhất
             const threeMonthsAgo = Date.now() - 90 * 24 * 3600 * 1000;
